@@ -1,0 +1,151 @@
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 280px;
+    background-color: var(--nh-black);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 50;
+    transition: transform 0.3s ease;
+}
+
+.main {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+    background-color: var(--background);
+    min-height: 100vh;
+}
+
+.header {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    background-color: #1a1a1a;
+    border-bottom: 2px solid var(--nh-yellow);
+}
+
+.brand {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.025em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.brandHighlight {
+    color: var(--nh-yellow);
+}
+
+.nav {
+    flex: 1;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    color: #a3a3a3;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.navItem:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.active {
+    background-color: var(--nh-blue);
+    color: #fff;
+}
+
+.footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.userProfile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--nh-yellow);
+    color: var(--nh-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.userName {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.userRole {
+    font-size: 0.75rem;
+    color: #a3a3a3;
+}
+
+.logoutBtn {
+    margin-top: 1rem;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #ef4444;
+    /* Red for logout */
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logoutBtn:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .main {
+        margin-left: 0;
+    }
+}

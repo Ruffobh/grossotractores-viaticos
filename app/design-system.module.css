@@ -1,0 +1,99 @@
+/* Global Shared Components CSS matching the new aesthetic */
+
+/* Card Container */
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--gray-200);
+    padding: 1.5rem;
+}
+
+/* Page Header */
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.pageTitle {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--nh-black);
+    letter-spacing: -0.025em;
+    margin: 0;
+}
+
+/* Primary Button (Pill shape) */
+.primaryButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--nh-blue);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 69, 137, 0.3);
+    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.primaryButton:hover {
+    background-color: #003366;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(0, 69, 137, 0.4);
+}
+
+/* Secondary Button (Outline) */
+.secondaryButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: white;
+    color: var(--gray-700);
+    padding: 0.75rem 1.25rem;
+    border-radius: 50px;
+    font-weight: 600;
+    border: 1px solid var(--gray-300);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.secondaryButton:hover {
+    background-color: var(--gray-50);
+    border-color: var(--gray-400);
+    color: var(--nh-black);
+}
+
+/* Input Fields */
+.inputField {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    /* Slightly more rounded */
+    font-size: 1rem;
+    transition: all 0.2s;
+    background-color: #fff;
+}
+
+.inputField:focus {
+    outline: none;
+    border-color: var(--nh-blue);
+    box-shadow: 0 0 0 3px rgba(0, 69, 137, 0.1);
+}
+
+.inputLabel {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}

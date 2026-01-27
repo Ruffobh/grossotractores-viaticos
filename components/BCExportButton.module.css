@@ -1,0 +1,32 @@
+.button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #ecfdf5;
+    /* emerald-50 */
+    border: 1px solid #d1fae5;
+    /* emerald-100 */
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #059669;
+    /* emerald-600 */
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
+    /* Green shadow */
+    transition: all 0.2s;
+}
+
+.button:hover {
+    background-color: #d1fae5;
+    color: #047857;
+    /* emerald-700 */
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.2);
+}
+
+.icon {
+    color: currentColor;
+    /* Inherit form button */
+}

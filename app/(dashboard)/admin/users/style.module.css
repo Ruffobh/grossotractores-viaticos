@@ -1,0 +1,154 @@
+/* Modern Admin Table Styles */
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--nh-black);
+    letter-spacing: -0.025em;
+    margin: 0;
+}
+
+.newButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--nh-blue);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 69, 137, 0.3);
+    transition: all 0.2s;
+}
+
+.newButton:hover {
+    background-color: #003366;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(0, 69, 137, 0.4);
+}
+
+.tableWrapper {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--gray-200);
+    overflow-x: auto;
+    /* Keep insurance scroll for very small mobile, but aim to fit on desktop */
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    white-space: nowrap;
+    /* Prevent wrapping unless needed, but maybe allow wrapping for text? */
+}
+
+.table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background-color: var(--gray-50);
+    font-weight: 600;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-900);
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr:hover td {
+    background-color: var(--gray-50);
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.badge::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    margin-right: 4px;
+    background-color: currentColor;
+    opacity: 0.7;
+}
+
+.admin {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.manager {
+    background-color: #dbeafe;
+    color: #2563eb;
+    border: 1px solid #93c5fd;
+}
+
+.user {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.editButton {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background-color: white;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    color: var(--gray-700);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.editButton:hover {
+    background-color: var(--gray-50);
+    border-color: var(--nh-blue);
+    color: var(--nh-blue);
+    text-decoration: none;
+}

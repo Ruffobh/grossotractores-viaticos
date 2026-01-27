@@ -1,0 +1,236 @@
+/* Modern Table Styles aligned with Global System */
+.tableWrapper {
+    background-color: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-xl);
+    /* Lifted card look */
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    /* Modal uses collapse */
+    width: 100%;
+}
+
+.table th {
+    text-align: left;
+    padding: 0.75rem 1.5rem;
+    /* Match modal header padding */
+    background-color: #f9fafb;
+    /* gray-50 */
+    font-weight: 700;
+    color: #6b7280;
+    /* gray-500 */
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.table td {
+    padding: 1rem 1.5rem;
+    /* Match modal cell padding */
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    /* gray-700 */
+    vertical-align: middle;
+    font-size: 0.875rem;
+    /* Match modal font size */
+    transition: background-color 0.2s;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr:hover td {
+    background-color: #f9fafb;
+}
+
+.amount {
+    font-weight: 700;
+    /* Bold numbers like modal */
+    font-variant-numeric: tabular-nums;
+    color: var(--gray-900);
+    text-align: right;
+    /* Align numbers right usually, but let's keep left if that's standard, Modal has right */
+}
+
+/* Badges - Using global style inspiration but keeping status logic */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.6rem;
+    border-radius: 0.375rem;
+    /* Slightly rounded squares like modal */
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+/* Status Colors mapped to Modal colors where possible */
+/* Actions Wrapper */
+.actionsWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.deleteButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--gray-500);
+    padding: 0.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.deleteButton:hover {
+    color: #ef4444;
+    background-color: #fee2e2;
+}
+
+.deleteButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Status Colors mapped to Modal colors where possible */
+.pending_approval {
+    background-color: #fff7ed;
+    /* orange-50 */
+    color: #c2410c;
+    /* orange-700 */
+    border: 1px solid transparent;
+}
+
+.approved {
+    background-color: var(--emerald-100);
+    color: var(--emerald-600);
+    border: 1px solid transparent;
+}
+
+.submitted_to_bc {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: 1px solid transparent;
+}
+
+.rejected {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid transparent;
+}
+
+.exceeded_budget {
+    background-color: var(--purple-100);
+    /* Use purple for special attention */
+    color: var(--purple-700);
+    border: 1px solid transparent;
+}
+
+/* Actions */
+.link {
+    color: var(--nh-blue);
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.link:hover {
+    background-color: #eff6ff;
+    text-decoration: none;
+}
+
+/* Copy Button */
+.copyButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: white;
+    border: 1px solid var(--gray-200);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.2s;
+}
+
+.copyButton:hover {
+    background-color: var(--gray-50);
+    color: var(--nh-black);
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+/* Mobile Card View Adaptation */
+@media (max-width: 768px) {
+    .tableWrapper {
+        background: transparent;
+        box-shadow: none;
+        border: none;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody tr {
+        display: block;
+        background: white;
+        margin-bottom: 1rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        padding: 1rem;
+    }
+
+    .table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--gray-100);
+        text-align: right;
+    }
+
+    .table td:last-child {
+        border-bottom: none;
+    }
+
+    .table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        text-align: left;
+        padding-right: 1rem;
+    }
+
+    /* Center the actions button on mobile */
+    .table td:last-child {
+        justify-content: center;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid var(--gray-100);
+    }
+
+    .table td:last-child::before {
+        display: none;
+    }
+}

@@ -1,0 +1,138 @@
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+import Image from 'next/image'
+import styles from './style.module.css'
+import { approveExpense, rejectExpense } from './actions'
+import { CheckCircle, XCircle } from 'lucide-react'
+import { BCExportButton } from '@/components/bc-export-button'
+
+export default async function ExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    const supabase = await createClient()
+
+    // Fetch invoice data
+    const { data: invoice, error } = await supabase
+        .from('invoices')
+        .select('*, profiles(*)')
+        .eq('id', id)
+        .single()
+
+    if (error || !invoice) {
+        redirect('/expenses')
+    }
+
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: currentUserProfile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
+    const isAdmin = currentUserProfile?.role === 'admin'
+    const isManager = currentUserProfile?.role === 'manager'
+    const canExport = isAdmin || isManager
+
+    // Determine if actions are needed
+    const showAdminActions = isAdmin && (invoice.status === 'pending_approval' || invoice.status === 'exceeded_budget')
+
+    return (
+        <div className={styles.container}>
+            {/* Left: Image Viewer */}
+            <div className={styles.imageSection}>
+                {invoice.file_url?.toLowerCase().endsWith('.pdf') ? (
+                    <iframe src={invoice.file_url} className={styles.iframe} />
+                ) : (
+                    <div className={styles.imageWrapper}>
+                        <Image
+                            src={invoice.file_url || ''}
+                            alt="Receipt"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Right: Details & Actions */}
+            <div className={styles.formSection}>
+                <div className={styles.header}>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h2 className={styles.title}>Detalle de Comprobante</h2>
+                            <p className={styles.statusText}>
+                                Estado: <span className={styles[getStatusClass(invoice.status)]}>{formatStatus(invoice.status)}</span>
+                            </p>
+                            <p className="text-sm text-gray-400 mt-1">Cargado por: {invoice.profiles?.full_name}</p>
+                        </div>
+                        {canExport && <BCExportButton invoice={invoice} profile={invoice.profiles} />}
+                    </div>
+                </div>
+
+                <div className={styles.amountCard}>
+                    <p className={styles.amountLabel}>Monto Total</p>
+                    <p className={styles.amountValue}>
+                        {invoice.currency} {invoice.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    </p>
+                </div>
+
+                <div className={styles.gridSection}>
+                    <DetailRow label="Proveedor" value={invoice.vendor_name} />
+                    <DetailRow label="CUIT" value={invoice.vendor_cuit} />
+                    <DetailRow label="Fecha" value={new Date(invoice.date).toLocaleDateString()} />
+                    <DetailRow label="Tipo Factura" value={invoice.invoice_type} />
+                    <DetailRow label="Forma de Pago" value={invoice.payment_method} />
+                    <DetailRow label="Nº Comprobante" value={invoice.id.slice(0, 8)} />
+                </div>
+
+                <div className={styles.commentsSection}>
+                    <DetailRow label="Comentarios" value={invoice.comments} />
+                </div>
+
+                {showAdminActions && (
+                    <div className={styles.actions}>
+                        <form action={approveExpense.bind(null, invoice.id)} style={{ flex: 1 }}>
+                            <button type="submit" className={styles.approveButton}>
+                                <CheckCircle size={20} />
+                                Aprobar
+                            </button>
+                        </form>
+                        <form action={rejectExpense.bind(null, invoice.id)} style={{ flex: 1 }}>
+                            <button type="submit" className={styles.rejectButton}>
+                                <XCircle size={20} />
+                                Rechazar
+                            </button>
+                        </form>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
+function DetailRow({ label, value, isLarge = false }: { label: string, value: string | null | number, isLarge?: boolean }) {
+    return (
+        <div className={styles.detailRow}>
+            <label className={styles.label}>{label}</label>
+            <div className={isLarge ? styles.valueLarge : styles.value}>
+                {value || '-'}
+            </div>
+        </div>
+    )
+}
+
+function formatStatus(status: string) {
+    const map: Record<string, string> = {
+        'pending_approval': 'Pendiente de Aprobación',
+        'approved': 'Aprobado',
+        'rejected': 'Rechazado',
+        'exceeded_budget': 'Excede Presupuesto',
+        'pending': 'Pendiente'
+    }
+    return map[status] || status
+}
+
+function getStatusClass(status: string) {
+    const map: Record<string, string> = {
+        'pending_approval': 'statusPending',
+        'approved': 'statusApproved',
+        'rejected': 'statusRejected',
+        'exceeded_budget': 'statusExceeded',
+        'pending': 'statusPending'
+    }
+    return map[status] || 'statusPending'
+}
