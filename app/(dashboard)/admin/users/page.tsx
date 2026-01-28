@@ -93,7 +93,7 @@ export default async function UsersListPage() {
                             return (
                                 <tr key={profile.id}>
                                     <td className="font-bold">{profile.full_name || 'Sin Nombre'}</td>
-                                    <td>{profile.email}</td>
+                                    <td className={styles.emailCell} title={profile.email}>{profile.email}</td>
                                     <td>
                                         <span className={`${styles.badge} ${styles[profile.role || 'user']}`}>
                                             {profile.role || 'user'}
