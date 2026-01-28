@@ -114,7 +114,7 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                                     <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
                                     <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
                                     <Tooltip
-                                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monto']}
+                                        formatter={(value: any) => [`$${(value || 0).toLocaleString()}`, 'Monto']}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                     />
                                     <Bar dataKey="value" radius={[4, 4, 0, 0]}>
