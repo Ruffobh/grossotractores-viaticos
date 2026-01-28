@@ -38,8 +38,8 @@ export async function updateUserProfile(formData: FormData) {
         branch: branches.length > 0 ? branches[0] : null,
         branches: branches,
         area: formData.get('area'),
-        monthly_limit: parseFloat(formData.get('monthly_limit') as string),
-        cash_limit: parseFloat(formData.get('cash_limit') as string),
+        monthly_limit: Number(formData.get('monthly_limit')) || 0,
+        cash_limit: Number(formData.get('cash_limit')) || 0,
     }
 
     const { error } = await supabase

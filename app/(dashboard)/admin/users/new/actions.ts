@@ -25,8 +25,8 @@ export async function createUser(formData: FormData) {
     const role = formData.get('role') as string
     const branch = formData.get('branch') as string
     const area = formData.get('area') as string
-    const monthly_limit = parseFloat(formData.get('monthly_limit') as string)
-    const cash_limit = parseFloat(formData.get('cash_limit') as string)
+    const monthlyLimit = Number(formData.get('monthly_limit')) || 0
+    const cashLimit = Number(formData.get('cash_limit')) || 0
 
     // Use Service Client to Create Auth User
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
