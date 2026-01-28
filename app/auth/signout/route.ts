@@ -15,7 +15,12 @@ export async function POST(req: NextRequest) {
     }
 
     revalidatePath('/', 'layout')
-    return NextResponse.redirect(new URL('/login', req.url), {
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+        ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
+        : new URL('/', req.url).origin
+
+    return NextResponse.redirect(`${baseUrl}/login`, {
         status: 302,
     })
 }
