@@ -20,7 +20,7 @@
 .main {
     flex: 1;
     margin-left: 280px;
-    padding: 2rem;
+    padding: 1rem;
     background-color: var(--background);
     min-height: 100vh;
 }
