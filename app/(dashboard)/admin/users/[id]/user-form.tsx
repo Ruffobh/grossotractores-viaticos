@@ -54,16 +54,6 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                     </div>
 
                     <div>
-                        <label className={styles.label}>Sucursal(es)</label>
-                        <MultiSelect
-                            options={branchesOptions}
-                            selected={selectedBranches}
-                            onChange={setSelectedBranches}
-                            placeholder="Seleccionar sucursales..."
-                        />
-                    </div>
-
-                    <div>
                         <label className={styles.label}>Área</label>
                         <select name="area" defaultValue={profile.area || ''} className={styles.input}>
                             <option value="" disabled>Seleccionar área...</option>
@@ -74,6 +64,20 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                             <option value="Grupo-Staff-Soporte">Grupo-Staff-Soporte</option>
                             <option value="Operaciones">Operaciones</option>
                         </select>
+                    </div>
+
+                    <div className={styles.fullWidth}>
+                        <label className={styles.label}>Sucursal(es)</label>
+                        <MultiSelect
+                            options={branchesOptions}
+                            selected={selectedBranches}
+                            onChange={setSelectedBranches}
+                            placeholder="Seleccionar sucursales..."
+                        />
+                    </div>
+
+                    <div className={styles.fullWidth}>
+                        <h3 className="text-lg font-semibold mt-4 mb-2 text-gray-800 border-t pt-4">Límites de Gastos</h3>
                     </div>
 
                     <div>

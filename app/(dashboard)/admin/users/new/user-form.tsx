@@ -73,16 +73,6 @@ export default function NewUserForm({ branchesOptions }: NewUserFormProps) {
                     </div>
 
                     <div>
-                        <label className={styles.label}>Sucursal(es)</label>
-                        <MultiSelect
-                            options={branchesOptions}
-                            selected={selectedBranches}
-                            onChange={setSelectedBranches}
-                            placeholder="Seleccionar sucursales..."
-                        />
-                    </div>
-
-                    <div>
                         <label className={styles.label}>Área</label>
                         <select name="area" className={styles.input} defaultValue="">
                             <option value="" disabled>Seleccionar área...</option>
@@ -93,6 +83,20 @@ export default function NewUserForm({ branchesOptions }: NewUserFormProps) {
                             <option value="Grupo-Staff-Soporte">Grupo-Staff-Soporte</option>
                             <option value="Operaciones">Operaciones</option>
                         </select>
+                    </div>
+
+                    <div className={styles.fullWidth}>
+                        <label className={styles.label}>Sucursal(es)</label>
+                        <MultiSelect
+                            options={branchesOptions}
+                            selected={selectedBranches}
+                            onChange={setSelectedBranches}
+                            placeholder="Seleccionar sucursales..."
+                        />
+                    </div>
+
+                    <div className={styles.fullWidth}>
+                        <h3 className="text-lg font-semibold mt-4 mb-2 text-gray-800 border-t pt-4">Límites de Gastos</h3>
                     </div>
 
                     <div>
