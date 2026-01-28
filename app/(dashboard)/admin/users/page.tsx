@@ -24,22 +24,30 @@ export default async function UsersListPage() {
         .select('*')
         .order('full_name')
 
-    // 2. Fetch Consumption for Current Month
+    // 2. Fetch Consumption for Current Month (Split by Type)
     const now = new Date()
     const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
 
     const { data: invoices } = await supabase
         .from('invoices')
-        .select('user_id, total_amount')
+        .select('user_id, total_amount, payment_method')
         .gte('date', startDate)
         .lte('date', endDate)
 
-    // Aggregate consumption by user
-    const consumptionMap = new Map<string, number>()
+    // Aggregate consumption by user and type
+    const consumptionMap = new Map<string, { card: number, cash: number }>()
+
     invoices?.forEach(inv => {
-        const current = consumptionMap.get(inv.user_id) || 0
-        consumptionMap.set(inv.user_id, current + (inv.total_amount || 0))
+        const current = consumptionMap.get(inv.user_id) || { card: 0, cash: 0 }
+
+        if (inv.payment_method === 'Cash' || inv.payment_method === 'Transfer') {
+            current.cash += (inv.total_amount || 0)
+        } else {
+            current.card += (inv.total_amount || 0)
+        }
+
+        consumptionMap.set(inv.user_id, current)
     })
 
     if (error) {
@@ -65,16 +73,22 @@ export default async function UsersListPage() {
                             <th>Rol</th>
                             <th>Sucursal</th>
                             <th>Área</th>
-                            <th>Límite</th>
-                            <th>Consumo</th>
+                            <th>Límite TC</th>
+                            <th>Consumo TC</th>
+                            <th>Límite EF</th>
+                            <th>Consumo EF</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {profiles?.map((profile) => {
-                            const consumed = consumptionMap.get(profile.id) || 0
-                            const limit = profile.monthly_limit || 0
-                            const isExceeded = consumed > limit
+                            const userConsumption = consumptionMap.get(profile.id) || { card: 0, cash: 0 }
+
+                            const limitCard = profile.monthly_limit || 0
+                            const limitCash = profile.cash_limit || 0
+
+                            const cardExceeded = userConsumption.card > limitCard
+                            const cashExceeded = userConsumption.cash > limitCash
 
                             return (
                                 <tr key={profile.id}>
@@ -87,13 +101,25 @@ export default async function UsersListPage() {
                                     </td>
                                     <td>{profile.branch || '-'}</td>
                                     <td>{profile.area || '-'}</td>
-                                    <td>${limit.toLocaleString()}</td>
+
+                                    {/* Credit Card Stats */}
+                                    <td>${limitCard.toLocaleString()}</td>
                                     <td style={{
-                                        color: isExceeded ? '#ef4444' : 'inherit',
-                                        fontWeight: isExceeded ? '800' : 'normal'
+                                        color: cardExceeded ? '#ef4444' : 'inherit',
+                                        fontWeight: cardExceeded ? '800' : 'normal'
                                     }}>
-                                        ${consumed.toLocaleString()}
+                                        ${userConsumption.card.toLocaleString()}
                                     </td>
+
+                                    {/* Cash Stats */}
+                                    <td>${limitCash.toLocaleString()}</td>
+                                    <td style={{
+                                        color: cashExceeded ? '#ef4444' : 'inherit',
+                                        fontWeight: cashExceeded ? '800' : 'normal'
+                                    }}>
+                                        ${userConsumption.cash.toLocaleString()}
+                                    </td>
+
                                     <td>
                                         <div className={styles.actions}>
                                             <Link href={`/admin/users/${profile.id}`} className={styles.editButton}>
