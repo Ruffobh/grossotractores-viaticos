@@ -149,7 +149,7 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value: number, name: string, props: any) => [`$${value.toLocaleString()} (${props.payload.percentage})`, name]} />
+                                <Tooltip formatter={(value: any, name: string, props: any) => [`$${(value || 0).toLocaleString()} (${props.payload.percentage})`, name]} />
                                 <Legend verticalAlign="bottom" height={36} iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
@@ -166,7 +166,7 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                                 <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
                                 <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
                                 <Tooltip
-                                    formatter={(value: number = 0) => [`$${value.toLocaleString()}`, 'Monto']}
+                                    formatter={(value: any) => [`$${(value || 0).toLocaleString()}`, 'Monto']}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                 />
                                 <Line
