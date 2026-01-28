@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { geminiModel } from '@/utils/gemini/client'
+import { getGeminiModel } from '@/utils/gemini/client'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -70,7 +70,8 @@ export async function processReceipt(imageUrl: string) {
 
         while (retryCount <= maxRetries) {
             try {
-                result = await geminiModel.generateContent([
+                const model = getGeminiModel();
+                result = await model.generateContent([
                     prompt,
                     {
                         inlineData: {
