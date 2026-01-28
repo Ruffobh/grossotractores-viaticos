@@ -37,9 +37,8 @@ export default function LoginPage() {
             return
         }
 
-        // Force a router refresh to update server components (middleware check)
-        router.refresh()
-        router.push('/')
+        // Force full reload to ensure cookies are sent strictly
+        window.location.href = '/'
     }
 
     return (
