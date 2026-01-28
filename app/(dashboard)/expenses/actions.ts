@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { geminiModel } from '@/utils/gemini/client'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
 export async function processReceipt(imageUrl: string) {
     try {
@@ -62,15 +63,37 @@ export async function processReceipt(imageUrl: string) {
       Only return the JSON. Do not include markdown formatting.
     `
 
-        const result = await geminiModel.generateContent([
-            prompt,
-            {
-                inlineData: {
-                    data: base64Image,
-                    mimeType: mimeType,
-                },
-            },
-        ])
+
+        let result;
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        while (retryCount <= maxRetries) {
+            try {
+                result = await geminiModel.generateContent([
+                    prompt,
+                    {
+                        inlineData: {
+                            data: base64Image,
+                            mimeType: mimeType,
+                        },
+                    },
+                ]);
+                break; // Success, exit loop
+            } catch (error: any) {
+                if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+                    retryCount++;
+                    if (retryCount > maxRetries) throw error; // Give up
+
+                    const waitTime = 2000 * Math.pow(2, retryCount - 1); // 2s, 4s, 8s
+                    console.log(`Rate limited (429). Retrying in ${waitTime}ms... (Attempt ${retryCount}/${maxRetries})`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                } else {
+                    throw error; // Other error, throw immediately
+                }
+            }
+        }
+
 
         const response = await result.response
         let text = response.text()
@@ -88,6 +111,15 @@ export async function processReceipt(imageUrl: string) {
             // Continue with empty data instead of failing completely, so user can edit manually
         }
 
+        // 2b. Fetch User Profile for Branch
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('branch')
+            .eq('id', user.id)
+            .single()
+
+        const userBranch = profile?.branch || null
+
         // 3. Create generic Invoice record
         const { data: invoice, error } = await supabase
             .from('invoices')
@@ -97,12 +129,13 @@ export async function processReceipt(imageUrl: string) {
                 status: 'pending_approval',
                 vendor_name: parsedData.vendor_name || 'Desconocido',
                 vendor_cuit: parsedData.vendor_cuit,
+                invoice_number: parsedData.invoice_number,
                 invoice_type: parsedData.invoice_type,
                 date: parsedData.date || new Date().toISOString().split('T')[0],
                 total_amount: parsedData.total_amount || 0,
                 currency: parsedData.currency || 'ARS',
                 parsed_data: parsedData,
-                branch: null
+                branch: userBranch
             })
             .select()
             .single()
@@ -114,13 +147,10 @@ export async function processReceipt(imageUrl: string) {
 
         console.log("Invoice created:", invoice.id)
 
-        // Redirect to validation page
-        redirect(`/expenses/${invoice.id}/validate`)
+        // Redirect handled by client
+        return { success: true, invoiceId: invoice.id }
 
     } catch (err: any) {
-        if (err.message === 'NEXT_REDIRECT' || err.digest?.startsWith('NEXT_REDIRECT')) {
-            throw err
-        }
         console.error('AI Processing Error:', err)
         return { error: 'Failed to process receipt with AI: ' + (err.message || err) }
     }
@@ -132,9 +162,14 @@ export async function deleteExpense(id: string) {
     if (!user) return { error: 'Unauthorized' }
 
     // Check status first
+    // Check status first
     const { data: invoice } = await supabase.from('invoices').select('status').eq('id', id).single()
-    if (invoice?.status === 'submitted_to_bc') {
-        return { error: 'No se puede eliminar un comprobante que ya fue cargado en Business Central.' }
+
+    // Check user role
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+
+    if (invoice?.status === 'submitted_to_bc' && profile?.role !== 'admin') {
+        return { error: 'No se puede eliminar un comprobante que ya fue cargado en Business Central (Solo Administradores).' }
     }
 
     const { error } = await supabase.from('invoices').delete().eq('id', id)
@@ -144,7 +179,7 @@ export async function deleteExpense(id: string) {
     }
 
     // Setup revalidation
-    // revalidatePath('/expenses') // We will handle revalidation in the UI or return success
+    revalidatePath('/expenses') // We will handle revalidation in the UI or return success
     return { success: true }
 }
 

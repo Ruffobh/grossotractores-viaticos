@@ -14,9 +14,10 @@ interface MultiSelectProps {
     selected: string[]
     onChange: (selected: string[]) => void
     placeholder?: string
+    disabled?: boolean
 }
 
-export function MultiSelect({ options, selected, onChange, placeholder = 'Seleccionar...' }: MultiSelectProps) {
+export function MultiSelect({ options, selected, onChange, placeholder = 'Seleccionar...', disabled = false }: MultiSelectProps) {
     const [isOpen, setIsOpen] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
 
@@ -32,6 +33,7 @@ export function MultiSelect({ options, selected, onChange, placeholder = 'Selecc
     }, [])
 
     const toggleOption = (value: string) => {
+        if (disabled) return
         const newSelected = selected.includes(value)
             ? selected.filter(item => item !== value)
             : [...selected, value]
@@ -40,7 +42,11 @@ export function MultiSelect({ options, selected, onChange, placeholder = 'Selecc
 
     return (
         <div className={styles.container} ref={containerRef}>
-            <div className={styles.trigger} onClick={() => setIsOpen(!isOpen)}>
+            <div
+                className={`${styles.trigger} ${disabled ? styles.disabled : ''}`}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+                style={disabled ? { opacity: 0.5, cursor: 'not-allowed', pointerEvents: 'none' } : {}}
+            >
                 <span className={selected.length === 0 ? styles.placeholder : ''}>
                     {selected.length === 0
                         ? placeholder

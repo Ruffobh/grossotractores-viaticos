@@ -84,11 +84,15 @@ export default function NewUserForm({ branchesOptions }: NewUserFormProps) {
 
                     <div>
                         <label className={styles.label}>Área</label>
-                        <input
-                            name="area"
-                            placeholder="Ej: Ventas, Administración"
-                            className={styles.input}
-                        />
+                        <select name="area" className={styles.input} defaultValue="">
+                            <option value="" disabled>Seleccionar área...</option>
+                            <option value="Administracion">Administracion</option>
+                            <option value="Repuestos">Repuestos</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Maquinaria">Maquinaria</option>
+                            <option value="Grupo-Staff-Soporte">Grupo-Staff-Soporte</option>
+                            <option value="Operaciones">Operaciones</option>
+                        </select>
                     </div>
 
                     <div>

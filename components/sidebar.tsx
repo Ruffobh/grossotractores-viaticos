@@ -71,16 +71,14 @@ export function Sidebar({ profile, role }: SidebarProps) {
                         <span>Nuevo Gasto</span>
                     </Link>
 
-                    {(role === 'manager' || role === 'admin') && (
-                        <Link
-                            href="/expenses"
-                            className={`${styles.navItem} ${isActive('/expenses') && pathname !== '/expenses/new' ? styles.active : ''}`}
-                            onClick={closeSidebar}
-                        >
-                            <FileText size={20} />
-                            <span>Comprobantes</span>
-                        </Link>
-                    )}
+                    <Link
+                        href="/expenses"
+                        className={`${styles.navItem} ${isActive('/expenses') && pathname !== '/expenses/new' ? styles.active : ''}`}
+                        onClick={closeSidebar}
+                    >
+                        <FileText size={20} />
+                        <span>Comprobantes</span>
+                    </Link>
 
                     {role === 'admin' && (
                         <>
@@ -93,14 +91,14 @@ export function Sidebar({ profile, role }: SidebarProps) {
                                 <Users size={20} />
                                 <span>Usuarios</span>
                             </Link>
-                            <Link
+                            {/* <Link
                                 href="/admin/branches"
                                 className={`${styles.navItem} ${isActive('/admin/branches') ? styles.active : ''}`}
                                 onClick={closeSidebar}
                             >
                                 <Building size={20} />
                                 <span>Sucursales</span>
-                            </Link>
+                            </Link> */}
                         </>
                     )}
                 </nav>

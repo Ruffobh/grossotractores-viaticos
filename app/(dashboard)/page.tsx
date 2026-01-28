@@ -53,7 +53,7 @@ export default async function DashboardPage({
 
     let query = supabase
         .from('invoices')
-        .select('*, profiles(branch, area, full_name)')
+        .select('*, profiles(branch, area, full_name), expense_category')
         .gte('date', startDate)
         .lte('date', endDate)
         .order('date', { ascending: false })
@@ -181,8 +181,8 @@ export default async function DashboardPage({
                 </div>
             </div>
 
-            <div className="mt-8">
-                <AnalyticsDashboard invoices={invoices as any} />
+            <div className={styles.analyticsSection}>
+                <AnalyticsDashboard invoices={invoices as any} role={role} />
             </div>
         </div>
     )

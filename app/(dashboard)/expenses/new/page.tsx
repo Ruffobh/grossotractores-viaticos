@@ -71,13 +71,12 @@ export default function NewExpensePage() {
                 throw new Error(result.error)
             }
 
-            // If we get here without result (void) or without error, it means redirect happened or is happening.
-            // But usually redirect stops execution of the client function if it causes unmount? 
-            // Actually, server action redirect might result in a void return to client, then client router takes over.
-            setUploadStatus('¡Completado! Redirigiendo...')
-
-            // We don't need manual router.push anymore, but keeping a fallback just in case isn't bad if we had ID.
-            // But since we removed ID return, we just wait.
+            if (result && result.success && result.invoiceId) {
+                setUploadStatus('¡Completado! Redirigiendo...')
+                router.push(`/expenses/${result.invoiceId}/validate`)
+            } else {
+                throw new Error('No se recibió confirmación del servidor.')
+            }
 
         } catch (error: any) {
             console.error('Error:', error)

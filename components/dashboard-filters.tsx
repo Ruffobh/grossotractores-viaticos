@@ -90,34 +90,37 @@ export function DashboardFilters({ branches, areas, types, role }: DashboardFilt
                         <span>Filtros:</span>
                     </div>
 
-                    {(role === 'admin') && (
-                        <div style={{ minWidth: '200px' }}>
-                            <MultiSelect
-                                placeholder="Todas las Sucursales"
-                                options={branchOptions}
-                                selected={selectedBranches}
-                                onChange={(val) => updateParams('branches', val)}
-                            />
-                        </div>
+                    {(role === 'admin' || role === 'manager') && (
+                        <>
+                            <div style={{ minWidth: '200px' }}>
+                                <MultiSelect
+                                    placeholder="Todas las Sucursales"
+                                    options={branchOptions}
+                                    selected={selectedBranches}
+                                    onChange={(val) => updateParams('branches', val)}
+                                    disabled={role === 'manager'} // Managers usually only see their branch, but if they manage multiple, let's leave enabled or handled by logic
+                                />
+                            </div>
+
+                            <div style={{ minWidth: '180px' }}>
+                                <MultiSelect
+                                    placeholder="Todas las Áreas"
+                                    options={areaOptions}
+                                    selected={selectedAreas}
+                                    onChange={(val) => updateParams('areas', val)}
+                                />
+                            </div>
+
+                            <div style={{ minWidth: '180px' }}>
+                                <MultiSelect
+                                    placeholder="Todos los Tipos"
+                                    options={typeOptions}
+                                    selected={selectedTypes}
+                                    onChange={(val) => updateParams('types', val)}
+                                />
+                            </div>
+                        </>
                     )}
-
-                    <div style={{ minWidth: '180px' }}>
-                        <MultiSelect
-                            placeholder="Todas las Áreas"
-                            options={areaOptions}
-                            selected={selectedAreas}
-                            onChange={(val) => updateParams('areas', val)}
-                        />
-                    </div>
-
-                    <div style={{ minWidth: '180px' }}>
-                        <MultiSelect
-                            placeholder="Todos los Tipos"
-                            options={typeOptions}
-                            selected={selectedTypes}
-                            onChange={(val) => updateParams('types', val)}
-                        />
-                    </div>
                 </div>
             </div>
         </div>

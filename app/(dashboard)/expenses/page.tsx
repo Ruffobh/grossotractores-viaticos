@@ -12,11 +12,26 @@ export default async function ExpensesPage({
     const params = await searchParams
     const supabase = await createClient()
 
-    // Build query based on method and role (RLS handles role mostly)
+    // 1. Get User & Profile first to determine permissions
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // Handle unauthenticated case (though middleware catches this)
+    if (!user) return <div>No autenticado</div>
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const isManagerOrAdmin = profile?.role === 'manager' || profile?.role === 'admin'
+    const role = profile?.role || 'user'
+
+    // 2. Build Query
     let query = supabase
         .from('invoices')
         .select('*, profiles(full_name)')
         .order('date', { ascending: false })
+
+    // RLS usually handles this, but we force it here for safety and UI consistency
+    if (role === 'user') {
+        query = query.eq('user_id', user.id)
+    }
 
     // Apply filters if present
     if (params.status) {
@@ -29,10 +44,6 @@ export default async function ExpensesPage({
         console.error(error)
         return <div>Error al cargar comprobantes.</div>
     }
-
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
-    const isManagerOrAdmin = profile?.role === 'manager' || profile?.role === 'admin'
 
     return (
         <div className={styles.container}>
@@ -51,6 +62,7 @@ export default async function ExpensesPage({
                 <Link href="/expenses?status=approved" className={params.status === 'approved' ? styles.activeFilter : styles.filter}>Aprobados</Link>
                 <Link href="/expenses?status=exceeded_budget" className={params.status === 'exceeded_budget' ? styles.activeFilter : styles.filter}>Excede Límite</Link>
                 <Link href="/expenses?status=rejected" className={params.status === 'rejected' ? styles.activeFilter : styles.filter}>Rechazados</Link>
+                <Link href="/expenses?status=submitted_to_bc" className={params.status === 'submitted_to_bc' ? styles.activeFilter : styles.filter}>Cargado en BC</Link>
             </div>
 
             <ExpensesTable expenses={expenses as any} isManagerOrAdmin={isManagerOrAdmin} />
@@ -65,6 +77,7 @@ function formatStatus(status: string | null) {
         case 'approved': return 'Aprobado'
         case 'rejected': return 'Rechazado'
         case 'exceeded_budget': return 'Excede Límite'
+        case 'submitted_to_bc': return 'Cargado en BC'
         default: return status
     }
 }

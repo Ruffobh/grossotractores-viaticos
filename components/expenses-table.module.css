@@ -1,10 +1,11 @@
 /* Modern Table Styles aligned with Global System */
 .tableWrapper {
     background-color: white;
-    border-radius: var(--radius);
+    border-radius: 16px;
     box-shadow: var(--shadow-xl);
     /* Lifted card look */
     border: 1px solid var(--gray-200);
+    border-top: 4px solid var(--nh-blue);
     overflow: hidden;
     margin-top: 1rem;
 }
@@ -56,7 +57,7 @@
     /* Bold numbers like modal */
     font-variant-numeric: tabular-nums;
     color: var(--gray-900);
-    text-align: right;
+    text-align: left;
     /* Align numbers right usually, but let's keep left if that's standard, Modal has right */
 }
 
@@ -77,8 +78,12 @@
 .actionsWrapper {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0.5rem;
+}
+
+.table th:last-child {
+    text-align: center;
 }
 
 .deleteButton {
@@ -233,4 +238,100 @@
     .table td:last-child::before {
         display: none;
     }
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modalContent {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-width: 28rem;
+    width: 100%;
+    animation: zoomIn 0.2s ease-out;
+    text-align: center;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modalIconWrapper {
+    background-color: #fee2e2;
+    padding: 0.75rem;
+    border-radius: 9999px;
+    display: inline-flex;
+    margin-bottom: 1rem;
+}
+
+.modalTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--nh-black);
+    margin: 0 0 0.5rem 0;
+}
+
+.modalText {
+    color: var(--gray-700);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.modalButtons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.modalButtonCancel {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+    font-weight: 600;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modalButtonCancel:hover {
+    background-color: var(--gray-50);
+}
+
+.modalButtonConfirm {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.modalButtonConfirm:hover {
+    background-color: #b91c1c;
 }

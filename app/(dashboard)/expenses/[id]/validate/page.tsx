@@ -22,9 +22,14 @@ export default async function ValidateExpensePage({ params }: { params: Promise<
 
     // Calculate current monthly consumption
     const { data: { user } } = await supabase.auth.getUser()
-    const now = new Date()
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString()
+    // Calculate current monthly consumption based on INVOICE DATE
+    const invoiceDate = new Date(invoice.date || new Date())
+    const year = invoiceDate.getFullYear()
+    const month = invoiceDate.getMonth()
+
+    // Start and end of the invoice's month
+    const firstDay = new Date(year, month, 1).toISOString()
+    const lastDay = new Date(year, month + 1, 0).toISOString()
 
     const { data: profile } = await supabase
         .from('profiles')

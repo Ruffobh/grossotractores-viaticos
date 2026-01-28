@@ -25,6 +25,7 @@ interface Invoice {
     invoice_type: string | null
     date: string
     vendor_name: string | null
+    expense_category?: string | null
     profiles?: {
         branch: string | null
         area: string | null
@@ -33,11 +34,12 @@ interface Invoice {
 
 interface AnalyticsDashboardProps {
     invoices: Invoice[]
+    role: string
 }
 
 const COLORS = ['#004589', '#FFD300', '#00C49F', '#FF8042', '#8884d8', '#82ca9d']
 
-export function AnalyticsDashboard({ invoices }: AnalyticsDashboardProps) {
+export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) {
 
     // 1. Process Data: Total by Branch
     const branchDataMap = new Map<string, number>()
@@ -50,13 +52,25 @@ export function AnalyticsDashboard({ invoices }: AnalyticsDashboardProps) {
     })
     const branchData = Array.from(branchDataMap.entries()).map(([name, value]) => ({ name, value }))
 
-    // 2. Process Data: Invoice Type Distribution
+    // 2. Process Data: Expense Type Distribution (Using Area as proxy)
     const typeDataMap = new Map<string, number>()
     invoices.forEach(inv => {
-        const type = inv.invoice_type || 'Otros'
-        typeDataMap.set(type, (typeDataMap.get(type) || 0) + 1)
+        const type = inv.expense_category || 'Sin Categoría'
+        const amount = inv.total_amount || 0
+        // Group by Category and Sum Amount
+        if (inv.currency === 'ARS') {
+            typeDataMap.set(type, (typeDataMap.get(type) || 0) + amount)
+        }
     })
-    const typeData = Array.from(typeDataMap.entries()).map(([name, value]) => ({ name, value }))
+
+    const totalAmount = Array.from(typeDataMap.values()).reduce((sum, val) => sum + val, 0)
+
+    const typeData = Array.from(typeDataMap.entries())
+        .map(([name, value]) => ({
+            name,
+            value,
+            percentage: totalAmount > 0 ? ((value / totalAmount) * 100).toFixed(1) + '%' : '0%'
+        }))
 
     // 3. Process Data: Timeline
     const timelineDataMap = new Map<string, number>()
@@ -71,32 +85,52 @@ export function AnalyticsDashboard({ invoices }: AnalyticsDashboardProps) {
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime())
 
+    // Custom Label for Pie Chart
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
+        const RADIAN = Math.PI / 180;
+        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+        return (
+            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="bold">
+                {`${(percent * 100).toFixed(0)}%`}
+            </text>
+        );
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.grid}>
 
-                {/* Gastos por Sucursal */}
-                <div className={styles.card}>
-                    <h3 className={styles.cardTitle}>Gastos por Sucursal (ARS)</h3>
-                    <div className={styles.chartContainer}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={branchData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                                <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
-                                <Tooltip
-                                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monto']}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                />
-                                <Bar dataKey="value" fill="#004589" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                {/* Gastos por Sucursal - Hidden for Users */}
+                {role !== 'user' && (
+                    <div className={styles.card}>
+                        <h3 className={styles.cardTitle}>Gastos por Sucursal (ARS)</h3>
+                        <div className={styles.chartContainer}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={branchData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                                    <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
+                                    <Tooltip
+                                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monto']}
+                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                    />
+                                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                        {branchData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
-                </div>
+                )}
 
-                {/* Distribución por Tipo */}
+                {/* Distribución por Tipo de Gasto (Area) */}
                 <div className={styles.card}>
-                    <h3 className={styles.cardTitle}>Distribución por Tipo de Factura</h3>
+                    <h3 className={styles.cardTitle}>Distribución por Tipo de Gasto</h3>
                     <div className={styles.chartContainer}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -109,12 +143,13 @@ export function AnalyticsDashboard({ invoices }: AnalyticsDashboardProps) {
                                     paddingAngle={5}
                                     fill="#8884d8"
                                     dataKey="value"
+                                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
                                 >
                                     {typeData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monto']} />
+                                <Tooltip formatter={(value: number, name: string, props: any) => [`$${value.toLocaleString()} (${props.payload.percentage})`, name]} />
                                 <Legend verticalAlign="bottom" height={36} iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
@@ -122,7 +157,7 @@ export function AnalyticsDashboard({ invoices }: AnalyticsDashboardProps) {
                 </div>
 
                 {/* Evolución Temporal */}
-                <div className={`${styles.card} ${styles.fullWidth}`}>
+                <div className={`${styles.card} ${role !== 'user' ? styles.fullWidth : ''}`}>
                     <h3 className={styles.cardTitle}>Evolución de Gastos</h3>
                     <div className={styles.chartContainer}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -131,7 +166,7 @@ export function AnalyticsDashboard({ invoices }: AnalyticsDashboardProps) {
                                 <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
                                 <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
                                 <Tooltip
-                                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monto']}
+                                    formatter={(value: number = 0) => [`$${value.toLocaleString()}`, 'Monto']}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                 />
                                 <Line

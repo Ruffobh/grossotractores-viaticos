@@ -65,11 +65,15 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
 
                     <div>
                         <label className={styles.label}>Área</label>
-                        <input
-                            name="area"
-                            defaultValue={profile.area || ''}
-                            className={styles.input}
-                        />
+                        <select name="area" defaultValue={profile.area || ''} className={styles.input}>
+                            <option value="" disabled>Seleccionar área...</option>
+                            <option value="Administracion">Administracion</option>
+                            <option value="Repuestos">Repuestos</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Maquinaria">Maquinaria</option>
+                            <option value="Grupo-Staff-Soporte">Grupo-Staff-Soporte</option>
+                            <option value="Operaciones">Operaciones</option>
+                        </select>
                     </div>
 
                     <div>

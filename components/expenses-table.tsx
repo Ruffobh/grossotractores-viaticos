@@ -22,21 +22,28 @@ interface Expense {
 }
 
 export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expense[], isManagerOrAdmin: boolean }) {
-    const [isDeleting, setIsDeleting] = useState<string | null>(null)
+    const [deleteId, setDeleteId] = useState<string | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
     const router = useRouter()
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('¿Estás seguro de eliminar este comprobante? Esta acción no se puede deshacer.')) return
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id)
+    }
 
-        setIsDeleting(id)
-        const result = await deleteExpense(id)
+    const confirmDelete = async () => {
+        if (!deleteId) return
+
+        setIsDeleting(true)
+        const result = await deleteExpense(deleteId)
 
         if (result?.error) {
             alert(result.error)
-            setIsDeleting(null)
+            setIsDeleting(false)
+            setDeleteId(null) // Close modal on error? Or keep open? Let's close.
         } else {
             router.refresh()
-            setIsDeleting(null)
+            setIsDeleting(false)
+            setDeleteId(null)
         }
     }
 
@@ -75,16 +82,15 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                         Ver
                                     </Link>
 
-                                    {expense.status !== 'submitted_to_bc' && (
-                                        <button
-                                            onClick={() => handleDelete(expense.id)}
-                                            disabled={isDeleting === expense.id}
-                                            className={styles.deleteButton}
-                                            title="Eliminar"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={() => handleDeleteClick(expense.id)}
+                                        className={styles.deleteButton}
+                                        title="Eliminar"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+
+
                                 </td>
                             </tr>
                         ))}
@@ -96,6 +102,36 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                     </tbody>
                 </table>
             </div>
+            {deleteId && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalIconWrapper}>
+                            <Trash2 className="text-red-600 w-8 h-8" />
+                        </div>
+                        <h3 className={styles.modalTitle}>¿Eliminar Comprobante?</h3>
+                        <p className={styles.modalText}>
+                            ¿Estás seguro de que deseas eliminar este comprobante permanentemente? Esta acción no se puede deshacer.
+                        </p>
+
+                        <div className={styles.modalButtons}>
+                            <button
+                                onClick={() => setDeleteId(null)}
+                                className={styles.modalButtonCancel}
+                                disabled={isDeleting}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className={styles.modalButtonConfirm}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

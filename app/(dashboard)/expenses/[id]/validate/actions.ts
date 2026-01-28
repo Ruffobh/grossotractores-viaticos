@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { sendAdminAlert, sendManagerNotification } from '@/app/utils/mail'
 
 export async function updateInvoice(formData: FormData) {
     const supabase = await createClient()
@@ -16,27 +17,31 @@ export async function updateInvoice(formData: FormData) {
         total_amount: parseFloat(formData.get('total_amount') as string),
         currency: formData.get('currency'),
         payment_method: formData.get('payment_method'),
+        expense_category: formData.get('expense_category'),
         comments: formData.get('comments'),
-        // status: 'pending_approval' // Confirming moves it to pending review - This will be determined by business logic
     }
 
     // Business Logic: Check Monthly Budget
-    // 1. Get User Profile and Limit
     const { data: user } = await supabase.auth.getUser()
     const { data: profile } = await supabase
         .from('profiles')
-        .select('monthly_limit')
+        .select('monthly_limit, full_name, branch') // Fetch Name and Branch
         .eq('id', user.user?.id)
         .single()
 
     const monthlyLimit = profile?.monthly_limit || 0
+    // Get full name for email context, default to User if missing
+    const userName = profile?.full_name || 'Usuario'
+    const userBranch = profile?.branch || null
 
-    // 2. Calculate current month total (excluding this invoice if it was already summed, but it's usually new)
-    // We sum all 'approved' expenses for this month. 
-    // Should we count 'pending' too? Usually pending counts towards reserved budget.
-    const now = new Date()
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString()
+    const invoiceDate = new Date(data.date as string)
+    // Adjust to local timezone logic if needed, but ISO string split is safer for bounds
+    const year = invoiceDate.getFullYear()
+    const month = invoiceDate.getMonth()
+
+    // Calculate start and end of that specific month
+    const firstDay = new Date(year, month, 1).toISOString()
+    const lastDay = new Date(year, month + 1, 0).toISOString()
 
     const { data: expenses } = await supabase
         .from('invoices')
@@ -44,34 +49,54 @@ export async function updateInvoice(formData: FormData) {
         .eq('user_id', user.user?.id)
         .gte('date', firstDay)
         .lte('date', lastDay)
-        .neq('id', id) // Exclude current one being updated
-        .neq('status', 'rejected') // Don't count rejected
+        .neq('id', id)
+        .neq('status', 'rejected')
 
     const currentTotal = expenses?.reduce((sum, item) => sum + (item.total_amount || 0), 0) || 0
     const newAmount = data.total_amount
 
-    let newStatus = 'approved' // Default to approved if under limit? 
-    // User said: "el usuario tiene que corroborar... seleccionar forma de pago... aprobados y pendientes de aprobacion"
-    // Usually auto-approve if under limit? Or always pending?
-    // "Usuario normal... dashboard... aprobados y pendientes de aprobacion" implies someone else approves OR system auto-approves.
-    // "si algun usuario va a superar el monto... tiene que ese comprobante solicitar autorizacion" -> Implies others might NOT need authorization if under limit?
-    // Let's assume: Under limit -> 'approved' (Auto-approval), Over limit -> 'pending_approval' (or 'exceeded_budget' specific status).
+    let newStatus = 'approved'
 
+    // Determine status logic based on user rules
     if (currentTotal + newAmount > monthlyLimit) {
-        newStatus = 'exceeded_budget'
+        newStatus = 'pending_approval' // Exceeds budget -> Needs Admin Approval
     } else {
-        newStatus = 'approved' // Auto-approve if under budget
+        newStatus = 'approved' // Within budget -> Auto Approved
     }
 
     const { error } = await supabase
         .from('invoices')
-        .update({ ...data, status: newStatus })
+        .update({ ...data, status: newStatus, branch: userBranch })
         .eq('id', id)
 
     if (error) {
         console.error('Error updating invoice:', error)
         throw new Error(`Failed to update invoice: ${error.message} (${error.code})`)
     }
+
+    // --- EMAIL NOTIFICATIONS ---
+    // Prepare data helper
+    const expenseData = {
+        id,
+        date: data.date as string,
+        vendor_name: data.vendor_name as string,
+        total_amount: data.total_amount as number,
+        currency: data.currency as string,
+        user_name: userName,
+        user_id: user.user?.id!
+    }
+
+    if (newStatus === 'pending_approval') {
+        // Exceeds Limit -> Alert Admin
+        await sendAdminAlert(expenseData)
+    } else if (newStatus === 'approved') {
+        // Auto Approved -> Notify Manager
+        // TEST MODE: Sending to current user's email
+        // const currentUserEmail = user.user?.email || undefined
+        const currentUserEmail = "francoruffino.90@gmail.com" // Hardcoded for test
+        await sendManagerNotification(expenseData, currentUserEmail)
+    }
+    // ---------------------------
 
     revalidatePath('/expenses')
     revalidatePath('/')

@@ -51,6 +51,11 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
             {/* Right: Details & Actions */}
             <div className={styles.formSection}>
                 <div className={styles.header}>
+                    <div className="mb-6">
+                        <a href="/expenses" className={styles.backButton}>
+                            &larr; Volver
+                        </a>
+                    </div>
                     <div className="flex justify-between items-start">
                         <div>
                             <h2 className={styles.title}>Detalle de Comprobante</h2>
@@ -76,7 +81,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                     <DetailRow label="Fecha" value={new Date(invoice.date).toLocaleDateString()} />
                     <DetailRow label="Tipo Factura" value={invoice.invoice_type} />
                     <DetailRow label="Forma de Pago" value={invoice.payment_method} />
-                    <DetailRow label="Nº Comprobante" value={invoice.id.slice(0, 8)} />
+                    <DetailRow label="Nº Comprobante" value={invoice.invoice_number || invoice.id.slice(0, 8)} />
                 </div>
 
                 <div className={styles.commentsSection}>

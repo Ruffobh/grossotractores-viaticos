@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { updateInvoice } from './actions'
 
@@ -14,35 +14,68 @@ interface ValidationFormProps {
 export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styles }: ValidationFormProps) {
     const [amount, setAmount] = useState<number>(invoice.total_amount || 0)
     const [isExceeded, setIsExceeded] = useState(false)
+    const [showModal, setShowModal] = useState(false)
+    const formRef = useRef<HTMLFormElement>(null)
+    const isConfirmedRef = useRef(false)
 
     useEffect(() => {
         // Calculate if new total exceeds limit
         const projectedTotal = currentConsumption + amount
-        // If currentConsumption already included this invoice (e.g. update), we should subtract it first?
-        // But this is usually "pending_approval" so it might not be in "approved" sum yet?
-        // Let's assume currentConsumption is sum of OTHER invoices.
-
         setIsExceeded(projectedTotal > monthlyLimit)
     }, [amount, currentConsumption, monthlyLimit])
 
+    const handleSubmit = (e: React.FormEvent) => {
+        if (isExceeded && !isConfirmedRef.current) {
+            e.preventDefault()
+            setShowModal(true)
+            return
+        }
+        // If not exceeded or confirmed, allow default submission
+    }
+
+    const confirmSubmission = () => {
+        isConfirmedRef.current = true
+        formRef.current?.requestSubmit()
+        setShowModal(false)
+    }
+
     return (
-        <form action={updateInvoice}>
+        <form action={updateInvoice} ref={formRef} onSubmit={handleSubmit}>
             <input type="hidden" name="id" value={invoice.id} />
 
-            {isExceeded && (
-                <div className="bg-red-50 border-1 border-red-200 p-4 rounded-xl mb-6 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                    <AlertTriangle className="text-red-600 shrink-0 mt-0.5" size={20} />
-                    <div>
-                        <h4 className="font-bold text-red-700 text-sm">Alerta de Presupuesto</h4>
-                        <p className="text-red-600 text-sm mt-1">
-                            Esta carga supera tu límite mensual permitido.
-                            <br />
-                            <span className="font-medium">Consumo actual:</span> ${currentConsumption.toLocaleString()}
-                            <br />
-                            <span className="font-medium">Límite:</span> ${monthlyLimit.toLocaleString()}
-                            <br />
-                            Se requerirá autorización especial.
+            {/* Modal Logic handled via state and effectively "intercepting" submit */}
+            {showModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalIconWrapper}>
+                            <AlertTriangle className="text-red-600 w-8 h-8" />
+                        </div>
+                        <h3 className={styles.modalTitle}>Alerta de Presupuesto</h3>
+                        <p className={styles.modalText}>
+                            El monto total supera tu límite mensual disponible.
+                            <span className={styles.modalStats}>
+                                Consumo: <b>${currentConsumption.toLocaleString()}</b>
+                                <span className="mx-2">|</span>
+                                Límite: <b>${monthlyLimit.toLocaleString()}</b>
+                            </span>
                         </p>
+
+                        <div className={styles.modalButtons}>
+                            <button
+                                type="button"
+                                onClick={() => setShowModal(false)}
+                                className={styles.modalButtonCancel}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmSubmission}
+                                className={styles.modalButtonConfirm}
+                            >
+                                Solicitar Aprobación
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -107,6 +140,17 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
                     <select name="currency" defaultValue={invoice.currency || 'ARS'} className={styles.input}>
                         <option value="ARS">ARS</option>
                         <option value="USD">USD</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className={styles.label}>Tipo de Gasto</label>
+                    <select name="expense_category" defaultValue={invoice.expense_category || 'Varios'} className={styles.input}>
+                        <option value="Comida">Comida</option>
+                        <option value="Alojamiento">Alojamiento</option>
+                        <option value="Combustible">Combustible</option>
+                        <option value="Peaje">Peaje</option>
+                        <option value="Varios">Varios</option>
                     </select>
                 </div>
 

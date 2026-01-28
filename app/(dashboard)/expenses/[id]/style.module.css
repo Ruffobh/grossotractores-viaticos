@@ -109,17 +109,38 @@
 .detailRow {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
     background-color: white;
-    padding: 1rem;
+    padding: 0;
     border-radius: var(--radius);
     border: 1px solid var(--gray-200);
+    overflow: hidden;
     transition: all 0.2s;
 }
 
 .detailRow:hover {
     border-color: var(--nh-blue);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.label {
+    background-color: var(--gray-50);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+}
+
+.value {
+    padding: 1rem;
+    font-size: 1rem;
+    color: var(--gray-900);
+    font-weight: 600;
+    word-break: break-word;
 }
 
 /* Remove old border/padding logic from rows as Grid handles spacing */
@@ -129,21 +150,7 @@
 
 /* Legacy cleanup */
 
-.label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--gray-500);
-    font-weight: 700;
-}
-
-.value {
-    font-size: 1rem;
-    color: var(--gray-900);
-    font-weight: 600;
-    word-break: break-word;
-    /* Prevent overflow */
-}
+/* Legacy cleanup - classes moved up */
 
 .actions {
     margin-top: 3rem;
@@ -247,4 +254,34 @@
         box-shadow: none;
         width: 100%;
     }
+}
+
+/* Back Button */
+.backButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: white;
+    border: 1px solid var(--gray-300);
+    /* Darker border */
+    padding: 0.75rem 1.25rem;
+    /* More padding */
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    /* Bolder */
+    color: var(--gray-800);
+    /* Darker text */
+    cursor: pointer;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.backButton:hover {
+    background-color: var(--gray-50);
+    border-color: var(--gray-400);
+    color: var(--nh-black);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
