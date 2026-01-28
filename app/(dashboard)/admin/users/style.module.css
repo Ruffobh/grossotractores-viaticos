@@ -77,6 +77,11 @@
     padding-left: 1rem;
 }
 
+.table th:nth-child(2) {
+    text-align: left;
+    /* Email header left */
+}
+
 .table td {
     padding: 0.5rem 0.5rem;
     /* Reduced padding */
