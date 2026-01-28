@@ -69,11 +69,17 @@
     border-bottom: 1px solid var(--gray-200);
 }
 
-/* Specific alignment tweaks if needed */
-.table th:first-child,
+/* Specific alignment tweaks */
+.table th:first-child {
+    text-align: center;
+    /* Force Name header to be centered */
+    padding-left: 0.5rem;
+    /* Reset padding if it was added for alignment */
+}
+
 .table td:first-child {
     text-align: left;
-    /* Keep Name left aligned */
+    /* Keep Name Content left aligned */
     padding-left: 1rem;
 }
 
@@ -91,8 +97,8 @@
 
 /* Email Column Truncation */
 .table td.emailCell {
-    text-align: center;
-    /* Center align email */
+    text-align: left;
+    /* Email Content Left */
     max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
