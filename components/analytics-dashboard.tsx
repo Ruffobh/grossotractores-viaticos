@@ -143,13 +143,13 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                                     paddingAngle={5}
                                     fill="#8884d8"
                                     dataKey="value"
-                                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                                    label={({ percent }: any) => `${((percent || 0) * 100).toFixed(0)}%`}
                                 >
                                     {typeData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value: any, name: string, props: any) => [`$${(value || 0).toLocaleString()} (${props.payload.percentage})`, name]} />
+                                <Tooltip formatter={(value: any, name: any, props: any) => [`$${(value || 0).toLocaleString()} (${props.payload.percentage})`, name]} />
                                 <Legend verticalAlign="bottom" height={36} iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
