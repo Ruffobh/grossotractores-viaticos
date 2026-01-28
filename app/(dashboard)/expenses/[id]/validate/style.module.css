@@ -116,6 +116,21 @@
     cursor: pointer;
 }
 
+.deleteActionBtn {
+    padding: 0.75rem 1.5rem;
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.deleteActionBtn:hover {
+    background-color: #b91c1c;
+}
+
 @media (max-width: 768px) {
     .container {
         flex-direction: column;

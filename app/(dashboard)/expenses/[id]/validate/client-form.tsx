@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { updateInvoice } from './actions'
+import { deleteExpense } from '../../actions'
+import { useRouter } from 'next/navigation'
 
 interface ValidationFormProps {
     invoice: any
@@ -16,7 +18,9 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
     const [isExceeded, setIsExceeded] = useState(false)
     const [showModal, setShowModal] = useState(false)
     const formRef = useRef<HTMLFormElement>(null)
+    const formRef = useRef<HTMLFormElement>(null)
     const isConfirmedRef = useRef(false)
+    const router = useRouter()
 
     useEffect(() => {
         // Calculate if new total exceeds limit
@@ -37,6 +41,17 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
         isConfirmedRef.current = true
         formRef.current?.requestSubmit()
         setShowModal(false)
+    }
+
+    const handleCancel = async () => {
+        if (confirm('¿Estás seguro de cancelar la subida? El comprobante se eliminará.')) {
+            const res = await deleteExpense(invoice.id)
+            if (res?.error) {
+                alert('Error al cancelar: ' + res.error)
+            } else {
+                router.push('/expenses')
+            }
+        }
     }
 
     return (
@@ -175,6 +190,13 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
             </div>
 
             <div className={styles.actions}>
+                <button
+                    type="button"
+                    onClick={handleCancel}
+                    className={styles.deleteActionBtn}
+                >
+                    Cancelar
+                </button>
                 <button type="submit" className={styles.saveButton}>Confirmar y Guardar</button>
             </div>
         </form>
