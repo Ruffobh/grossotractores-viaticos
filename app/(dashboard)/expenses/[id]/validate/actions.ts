@@ -25,11 +25,13 @@ export async function updateInvoice(formData: FormData) {
     const { data: user } = await supabase.auth.getUser()
     const { data: profile } = await supabase
         .from('profiles')
-        .select('monthly_limit, full_name, branch') // Fetch Name and Branch
+        .select('monthly_limit, cash_limit, full_name, branch') // Fetch Limits based on type
         .eq('id', user.user?.id)
         .single()
 
-    const monthlyLimit = profile?.monthly_limit || 0
+    const cardLimit = profile?.monthly_limit || 0
+    const cashLimit = profile?.cash_limit || 0
+
     // Get full name for email context, default to User if missing
     const userName = profile?.full_name || 'Usuario'
     const userBranch = profile?.branch || null
@@ -45,20 +47,35 @@ export async function updateInvoice(formData: FormData) {
 
     const { data: expenses } = await supabase
         .from('invoices')
-        .select('total_amount')
+        .select('total_amount, payment_method')
         .eq('user_id', user.user?.id)
         .gte('date', firstDay)
         .lte('date', lastDay)
         .neq('id', id)
         .neq('status', 'rejected')
 
-    const currentTotal = expenses?.reduce((sum, item) => sum + (item.total_amount || 0), 0) || 0
+    // Filter consumption by Type
+    const currentPaymentMethod = data.payment_method as string
+    const isCashOrTransfer = currentPaymentMethod === 'Cash' || currentPaymentMethod === 'Transfer'
+
+    // Calculate relevant consumption based on the CURRENT invoice's type
+    const relevantExpenses = expenses?.filter(inv => {
+        const invMethod = inv.payment_method
+        if (isCashOrTransfer) {
+            return invMethod === 'Cash' || invMethod === 'Transfer'
+        } else {
+            return invMethod === 'Card'
+        }
+    }) || []
+
+    const currentTotal = relevantExpenses.reduce((sum, item) => sum + (item.total_amount || 0), 0)
     const newAmount = data.total_amount
+    const activeLimit = isCashOrTransfer ? cashLimit : cardLimit
 
     let newStatus = 'approved'
 
     // Determine status logic based on user rules
-    if (currentTotal + newAmount > monthlyLimit) {
+    if (currentTotal + newAmount > activeLimit) {
         newStatus = 'pending_approval' // Exceeds budget -> Needs Admin Approval
     } else {
         newStatus = 'approved' // Within budget -> Auto Approved

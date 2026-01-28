@@ -80,12 +80,25 @@ export default async function DashboardPage({
 
     const { data: myInvoices } = await supabase
         .from('invoices')
-        .select('total_amount')
+        .select('total_amount, payment_method')
         .eq('user_id', user.id)
         .gte('date', startOfCurrentMonth)
         .lte('date', endOfCurrentMonth)
 
     const myConsumption = myInvoices?.reduce((sum, inv) => sum + (inv.total_amount || 0), 0) || 0
+
+    // Split Consumption by Type
+    let myCardConsumption = 0
+    let myCashConsumption = 0
+    myInvoices?.forEach(inv => {
+        const amt = inv.total_amount || 0
+        const method = inv.payment_method
+        if (method === 'Cash' || method === 'Transfer') {
+            myCashConsumption += amt
+        } else {
+            myCardConsumption += amt
+        }
+    })
 
 
     // 5. Client-side Filtering (for the main list/charts)
@@ -145,29 +158,53 @@ export default async function DashboardPage({
                     )}
                 </div>
 
-                {monthlyLimit > 0 && (
+                {(monthlyLimit > 0 || (profile?.cash_limit || 0) > 0) && (
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
-                            <h3 className={styles.cardTitle}>Límite Restante</h3>
+                            <h3 className={styles.cardTitle}>Límites Restantes</h3>
                         </div>
                         {selectedMonth === (now.getMonth() + 1) && selectedYear === now.getFullYear() ? (
-                            <>
-                                <p className={styles.value}>${Math.max(0, monthlyLimit - myConsumption).toLocaleString()}</p>
+                            <div className="space-y-6">
+                                {/* CARD LIMIT */}
+                                {monthlyLimit > 0 && (
+                                    <div>
+                                        <div className="flex justify-between items-end mb-1">
+                                            <span className="text-sm font-medium text-gray-700">Tarjeta</span>
+                                            <span className="text-sm text-gray-500">${Math.max(0, monthlyLimit - myCardConsumption).toLocaleString()} disp.</span>
+                                        </div>
+                                        <div className={styles.progressContainer}>
+                                            <div
+                                                className={`${styles.progressBar} ${(myCardConsumption / monthlyLimit) < 0.6 ? styles.progressBarSuccess : (myCardConsumption / monthlyLimit) <= 0.85 ? styles.progressBarWarning : styles.progressBarDanger}`}
+                                                style={{ width: `${Math.min(100, (myCardConsumption / monthlyLimit) * 100)}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-400 mt-1 text-right">
+                                            {Math.round((myCardConsumption / monthlyLimit) * 100)}% de ${monthlyLimit.toLocaleString()}
+                                        </p>
+                                    </div>
+                                )}
 
-
-                                {/* Progress Bar Logic */}
-                                <div className={styles.progressContainer}>
-                                    <div
-                                        className={`${styles.progressBar} ${(myConsumption / monthlyLimit) < 0.6 ? styles.progressBarSuccess : (myConsumption / monthlyLimit) <= 0.85 ? styles.progressBarWarning : styles.progressBarDanger}`}
-                                        style={{ width: `${Math.min(100, (myConsumption / monthlyLimit) * 100)}%` }}
-                                    />
-                                </div>
-                                <p className={`text-xs mt-2 font-medium ${(myConsumption / monthlyLimit) < 0.6 ? styles.textSuccess : (myConsumption / monthlyLimit) <= 0.85 ? styles.textWarning : styles.textDanger}`}>
-                                    {Math.round((myConsumption / monthlyLimit) * 100)}% consumido
-                                </p>
-                            </>
+                                {/* CASH LIMIT */}
+                                {(profile?.cash_limit || 0) > 0 && (
+                                    <div>
+                                        <div className="flex justify-between items-end mb-1">
+                                            <span className="text-sm font-medium text-gray-700">Efectivo / Transf.</span>
+                                            <span className="text-sm text-gray-500">${Math.max(0, (profile?.cash_limit || 0) - myCashConsumption).toLocaleString()} disp.</span>
+                                        </div>
+                                        <div className={styles.progressContainer}>
+                                            <div
+                                                className={`${styles.progressBar} ${(myCashConsumption / (profile?.cash_limit || 0)) < 0.6 ? styles.progressBarSuccess : (myCashConsumption / (profile?.cash_limit || 0)) <= 0.85 ? styles.progressBarWarning : styles.progressBarDanger}`}
+                                                style={{ width: `${Math.min(100, (myCashConsumption / (profile?.cash_limit || 0)) * 100)}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-400 mt-1 text-right">
+                                            {Math.round((myCashConsumption / (profile?.cash_limit || 0)) * 100)}% de ${(profile?.cash_limit || 0).toLocaleString()}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         ) : (
-                            <p className="text-gray-400 mt-2">Este widget solo muestra el mes actual</p>
+                            <p className="text-gray-400 mt-2 text-sm">Este widget solo muestra el mes actual</p>
                         )}
                     </div>
                 )}

@@ -8,13 +8,16 @@ import { useRouter } from 'next/navigation'
 
 interface ValidationFormProps {
     invoice: any
-    currentConsumption: number
-    monthlyLimit: number
-    styles: any // Passing styles to reuse existing CSS module, or we map classes
+    cardConsumption: number
+    cashConsumption: number
+    cardLimit: number
+    cashLimit: number
+    styles: any
 }
 
-export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styles }: ValidationFormProps) {
+export function ValidationForm({ invoice, cardConsumption, cashConsumption, cardLimit, cashLimit, styles }: ValidationFormProps) {
     const [amount, setAmount] = useState<number>(invoice.total_amount || 0)
+    const [paymentMethod, setPaymentMethod] = useState<string>(invoice.payment_method || 'Cash')
     const [isExceeded, setIsExceeded] = useState(false)
     const [showModal, setShowModal] = useState(false)
     const formRef = useRef<HTMLFormElement>(null)
@@ -22,10 +25,14 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
     const router = useRouter()
 
     useEffect(() => {
-        // Calculate if new total exceeds limit
-        const projectedTotal = currentConsumption + amount
-        setIsExceeded(projectedTotal > monthlyLimit)
-    }, [amount, currentConsumption, monthlyLimit])
+        // Calculate based on selected method
+        const isCash = paymentMethod === 'Cash' || paymentMethod === 'Transfer'
+        const currentUsage = isCash ? cashConsumption : cardConsumption
+        const limit = isCash ? cashLimit : cardLimit
+
+        const projectedTotal = currentUsage + amount
+        setIsExceeded(projectedTotal > limit)
+    }, [amount, paymentMethod, cardConsumption, cashConsumption, cardLimit, cashLimit])
 
     const handleSubmit = (e: React.FormEvent) => {
         if (isExceeded && !isConfirmedRef.current) {
@@ -66,11 +73,11 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
                         </div>
                         <h3 className={styles.modalTitle}>Alerta de Presupuesto</h3>
                         <p className={styles.modalText}>
-                            El monto total supera tu límite mensual disponible.
+                            El monto total supera tu límite mensual de <b>{paymentMethod === 'Cash' || paymentMethod === 'Transfer' ? 'Efectivo' : 'Tarjeta'}</b>.
                             <span className={styles.modalStats}>
-                                Consumo: <b>${currentConsumption.toLocaleString()}</b>
+                                Consumo: <b>${((paymentMethod === 'Cash' || paymentMethod === 'Transfer' ? cashConsumption : cardConsumption)).toLocaleString()}</b>
                                 <span className="mx-2">|</span>
-                                Límite: <b>${monthlyLimit.toLocaleString()}</b>
+                                Límite: <b>${((paymentMethod === 'Cash' || paymentMethod === 'Transfer' ? cashLimit : cardLimit)).toLocaleString()}</b>
                             </span>
                         </p>
 
@@ -95,6 +102,8 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
             )}
 
             <div className={styles.formGrid}>
+                {/* ... existing fields ... */}
+
                 <div className={styles.fullWidth}>
                     <label className={styles.label}>Proveedor (Razón Social)</label>
                     <input
@@ -170,7 +179,12 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
 
                 <div>
                     <label className={styles.label}>Forma de Pago</label>
-                    <select name="payment_method" defaultValue={invoice.payment_method || 'Cash'} className={styles.input}>
+                    <select
+                        name="payment_method"
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className={styles.input}
+                    >
                         <option value="Cash">Efectivo</option>
                         <option value="Card">Tarjeta</option>
                         <option value="Transfer">Transferencia</option>

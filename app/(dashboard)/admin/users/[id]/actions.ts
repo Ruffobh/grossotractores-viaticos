@@ -39,6 +39,7 @@ export async function updateUserProfile(formData: FormData) {
         branches: branches,
         area: formData.get('area'),
         monthly_limit: parseFloat(formData.get('monthly_limit') as string),
+        cash_limit: parseFloat(formData.get('cash_limit') as string),
     }
 
     const { error } = await supabase

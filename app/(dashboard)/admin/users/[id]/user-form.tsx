@@ -77,11 +77,21 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                     </div>
 
                     <div>
-                        <label className={styles.label}>Límite Mensual (ARS)</label>
+                        <label className={styles.label}>Límite Tarjeta (ARS)</label>
                         <input
                             type="number"
                             name="monthly_limit"
                             defaultValue={profile.monthly_limit || 0}
+                            className={styles.input}
+                        />
+                    </div>
+
+                    <div>
+                        <label className={styles.label}>Límite Efectivo/Transf. (ARS)</label>
+                        <input
+                            type="number"
+                            name="cash_limit"
+                            defaultValue={profile.cash_limit || 0}
                             className={styles.input}
                         />
                     </div>

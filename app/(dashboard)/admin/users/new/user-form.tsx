@@ -96,11 +96,21 @@ export default function NewUserForm({ branchesOptions }: NewUserFormProps) {
                     </div>
 
                     <div>
-                        <label className={styles.label}>Límite Mensual (ARS)</label>
+                        <label className={styles.label}>Límite Tarjeta (ARS)</label>
                         <input
                             type="number"
                             name="monthly_limit"
                             defaultValue={500000}
+                            className={styles.input}
+                        />
+                    </div>
+
+                    <div>
+                        <label className={styles.label}>Límite Efectivo/Transf. (ARS)</label>
+                        <input
+                            type="number"
+                            name="cash_limit"
+                            defaultValue={200000}
                             className={styles.input}
                         />
                     </div>

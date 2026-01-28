@@ -33,21 +33,35 @@ export default async function ValidateExpensePage({ params }: { params: Promise<
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('monthly_limit')
+        .select('monthly_limit, cash_limit')
         .eq('id', user?.id)
         .single()
 
     const { data: expenses } = await supabase
         .from('invoices')
-        .select('total_amount')
+        .select('total_amount, payment_method')
         .eq('user_id', user?.id)
         .gte('date', firstDay)
         .lte('date', lastDay)
         .neq('id', id) // Exclude current
         .neq('status', 'rejected')
 
-    const currentConsumption = expenses?.reduce((sum, item) => sum + (item.total_amount || 0), 0) || 0
-    const monthlyLimit = profile?.monthly_limit || 0
+    const cardLimit = profile?.monthly_limit || 0
+    const cashLimit = profile?.cash_limit || 0
+
+    let cardConsumption = 0
+    let cashConsumption = 0
+
+    expenses?.forEach(exp => {
+        const amt = exp.total_amount || 0
+        const method = exp.payment_method
+        if (method === 'Cash' || method === 'Transfer') {
+            cashConsumption += amt
+        } else {
+            // Default to Card (or known Card)
+            cardConsumption += amt
+        }
+    })
 
     return (
         <div className={styles.container}>
@@ -77,8 +91,10 @@ export default async function ValidateExpensePage({ params }: { params: Promise<
 
                 <ClientValidationForm
                     invoice={invoice}
-                    currentConsumption={currentConsumption}
-                    monthlyLimit={monthlyLimit}
+                    cardConsumption={cardConsumption}
+                    cashConsumption={cashConsumption}
+                    cardLimit={cardLimit}
+                    cashLimit={cashLimit}
                     styles={styles}
                 />
             </div>
