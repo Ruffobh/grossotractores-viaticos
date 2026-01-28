@@ -18,7 +18,6 @@ export function ValidationForm({ invoice, currentConsumption, monthlyLimit, styl
     const [isExceeded, setIsExceeded] = useState(false)
     const [showModal, setShowModal] = useState(false)
     const formRef = useRef<HTMLFormElement>(null)
-    const formRef = useRef<HTMLFormElement>(null)
     const isConfirmedRef = useRef(false)
     const router = useRouter()
 
