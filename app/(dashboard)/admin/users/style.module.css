@@ -77,11 +77,6 @@
     padding-left: 1rem;
 }
 
-.table th:nth-child(2) {
-    text-align: left;
-    /* Email header left */
-}
-
 .table td {
     padding: 0.5rem 0.5rem;
     /* Reduced padding */
@@ -96,11 +91,14 @@
 
 /* Email Column Truncation */
 .table td.emailCell {
-    text-align: left;
+    text-align: center;
+    /* Center align email */
     max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin: 0 auto;
+    /* Ensure block centering if needed, though td handles text-align */
 }
 
 .table tbody tr:last-child td {
