@@ -12,6 +12,14 @@ export async function processReceipt(imageUrl: string) {
 
         if (!user) return { error: 'Unauthorized' }
 
+        // DEBUG: Log loaded environment variables (Keys only for security)
+        console.log("🔍 DEBUG - Runtime Environment Variables check:");
+        console.log("Keys found:", Object.keys(process.env));
+        console.log("GOOGLE_API_KEY exists?", !!process.env.GOOGLE_API_KEY);
+        console.log("GOOGLE_API_KEY length:", process.env.GOOGLE_API_KEY?.length);
+        console.log("RESEND_API_KEY exists?", !!process.env.RESEND_API_KEY);
+
+
         // 1. Fetch image data (Gemini needs base64 or file part)
         // Since we have a public URL, we can fetch it.
         const imageResp = await fetch(imageUrl)
