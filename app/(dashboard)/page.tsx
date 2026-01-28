@@ -163,97 +163,93 @@ export default async function DashboardPage({
                         <h3 className={styles.cardTitle}>Estado de Presupuestos</h3>
                     </div>
                     {selectedMonth === (now.getMonth() + 1) && selectedYear === now.getFullYear() ? (
-                        <div className="space-y-8">
+                        <div className={styles.limitWidget}>
                             {/* CARD LIMIT */}
-                            <div className="relative">
-                                <div className="flex justify-between items-center mb-2">
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-800 uppercase tracking-wide">Tarjeta Corporativa</span>
-                                        <span className="text-xs text-gray-500 mt-0.5">
+                            <div className={styles.limitRow}>
+                                <div className={styles.limitHeader}>
+                                    <div className={styles.limitLabelGroup}>
+                                        <span className={styles.limitTitle}>Tarjeta Corporativa</span>
+                                        <span className={styles.limitSubtitle}>
                                             {monthlyLimit > 0 ? `Límite: $${monthlyLimit.toLocaleString()}` : 'Sin límite asignado'}
                                         </span>
                                     </div>
-                                    <div className="text-right">
-                                        <span className={`text-lg font-bold ${monthlyLimit > 0 ? (myCardConsumption > monthlyLimit ? 'text-red-600' : 'text-gray-900') : 'text-gray-400'}`}>
+                                    <div className={styles.limitStats}>
+                                        <span className={`${styles.limitValue} ${monthlyLimit > 0 && myCardConsumption > monthlyLimit ? styles.limitValueRed : ''}`}>
                                             ${myCardConsumption.toLocaleString()}
                                         </span>
                                         {monthlyLimit > 0 && (
-                                            <div className="text-xs font-medium text-gray-500">
+                                            <div className={styles.limitPercentage}>
                                                 {((myCardConsumption / monthlyLimit) * 100).toFixed(1)}% Consumido
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                {monthlyLimit > 0 ? (
-                                    <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                                <div className={styles.limitBarContainer}>
+                                    {monthlyLimit > 0 ? (
                                         <div
-                                            className={`h-full rounded-full transition-all duration-500 ease-out ${(myCardConsumption / monthlyLimit) > 1 ? 'bg-red-500' :
-                                                    (myCardConsumption / monthlyLimit) > 0.85 ? 'bg-yellow-500' :
-                                                        'bg-blue-600'
+                                            className={`${styles.limitBar} ${(myCardConsumption / monthlyLimit) > 1 ? styles.bgRed :
+                                                    (myCardConsumption / monthlyLimit) > 0.85 ? styles.bgYellow :
+                                                        styles.bgBlue
                                                 }`}
                                             style={{ width: `${Math.min(100, (myCardConsumption / monthlyLimit) * 100)}%` }}
                                         />
-                                    </div>
-                                ) : (
-                                    <div className="w-full bg-gray-100 rounded-full h-3 border-t border-gray-200 opacity-50 relative">
-                                        <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400 font-medium tracking-wider">NO ASIGNADO</div>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div className={styles.barEmpty}>NO ASIGNADO</div>
+                                    )}
+                                </div>
 
                                 {monthlyLimit > 0 && (
-                                    <div className="flex justify-end mt-1.5">
-                                        <span className="text-xs text-gray-500 font-medium">
-                                            Disponible: <span className="text-gray-900">${Math.max(0, monthlyLimit - myCardConsumption).toLocaleString()}</span>
+                                    <div className={styles.limitFooter}>
+                                        <span className={styles.limitAvailable}>
+                                            Disponible: <span className={styles.limitAvailableValue}>${Math.max(0, monthlyLimit - myCardConsumption).toLocaleString()}</span>
                                         </span>
                                     </div>
                                 )}
                             </div>
 
                             {/* DIVIDER */}
-                            <div className="border-t border-gray-100"></div>
+                            <div className={styles.divider}></div>
 
                             {/* CASH LIMIT */}
-                            <div className="relative">
-                                <div className="flex justify-between items-center mb-2">
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-800 uppercase tracking-wide">Efectivo / Transferencia</span>
-                                        <span className="text-xs text-gray-500 mt-0.5">
+                            <div className={styles.limitRow}>
+                                <div className={styles.limitHeader}>
+                                    <div className={styles.limitLabelGroup}>
+                                        <span className={styles.limitTitle}>Efectivo / Transferencia</span>
+                                        <span className={styles.limitSubtitle}>
                                             {(profile?.cash_limit || 0) > 0 ? `Límite: ${(profile?.cash_limit || 0).toLocaleString()}` : 'Sin límite asignado'}
                                         </span>
                                     </div>
-                                    <div className="text-right">
-                                        <span className={`text-lg font-bold ${(profile?.cash_limit || 0) > 0 ? (myCashConsumption > (profile?.cash_limit || 0) ? 'text-red-600' : 'text-gray-900') : 'text-gray-400'}`}>
+                                    <div className={styles.limitStats}>
+                                        <span className={`${styles.limitValue} ${(profile?.cash_limit || 0) > 0 && myCashConsumption > (profile?.cash_limit || 0) ? styles.limitValueRed : ''}`}>
                                             ${myCashConsumption.toLocaleString()}
                                         </span>
                                         {(profile?.cash_limit || 0) > 0 && (
-                                            <div className="text-xs font-medium text-gray-500">
+                                            <div className={styles.limitPercentage}>
                                                 {((myCashConsumption / (profile?.cash_limit || 0)) * 100).toFixed(1)}% Consumido
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                {(profile?.cash_limit || 0) > 0 ? (
-                                    <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                                <div className={styles.limitBarContainer}>
+                                    {(profile?.cash_limit || 0) > 0 ? (
                                         <div
-                                            className={`h-full rounded-full transition-all duration-500 ease-out ${(myCashConsumption / (profile?.cash_limit || 0)) > 1 ? 'bg-red-500' :
-                                                    (myCashConsumption / (profile?.cash_limit || 0)) > 0.85 ? 'bg-yellow-500' :
-                                                        'bg-emerald-500' // Different color for cash to distinguish
+                                            className={`${styles.limitBar} ${(myCashConsumption / (profile?.cash_limit || 0)) > 1 ? styles.bgRed :
+                                                    (myCashConsumption / (profile?.cash_limit || 0)) > 0.85 ? styles.bgYellow :
+                                                        styles.bgGreen
                                                 }`}
                                             style={{ width: `${Math.min(100, (myCashConsumption / (profile?.cash_limit || 0)) * 100)}%` }}
                                         />
-                                    </div>
-                                ) : (
-                                    <div className="w-full bg-gray-100 rounded-full h-3 border-t border-gray-200 opacity-50 relative">
-                                        <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400 font-medium tracking-wider">NO ASIGNADO</div>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div className={styles.barEmpty}>NO ASIGNADO</div>
+                                    )}
+                                </div>
 
                                 {(profile?.cash_limit || 0) > 0 && (
-                                    <div className="flex justify-end mt-1.5">
-                                        <span className="text-xs text-gray-500 font-medium">
-                                            Disponible: <span className="text-gray-900">${Math.max(0, (profile?.cash_limit || 0) - myCashConsumption).toLocaleString()}</span>
+                                    <div className={styles.limitFooter}>
+                                        <span className={styles.limitAvailable}>
+                                            Disponible: <span className={styles.limitAvailableValue}>${Math.max(0, (profile?.cash_limit || 0) - myCashConsumption).toLocaleString()}</span>
                                         </span>
                                     </div>
                                 )}

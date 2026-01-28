@@ -144,3 +144,125 @@
     padding-top: 1.5rem;
     border-top: 1px dashed var(--gray-200);
 }
+
+/* Limit Widget Styles */
+.limitWidget {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.limitRow {
+    position: relative;
+}
+
+.limitHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.limitLabelGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.limitTitle {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--nh-black);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.limitSubtitle {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 0.125rem;
+}
+
+.limitStats {
+    text-align: right;
+}
+
+.limitValue {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: var(--nh-black);
+    display: block;
+}
+
+.limitValueRed {
+    color: var(--danger);
+}
+
+.limitPercentage {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-500);
+}
+
+.limitBarContainer {
+    width: 100%;
+    height: 12px;
+    background-color: var(--gray-100);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.limitBar {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.6s ease-out;
+}
+
+.bgBlue {
+    background-color: var(--nh-blue);
+}
+
+.bgGreen {
+    background-color: var(--success);
+}
+
+.bgYellow {
+    background-color: var(--nh-yellow);
+}
+
+.bgRed {
+    background-color: var(--danger);
+}
+
+.barEmpty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    color: var(--gray-400);
+    font-weight: 600;
+    opacity: 0.6;
+    letter-spacing: 0.05em;
+}
+
+.limitFooter {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.375rem;
+}
+
+.limitAvailable {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-weight: 500;
+}
+
+.limitAvailableValue {
+    color: var(--nh-black);
+    font-weight: 700;
+}
+
+.divider {
+    border-top: 1px solid var(--gray-100);
+}
