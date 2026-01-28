@@ -1,4 +1,4 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from 'next'; // Fix for Hostinger build
 
 const nextConfig: NextConfig = {
   /* config options here */
