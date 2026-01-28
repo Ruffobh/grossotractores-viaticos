@@ -78,8 +78,8 @@ export async function createUser(formData: FormData) {
             branch: branches.length > 0 ? branches[0] : null,
             branches: branches,
             area,
-            monthly_limit,
-            cash_limit
+            monthly_limit: monthlyLimit,
+            cash_limit: cashLimit
         })
 
     if (profileError) {
