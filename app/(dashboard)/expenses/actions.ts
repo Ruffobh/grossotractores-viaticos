@@ -95,6 +95,7 @@ export async function processReceipt(imageUrl: string) {
         }
 
 
+        if (!result) throw new Error('Failed to get response from Gemini')
         const response = await result.response
         let text = response.text()
 
