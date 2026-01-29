@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ChunkErrorHandler } from "@/components/chunk-error-handler";
 
 export const metadata: Metadata = {
   title: "Grosso Viaticos",
@@ -15,7 +14,24 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased">
-        <ChunkErrorHandler />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('error', function(e) {
+                if (/Loading chunk|missing|ChunkLoadError/i.test(e.message)) {
+                  console.error('Recovering from ChunkLoadError by reloading...');
+                  window.location.reload();
+                }
+              });
+              window.addEventListener('unhandledrejection', function(e) {
+                if (e.reason && /Loading chunk|missing|ChunkLoadError/i.test(e.reason.message)) {
+                  console.error('Recovering from ChunkLoadError (Promise) by reloading...');
+                  window.location.reload();
+                }
+              });
+            `,
+          }}
+        />
         {children}
       </body>
     </html>
