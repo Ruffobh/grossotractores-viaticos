@@ -58,6 +58,7 @@ export default function LoginPage() {
                 <div className={styles.header}>
                     <div className={styles.logo}>GROSSO TRACTORES</div>
                     <div className={styles.subtitle}>Gestión de Viáticos</div>
+                    <div className="text-xs text-gray-400 mt-1">v2.5 (Prod)</div>
                 </div>
 
                 {/* Critical Env Error */}
