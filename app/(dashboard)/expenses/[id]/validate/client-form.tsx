@@ -141,12 +141,10 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
 
                 <div>
                     <label className={styles.label}>Tipo Factura</label>
-                    <select name="invoice_type" defaultValue={invoice.invoice_type || 'Ticket'} className={styles.input}>
-                        <option value="A">Factura A</option>
-                        <option value="B">Factura B</option>
-                        <option value="C">Factura C</option>
-                        <option value="M">Factura M</option>
-                        <option value="Ticket">Ticket</option>
+                    <select name="invoice_type" defaultValue={invoice.invoice_type || 'FACTURA A'} className={styles.input}>
+                        <option value="FACTURA A">FACTURA A</option>
+                        <option value="FACTURA C">FACTURA C</option>
+                        <option value="CONSUMIDOR FINAL">CONSUMIDOR FINAL</option>
                     </select>
                 </div>
 

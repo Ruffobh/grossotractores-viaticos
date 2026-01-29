@@ -56,7 +56,7 @@ export async function processReceipt(imageUrl: string) {
       5. **Data Fields to Extract**:
       - vendor_name (string)
       - vendor_cuit (string, format XX-XXXXXXXX-X)
-      - invoice_type (string, e.g., "A", "B", "C", "Ticket Factura A", "Ticket Factura B")
+      - invoice_type (string, EXACTLY one of: "FACTURA A", "FACTURA C", "CONSUMIDOR FINAL")
       - invoice_number (string, format 00000-00000000)
       - date (string, YYYY-MM-DD)
       - total_amount (number)
