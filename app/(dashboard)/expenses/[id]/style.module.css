@@ -87,7 +87,7 @@
 }
 
 .amountValue {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 800;
     color: var(--nh-blue);
     margin: 0;
@@ -98,7 +98,7 @@
 .gridSection {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.5rem;
     margin-bottom: 2rem;
 }
 
@@ -136,8 +136,8 @@
 }
 
 .value {
-    padding: 1rem;
-    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
     color: var(--gray-900);
     font-weight: 600;
     word-break: break-word;
