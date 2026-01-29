@@ -95,8 +95,10 @@ export default async function UsersListPage() {
                                     <td data-label="Nombre" className="font-bold">{profile.full_name || 'Sin Nombre'}</td>
                                     <td data-label="Email" className={styles.emailCell} title={profile.email}>{profile.email}</td>
                                     <td data-label="Rol">
-                                        <span className={`${styles.badge} ${styles[profile.role || 'user']}`}>
-                                            {profile.role || 'user'}
+                                        <span className={`${styles.badge} ${profile.role === 'branch_manager' ? styles.manager :
+                                                styles[profile.role || 'user']
+                                            }`}>
+                                            {profile.role === 'branch_manager' ? 'MANAGER' : (profile.role || 'user')}
                                         </span>
                                     </td>
                                     <td data-label="Sucursal">{profile.branch || '-'}</td>
