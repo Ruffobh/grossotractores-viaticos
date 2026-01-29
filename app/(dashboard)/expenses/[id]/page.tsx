@@ -81,7 +81,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                     <DetailRow label="Tipo de Gasto" value={invoice.expense_category} />
                     <DetailRow label="Fecha" value={new Date(invoice.date).toLocaleDateString()} />
                     <DetailRow label="Tipo Factura" value={invoice.invoice_type} />
-                    <DetailRow label="Forma de Pago" value={invoice.payment_method} />
+                    <DetailRow label="Forma de Pago" value={formatPaymentMethod(invoice.payment_method)} />
                     <DetailRow label="Nº Comprobante" value={invoice.invoice_number || invoice.id.slice(0, 8)} />
                 </div>
 
@@ -141,4 +141,15 @@ function getStatusClass(status: string) {
         'pending': 'statusPending'
     }
     return map[status] || 'statusPending'
+}
+
+function formatPaymentMethod(method: string) {
+    const map: Record<string, string> = {
+        'Cash': 'Efectivo',
+        'Transfer': 'Transferencia',
+        'Credit Card': 'Tarjeta de Crédito',
+        'Debit Card': 'Tarjeta de Débito',
+        'Other': 'Otro'
+    }
+    return map[method] || method
 }
