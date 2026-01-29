@@ -90,7 +90,14 @@ export async function processReceipt(imageUrl: string) {
                 ]);
                 break; // Success, exit loop
             } catch (error: any) {
-                if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+                const isRetryable =
+                    error.message.includes('429') ||
+                    error.message.includes('Too Many Requests') ||
+                    error.message.includes('503') ||
+                    error.message.includes('Overloaded') ||
+                    error.message.includes('fetch failed');
+
+                if (isRetryable) {
                     retryCount++;
                     if (retryCount > maxRetries) throw error; // Give up
 
