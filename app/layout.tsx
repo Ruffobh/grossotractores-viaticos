@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ChunkErrorHandler } from "@/components/chunk-error-handler";
 
 export const metadata: Metadata = {
   title: "Grosso Viaticos",
@@ -14,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased">
+        <ChunkErrorHandler />
         {children}
       </body>
     </html>
