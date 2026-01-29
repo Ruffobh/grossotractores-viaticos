@@ -132,7 +132,7 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
                     <li><strong>Monto:</strong> ${expense.currency} ${expense.total_amount?.toLocaleString()}</li>
                 </ul>
                 <p>Por favor, ingrese al sistema para descargar la información.</p>
-                <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/expenses">Ir al Panel</a></p>
+                <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/expenses/${expense.id}">Ver Comprobante</a></p>
                 ${overrideEmail ? '<p style="color:red; font-size:12px;">* Email de prueba redirigido al usuario actual</p>' : ''}
             `
         })
