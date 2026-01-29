@@ -51,20 +51,24 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
             {/* Right: Details & Actions */}
             <div className={styles.formSection}>
                 <div className={styles.header}>
-                    <div className="mb-6">
-                        <a href="/expenses" className={styles.backButton}>
-                            &larr; Volver
-                        </a>
-                    </div>
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h2 className={styles.title}>Detalle de Comprobante</h2>
-                            <p className={styles.statusText}>
-                                Estado: <span className={styles[getStatusClass(invoice.status)]}>{formatStatus(invoice.status)}</span>
-                            </p>
-                            <p className="text-sm text-gray-400 mt-1">Cargado por: {invoice.profiles?.full_name}</p>
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-4">
+                            <a href="/expenses" className={styles.backButtonCompact}>
+                                &larr;
+                            </a>
+                            <h2 className={styles.titleCompact}>Detalle de Comprobante</h2>
                         </div>
                         {canExport && <BCExportButton invoice={invoice} profile={invoice.profiles} />}
+                    </div>
+
+                    <div className="flex justify-between items-center border-b pb-4 mb-4">
+                        <div className="flex gap-4 items-center">
+                            <span className={styles[getStatusClass(invoice.status)]}>{formatStatus(invoice.status)}</span>
+                            <span className="text-sm text-gray-400">|</span>
+                            <p className="text-sm text-gray-500">
+                                <span className="font-semibold text-gray-700">Por:</span> {invoice.profiles?.full_name}
+                            </p>
+                        </div>
                     </div>
                 </div>
 
