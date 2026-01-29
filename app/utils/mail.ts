@@ -1,12 +1,21 @@
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 import { createClient } from '@/utils/supabase/server'
 
-// Initialize Resend with the API key from env
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize Nodemailer Transporter
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.office365.com',
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+    },
+    tls: {
+        ciphers: 'SSLv3'
+    }
+})
 
-// Sender email - Resend requires a verified domain or 'onboarding@resend.dev' for testing
-// For production, this should be 'notifications@grossotractores.com.ar' (after verifying domain)
-const SENDER_EMAIL = 'onboarding@resend.dev'
+const SENDER_EMAIL = process.env.SMTP_FROM || process.env.SMTP_USER || 'comprobantes@grossotractores.com.ar'
 
 interface ExpenseData {
     id: string
@@ -40,9 +49,9 @@ export async function sendAdminAlert(expense: ExpenseData) {
         const adminEmails = admins.map(a => a.email!)
 
         // 2. Send Email
-        const { data, error } = await resend.emails.send({
-            from: SENDER_EMAIL,
-            to: adminEmails,
+        const info = await transporter.sendMail({
+            from: `"Viáticos Grosso" <${SENDER_EMAIL}>`,
+            to: adminEmails.join(', '), // Nodemailer accepts comma separated string or array
             subject: `⚠️ Alerta de Gasto: ${expense.user_name} excedió el límite`,
             html: `
                 <h2>Atención: Gasto Excedido</h2>
@@ -56,12 +65,8 @@ export async function sendAdminAlert(expense: ExpenseData) {
             `
         })
 
-        if (error) {
-            console.error('Error sending admin email:', error)
-            return { error }
-        }
-
-        return { success: true, data }
+        console.log('Admin Alert sent: %s', info.messageId)
+        return { success: true, data: info }
 
     } catch (err) {
         console.error('Unexpected error sending admin email:', err)
@@ -72,7 +77,6 @@ export async function sendAdminAlert(expense: ExpenseData) {
 /**
  * Sends a notification to the Branch Manager when an expense is Approved (Ready for BC).
  */
-
 export async function sendManagerNotification(expense: ExpenseData, overrideEmail?: string) {
     try {
         const supabase = await createClient()
@@ -83,7 +87,6 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
             recipients = [overrideEmail]
         } else {
             // 1. Find the Branch Manager for this expense
-            // We need to look up the user's details first to find their branch
             const { data: userProfile } = await supabase
                 .from('profiles')
                 .select(`
@@ -92,7 +95,7 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
                     name
                 )
             `)
-                .eq('id', expense.user_id) // Assuming expense has user_id
+                .eq('id', expense.user_id)
                 .single()
 
             if (!userProfile?.branch_id) {
@@ -100,8 +103,7 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
                 return { error: 'User has no branch' }
             }
 
-            // 2. Find the Manager of that branch (or Admins if no manager?)
-            // Let's find Branch Managers for this specific branch
+            // 2. Find the Manager of that branch
             const { data: managers } = await supabase
                 .from('profiles')
                 .select('email')
@@ -118,9 +120,9 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
         }
 
         // 3. Send Email
-        const { data, error } = await resend.emails.send({
-            from: SENDER_EMAIL,
-            to: recipients,
+        const info = await transporter.sendMail({
+            from: `"Viáticos Grosso" <${SENDER_EMAIL}>`,
+            to: recipients.join(', '),
             subject: `✅ Nuevo Comprobante Aprobado - ${expense.vendor_name}`,
             html: `
                 <h2>Listo para Business Central</h2>
@@ -135,16 +137,11 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
             `
         })
 
-        if (error) {
-            console.error('Error sending manager email:', error)
-            return { error }
-        }
-
-        return { success: true, data }
+        console.log('Manager Notification sent: %s', info.messageId)
+        return { success: true, data: info }
 
     } catch (err) {
         console.error('Unexpected error sending manager email:', err)
         return { error: err }
     }
 }
-
