@@ -173,7 +173,7 @@ export async function deleteExpense(id: string) {
 
     // Check status first
     // Check status first
-    const { data: invoice } = await supabase.from('invoices').select('status').eq('id', id).single()
+    const { data: invoice } = await supabase.from('invoices').select('status, file_url').eq('id', id).single()
 
     // Check user role
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
@@ -188,8 +188,33 @@ export async function deleteExpense(id: string) {
         return { error: error.message }
     }
 
+    // Delete from Storage
+    if (invoice?.file_url) {
+        try {
+            // Extract file path from URL. Assuming format contains .../receipts/path...
+            // Or simpler: if it's a signed URL or public URL, the path is usually the last segment(s).
+            // But let's look for 'receipts/' segment.
+            const parts = invoice.file_url.split('/receipts/')
+            if (parts.length > 1) {
+                const filePath = parts[1] // content after receipts/
+                // Handle URL decoding if needed, usually browser handles it but keep in mind space -> %20
+                const decodedPath = decodeURIComponent(filePath)
+
+                const { error: storageError } = await supabase.storage
+                    .from('receipts')
+                    .remove([decodedPath])
+
+                if (storageError) {
+                    console.error('Storage Deletion Error:', storageError)
+                }
+            }
+        } catch (e) {
+            console.error('Error attempting to delete file from storage:', e)
+        }
+    }
+
     // Setup revalidation
-    revalidatePath('/expenses') // We will handle revalidation in the UI or return success
+    revalidatePath('/expenses')
     return { success: true }
 }
 
