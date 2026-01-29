@@ -78,6 +78,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                 <div className={styles.gridSection}>
                     <DetailRow label="Proveedor" value={invoice.vendor_name} />
                     <DetailRow label="CUIT" value={invoice.vendor_cuit} />
+                    <DetailRow label="Tipo de Gasto" value={invoice.expense_category} />
                     <DetailRow label="Fecha" value={new Date(invoice.date).toLocaleDateString()} />
                     <DetailRow label="Tipo Factura" value={invoice.invoice_type} />
                     <DetailRow label="Forma de Pago" value={invoice.payment_method} />
