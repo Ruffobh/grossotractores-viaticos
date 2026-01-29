@@ -40,6 +40,22 @@ export async function updateUserProfile(formData: FormData) {
         area: formData.get('area'),
         monthly_limit: Number(formData.get('monthly_limit')) || 0,
         cash_limit: Number(formData.get('cash_limit')) || 0,
+        // Sync branch_id
+        branch_id: null as string | null
+    }
+
+    // Resolve branch_id from db
+    if (branches.length > 0) {
+        const branchName = branches[0]
+        const { data: branchRecord } = await supabase
+            .from('branches')
+            .select('id')
+            .eq('name', branchName)
+            .single()
+
+        if (branchRecord) {
+            profileData.branch_id = branchRecord.id
+        }
     }
 
     const { error } = await supabase

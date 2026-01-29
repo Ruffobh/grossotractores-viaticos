@@ -48,7 +48,7 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                         <label className={styles.label}>Rol</label>
                         <select name="role" defaultValue={profile.role || 'user'} className={styles.input}>
                             <option value="user">Usuario</option>
-                            <option value="manager">Encargado de Sucursal</option>
+                            <option value="branch_manager">Encargado de Sucursal</option>
                             <option value="admin">Administrador</option>
                         </select>
                     </div>
