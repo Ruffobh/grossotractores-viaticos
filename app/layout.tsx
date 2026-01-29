@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Grosso Viaticos",
   description: "Expense management for Grosso Tractores",
+  icons: {
+    icon: '/icon.png',
+  },
 };
 
 export default function RootLayout({
