@@ -10,6 +10,8 @@ interface FilterProps {
     isManagerOrAdmin: boolean
 }
 
+import styles from './expenses-filter.module.css'
+
 export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -50,26 +52,26 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
     const hasActiveFilters = filters.user_id || filters.branch || filters.expense_category || filters.payment_method
 
     return (
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-6">
-            <div className="flex items-center gap-2 mb-3 text-gray-700 font-semibold text-sm">
+        <div className={styles.container}>
+            <div className={styles.header}>
                 <Filter size={16} />
                 <span>Filtros Avanzados</span>
                 {hasActiveFilters && (
                     <button
                         onClick={clearFilters}
-                        className="ml-auto text-xs text-red-600 flex items-center gap-1 hover:underline"
+                        className={styles.clearButton}
                     >
-                        <X size={12} /> Limpiar todo
+                        <X size={14} /> Limpiar
                     </button>
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className={styles.grid}>
                 {/* User Filter */}
-                <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Usuario</label>
+                <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Usuario</label>
                     <select
-                        className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                        className={styles.select}
                         value={filters.user_id}
                         onChange={(e) => handleChange('user_id', e.target.value)}
                     >
@@ -81,10 +83,10 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
                 </div>
 
                 {/* Branch Filter */}
-                <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Sucursal</label>
+                <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Sucursal</label>
                     <select
-                        className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                        className={styles.select}
                         value={filters.branch}
                         onChange={(e) => handleChange('branch', e.target.value)}
                     >
@@ -96,10 +98,10 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
                 </div>
 
                 {/* Expense Category Filter */}
-                <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Tipo de Gasto</label>
+                <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Tipo de Gasto</label>
                     <select
-                        className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                        className={styles.select}
                         value={filters.expense_category}
                         onChange={(e) => handleChange('expense_category', e.target.value)}
                     >
@@ -113,10 +115,10 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
                 </div>
 
                 {/* Payment Method Filter */}
-                <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Forma de Pago</label>
+                <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Forma de Pago</label>
                     <select
-                        className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                        className={styles.select}
                         value={filters.payment_method}
                         onChange={(e) => handleChange('payment_method', e.target.value)}
                     >
