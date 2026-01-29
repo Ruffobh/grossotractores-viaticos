@@ -64,6 +64,7 @@ export default function LoginPage() {
                             id="email"
                             name="email"
                             type="email"
+                            autoComplete="email"
                             placeholder="usuario@grossotractores.com"
                             required
                             className={styles.input}
@@ -78,6 +79,7 @@ export default function LoginPage() {
                             id="password"
                             name="password"
                             type="password"
+                            autoComplete="current-password"
                             placeholder="••••••••"
                             required
                             className={styles.input}
