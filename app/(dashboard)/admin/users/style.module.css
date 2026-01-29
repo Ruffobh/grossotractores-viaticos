@@ -331,3 +331,70 @@
     color: var(--nh-blue);
     text-decoration: none;
 }
+
+/* Mobile Card View */
+@media (max-width: 768px) {
+    .tableWrapper {
+        background: transparent;
+        box-shadow: none;
+        border: none;
+        overflow-x: visible;
+        /* Disable scroll, use cards */
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody tr {
+        display: block;
+        background: white;
+        margin-bottom: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+        padding: 1rem;
+    }
+
+    .table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--gray-100);
+        text-align: right;
+    }
+
+    .table td:last-child {
+        border-bottom: none;
+        justify-content: center;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid var(--gray-100);
+    }
+
+    .table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        text-align: left;
+        padding-right: 1rem;
+    }
+
+    /* Hide label for Actions */
+    .table td:last-child::before {
+        display: none;
+    }
+
+    /* Email specific */
+    .table td.emailCell {
+        max-width: none;
+        /* Reset truncation for mobile card */
+        text-align: right;
+        overflow: visible;
+        white-space: normal;
+        word-break: break-all;
+    }
+}

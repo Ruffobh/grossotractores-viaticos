@@ -208,9 +208,13 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 0;
+        padding: 0.75rem 0;
+        /* More padding */
         border-bottom: 1px solid var(--gray-100);
         text-align: right;
+        color: var(--nh-black);
+        /* Enforce dark color */
+        font-weight: 500;
     }
 
     .table td:last-child {

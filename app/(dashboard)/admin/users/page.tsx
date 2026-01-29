@@ -92,19 +92,19 @@ export default async function UsersListPage() {
 
                             return (
                                 <tr key={profile.id}>
-                                    <td className="font-bold">{profile.full_name || 'Sin Nombre'}</td>
-                                    <td className={styles.emailCell} title={profile.email}>{profile.email}</td>
-                                    <td>
+                                    <td data-label="Nombre" className="font-bold">{profile.full_name || 'Sin Nombre'}</td>
+                                    <td data-label="Email" className={styles.emailCell} title={profile.email}>{profile.email}</td>
+                                    <td data-label="Rol">
                                         <span className={`${styles.badge} ${styles[profile.role || 'user']}`}>
                                             {profile.role || 'user'}
                                         </span>
                                     </td>
-                                    <td>{profile.branch || '-'}</td>
-                                    <td>{profile.area || '-'}</td>
+                                    <td data-label="Sucursal">{profile.branch || '-'}</td>
+                                    <td data-label="Área">{profile.area || '-'}</td>
 
                                     {/* Credit Card Stats */}
-                                    <td>${limitCard.toLocaleString()}</td>
-                                    <td style={{
+                                    <td data-label="Límite TC">${limitCard.toLocaleString()}</td>
+                                    <td data-label="Consumo TC" style={{
                                         color: cardExceeded ? '#ef4444' : 'inherit',
                                         fontWeight: cardExceeded ? '800' : 'normal'
                                     }}>
@@ -112,15 +112,15 @@ export default async function UsersListPage() {
                                     </td>
 
                                     {/* Cash Stats */}
-                                    <td>${limitCash.toLocaleString()}</td>
-                                    <td style={{
+                                    <td data-label="Límite EF">${limitCash.toLocaleString()}</td>
+                                    <td data-label="Consumo EF" style={{
                                         color: cashExceeded ? '#ef4444' : 'inherit',
                                         fontWeight: cashExceeded ? '800' : 'normal'
                                     }}>
                                         ${userConsumption.cash.toLocaleString()}
                                     </td>
 
-                                    <td>
+                                    <td data-label="Acciones">
                                         <div className={styles.actions}>
                                             <Link href={`/admin/users/${profile.id}`} className={styles.editButton}>
                                                 <Edit size={16} /> Editar

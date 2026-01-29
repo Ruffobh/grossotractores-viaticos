@@ -39,3 +39,9 @@
     height: 300px;
     width: 100%;
 }
+
+@media (max-width: 640px) {
+    .chartContainer {
+        height: 220px;
+    }
+}

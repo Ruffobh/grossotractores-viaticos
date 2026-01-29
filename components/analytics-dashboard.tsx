@@ -108,22 +108,28 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                     <div className={styles.card}>
                         <h3 className={styles.cardTitle}>Gastos por Sucursal (ARS)</h3>
                         <div className={styles.chartContainer}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={branchData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                                    <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
-                                    <Tooltip
-                                        formatter={(value: any) => [`$${(value || 0).toLocaleString()}`, 'Monto']}
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                    />
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                        {branchData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
+                            {branchData.some(d => d.value > 0) ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={branchData}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                                        <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
+                                        <Tooltip
+                                            formatter={(value: any) => [`$${(value || 0).toLocaleString()}`, 'Monto']}
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                        />
+                                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                            {branchData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                                    No hay gastos registrados
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -132,27 +138,33 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                 <div className={styles.card}>
                     <h3 className={styles.cardTitle}>Distribución por Tipo de Gasto</h3>
                     <div className={styles.chartContainer}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={typeData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
-                                    paddingAngle={5}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                    label={({ percent }: any) => `${((percent || 0) * 100).toFixed(0)}%`}
-                                >
-                                    {typeData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip formatter={(value: any, name: any, props: any) => [`$${(value || 0).toLocaleString()} (${props.payload.percentage})`, name]} />
-                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                            </PieChart>
-                        </ResponsiveContainer>
+                        {totalAmount > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={typeData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={100}
+                                        paddingAngle={5}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                        label={({ percent }: any) => `${((percent || 0) * 100).toFixed(0)}%`}
+                                    >
+                                        {typeData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip formatter={(value: any, name: any, props: any) => [`$${(value || 0).toLocaleString()} (${props.payload.percentage})`, name]} />
+                                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                                Sin datos para mostrar
+                            </div>
+                        )}
                     </div>
                 </div>
 

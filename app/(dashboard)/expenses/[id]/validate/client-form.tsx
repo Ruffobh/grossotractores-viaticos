@@ -51,11 +51,16 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
 
     const handleCancel = async () => {
         if (confirm('¿Estás seguro de cancelar la subida? El comprobante se eliminará.')) {
-            const res = await deleteExpense(invoice.id)
-            if (res?.error) {
-                alert('Error al cancelar: ' + res.error)
-            } else {
-                router.push('/expenses')
+            try {
+                const res = await deleteExpense(invoice.id)
+                if (res?.error) {
+                    alert('Error al cancelar: ' + res.error)
+                } else {
+                    router.refresh()
+                    router.push('/expenses')
+                }
+            } catch (error) {
+                alert('Ocurrió un error inesperado al cancelar.')
             }
         }
     }
