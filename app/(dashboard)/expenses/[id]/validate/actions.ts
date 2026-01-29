@@ -108,10 +108,7 @@ export async function updateInvoice(formData: FormData) {
         await sendAdminAlert(expenseData)
     } else if (newStatus === 'approved') {
         // Auto Approved -> Notify Manager
-        // TEST MODE: Sending to current user's email
-        // const currentUserEmail = user.user?.email || undefined
-        const currentUserEmail = "francoruffino.90@gmail.com" // Hardcoded for test
-        await sendManagerNotification(expenseData, currentUserEmail)
+        await sendManagerNotification(expenseData)
     }
     // ---------------------------
 
