@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { PlusCircle, Filter } from 'lucide-react'
 import styles from './style.module.css'
 import { ExpensesTable } from '@/components/expenses-table'
+import { ExpensesFilter } from '@/components/expenses-filter'
 
 export default async function ExpensesPage({
     searchParams,
@@ -22,6 +23,18 @@ export default async function ExpensesPage({
     const isManagerOrAdmin = profile?.role === 'manager' || profile?.role === 'admin'
     const role = profile?.role || 'user'
 
+    // Fetch data for filters (only needed if manager/admin)
+    let usersList: any[] = []
+    let branchesList: any[] = []
+
+    if (isManagerOrAdmin) {
+        const { data: uData } = await supabase.from('profiles').select('id, full_name').order('full_name')
+        usersList = uData || []
+
+        const { data: bData } = await supabase.from('branches').select('id, name').order('name')
+        branchesList = bData || []
+    }
+
     // 2. Build Query
     let query = supabase
         .from('invoices')
@@ -36,6 +49,14 @@ export default async function ExpensesPage({
     // Apply filters if present
     if (params.status) {
         query = query.eq('status', params.status as string)
+    }
+
+    // Advanced Filters (Manager/Admin Only)
+    if (isManagerOrAdmin) {
+        if (params.user_id) query = query.eq('user_id', params.user_id as string)
+        if (params.branch) query = query.eq('branch', params.branch as string)
+        if (params.expense_category) query = query.eq('expense_category', params.expense_category as string)
+        if (params.payment_method) query = query.eq('payment_method', params.payment_method as string)
     }
 
     const { data: expenses, error } = await query
@@ -54,6 +75,12 @@ export default async function ExpensesPage({
                     Nuevo
                 </Link>
             </div>
+
+            <ExpensesFilter
+                users={usersList}
+                branches={branchesList}
+                isManagerOrAdmin={isManagerOrAdmin}
+            />
 
             <div className={styles.filters}>
                 {/* Simple filter links for now */}
