@@ -13,25 +13,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="antialiased">
+      <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.addEventListener('error', function(e) {
                 if (/Loading chunk|missing|ChunkLoadError/i.test(e.message)) {
                   console.error('Recovering from ChunkLoadError by reloading...');
-                  window.location.reload();
+                  window.location.href = window.location.href.split('?')[0] + '?t=' + new Date().getTime();
                 }
               });
               window.addEventListener('unhandledrejection', function(e) {
                 if (e.reason && /Loading chunk|missing|ChunkLoadError/i.test(e.reason.message)) {
                   console.error('Recovering from ChunkLoadError (Promise) by reloading...');
-                  window.location.reload();
+                  window.location.href = window.location.href.split('?')[0] + '?t=' + new Date().getTime();
                 }
               });
             `,
           }}
         />
+      </head>
+      <body className="antialiased">
         {children}
       </body>
     </html>
