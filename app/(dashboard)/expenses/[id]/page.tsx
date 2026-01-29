@@ -51,8 +51,8 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
             {/* Right: Details & Actions */}
             <div className={styles.formSection}>
                 <div className={styles.header}>
-                    <div className="flex justify-between items-center mb-4">
-                        <div className="flex items-center gap-4">
+                    <div className={styles.headerTopRow}>
+                        <div className={styles.headerTitleGroup}>
                             <a href="/expenses" className={styles.backButtonCompact}>
                                 &larr;
                             </a>
@@ -61,12 +61,12 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                         {canExport && <BCExportButton invoice={invoice} profile={invoice.profiles} />}
                     </div>
 
-                    <div className="flex justify-between items-center border-b pb-4 mb-4">
-                        <div className="flex gap-4 items-center">
+                    <div className={styles.headerMetaRow}>
+                        <div className={styles.metaGroup}>
                             <span className={styles[getStatusClass(invoice.status)]}>{formatStatus(invoice.status)}</span>
-                            <span className="text-sm text-gray-400">|</span>
-                            <p className="text-sm text-gray-500">
-                                <span className="font-semibold text-gray-700">Por:</span> {invoice.profiles?.full_name}
+                            <span className={styles.separator}>|</span>
+                            <p className={styles.metaText}>
+                                <span className={styles.metaLabel}>Por:</span> {invoice.profiles?.full_name}
                             </p>
                         </div>
                     </div>
