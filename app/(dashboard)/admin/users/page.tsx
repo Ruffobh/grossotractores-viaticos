@@ -106,21 +106,21 @@ export default async function UsersListPage() {
                                     <td data-label="Área">{profile.area || '-'}</td>
 
                                     {/* Credit Card Stats */}
-                                    <td data-label="Límite TC">${limitCard.toLocaleString()}</td>
+                                    <td data-label="Límite TC">${limitCard.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
                                     <td data-label="Consumo TC" style={{
                                         color: cardExceeded ? '#ef4444' : 'inherit',
                                         fontWeight: cardExceeded ? '800' : 'normal'
                                     }}>
-                                        ${userConsumption.card.toLocaleString()}
+                                        ${userConsumption.card.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                     </td>
 
                                     {/* Cash Stats */}
-                                    <td data-label="Límite EF">${limitCash.toLocaleString()}</td>
+                                    <td data-label="Límite EF">${limitCash.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
                                     <td data-label="Consumo EF" style={{
                                         color: cashExceeded ? '#ef4444' : 'inherit',
                                         fontWeight: cashExceeded ? '800' : 'normal'
                                     }}>
-                                        ${userConsumption.cash.toLocaleString()}
+                                        ${userConsumption.cash.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                     </td>
 
                                     <td data-label="Acciones">

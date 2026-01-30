@@ -59,7 +59,7 @@ export async function sendAdminAlert(expense: ExpenseData) {
                 <ul>
                     <li><strong>Proveedor:</strong> ${expense.vendor_name}</li>
                     <li><strong>Fecha:</strong> ${new Date(expense.date).toLocaleDateString()}</li>
-                    <li><strong>Monto:</strong> ${expense.currency} ${expense.total_amount?.toLocaleString()}</li>
+                    <li><strong>Monto:</strong> ${expense.currency} ${expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</li>
                 </ul>
                 <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/expenses/${expense.id}">Ver Comprobante</a></p>
             `
@@ -129,7 +129,7 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
                 <p>Un comprobante de <strong>${expense.user_name}</strong> ha sido aprobado y está listo para ser contabilizado.</p>
                 <ul>
                     <li><strong>Proveedor:</strong> ${expense.vendor_name}</li>
-                    <li><strong>Monto:</strong> ${expense.currency} ${expense.total_amount?.toLocaleString()}</li>
+                    <li><strong>Monto:</strong> ${expense.currency} ${expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</li>
                 </ul>
                 <p>Por favor, ingrese al sistema para descargar la información.</p>
                 <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/expenses/${expense.id}">Ver Comprobante</a></p>

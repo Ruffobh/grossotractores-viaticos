@@ -153,10 +153,10 @@ export default async function DashboardPage({
                             {role === 'user' ? 'Mis Gastos' : 'Total Filtrado'}
                         </h3>
                     </div>
-                    <p className={styles.value}>${consumedAmount.toLocaleString()}</p>
+                    <p className={styles.value}>${consumedAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</p>
                     {role === 'user' && (
                         <>
-                            <p className="text-gray-400 text-sm mt-2">de ${monthlyLimit.toLocaleString()} autorizado</p>
+                            <p className="text-gray-400 text-sm mt-2">de ${monthlyLimit.toLocaleString('es-AR', { minimumFractionDigits: 2 })} autorizado</p>
                             <p className="text-xs text-gray-400 mt-1">Este mes ({selectedMonth === 'all' ? 'Año Completo' : `${selectedMonth}/${selectedYear}`})</p>
                         </>
                     )}
@@ -174,12 +174,12 @@ export default async function DashboardPage({
                                     <div className={styles.limitLabelGroup}>
                                         <span className={styles.limitTitle}>Tarjeta Corporativa</span>
                                         <span className={styles.limitSubtitle}>
-                                            {monthlyLimit > 0 ? `Límite: $${monthlyLimit.toLocaleString()}` : 'Sin límite asignado'}
+                                            {monthlyLimit > 0 ? `Límite: $${monthlyLimit.toLocaleString('es-AR', { minimumFractionDigits: 2 })}` : 'Sin límite asignado'}
                                         </span>
                                     </div>
                                     <div className={styles.limitStats}>
                                         <span className={`${styles.limitValue} ${monthlyLimit > 0 && myCardConsumption > monthlyLimit ? styles.limitValueRed : ''}`}>
-                                            ${myCardConsumption.toLocaleString()}
+                                            ${myCardConsumption.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                         </span>
                                         {monthlyLimit > 0 && (
                                             <div className={styles.limitPercentage}>
@@ -206,7 +206,7 @@ export default async function DashboardPage({
                                 {monthlyLimit > 0 && (
                                     <div className={styles.limitFooter}>
                                         <span className={styles.limitAvailable}>
-                                            Disponible: <span className={styles.limitAvailableValue}>${Math.max(0, monthlyLimit - myCardConsumption).toLocaleString()}</span>
+                                            Disponible: <span className={styles.limitAvailableValue}>${Math.max(0, monthlyLimit - myCardConsumption).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
                                         </span>
                                     </div>
                                 )}
@@ -221,12 +221,12 @@ export default async function DashboardPage({
                                     <div className={styles.limitLabelGroup}>
                                         <span className={styles.limitTitle}>Efectivo / Transferencia</span>
                                         <span className={styles.limitSubtitle}>
-                                            {(profile?.cash_limit || 0) > 0 ? `Límite: ${(profile?.cash_limit || 0).toLocaleString()}` : 'Sin límite asignado'}
+                                            {(profile?.cash_limit || 0) > 0 ? `Límite: ${(profile?.cash_limit || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}` : 'Sin límite asignado'}
                                         </span>
                                     </div>
                                     <div className={styles.limitStats}>
                                         <span className={`${styles.limitValue} ${(profile?.cash_limit || 0) > 0 && myCashConsumption > (profile?.cash_limit || 0) ? styles.limitValueRed : ''}`}>
-                                            ${myCashConsumption.toLocaleString()}
+                                            ${myCashConsumption.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                         </span>
                                         {(profile?.cash_limit || 0) > 0 && (
                                             <div className={styles.limitPercentage}>
@@ -253,7 +253,7 @@ export default async function DashboardPage({
                                 {(profile?.cash_limit || 0) > 0 && (
                                     <div className={styles.limitFooter}>
                                         <span className={styles.limitAvailable}>
-                                            Disponible: <span className={styles.limitAvailableValue}>${Math.max(0, (profile?.cash_limit || 0) - myCashConsumption).toLocaleString()}</span>
+                                            Disponible: <span className={styles.limitAvailableValue}>${Math.max(0, (profile?.cash_limit || 0) - myCashConsumption).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
                                         </span>
                                     </div>
                                 )}

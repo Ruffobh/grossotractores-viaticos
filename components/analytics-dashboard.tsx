@@ -117,9 +117,9 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                                     <BarChart data={branchData}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                                        <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
+                                        <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${(value || 0).toLocaleString('es-AR')}`} />
                                         <Tooltip
-                                            formatter={(value: any) => [`$${(value || 0).toLocaleString()}`, 'Monto']}
+                                            formatter={(value: any) => [`$${(value || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, 'Monto']}
                                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                         />
                                         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
@@ -160,7 +160,7 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip formatter={(value: any, name: any, props: any) => [`$${(value || 0).toLocaleString()} (${props.payload.percentage})`, name]} />
+                                    <Tooltip formatter={(value: any, name: any, props: any) => [`$${(value || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })} (${props.payload.percentage})`, name]} />
                                     <Legend verticalAlign="bottom" height={36} iconType="circle" />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -180,9 +180,9 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                             <LineChart data={timelineData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                                <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
+                                <YAxis fontSize={12} tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(value) => `$${(value || 0).toLocaleString('es-AR')}`} />
                                 <Tooltip
-                                    formatter={(value: any) => [`$${(value || 0).toLocaleString()}`, 'Monto']}
+                                    formatter={(value: any) => [`$${(value || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, 'Monto']}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                 />
                                 <Line

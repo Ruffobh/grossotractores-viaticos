@@ -81,9 +81,9 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                         <p className={styles.modalText}>
                             El monto total supera tu límite mensual de <b>{paymentMethod === 'Cash' || paymentMethod === 'Transfer' ? 'Efectivo' : 'Tarjeta'}</b>.
                             <span className={styles.modalStats}>
-                                Consumo: <b>${((paymentMethod === 'Cash' || paymentMethod === 'Transfer' ? cashConsumption : cardConsumption)).toLocaleString()}</b>
+                                Consumo: <b>${((paymentMethod === 'Cash' || paymentMethod === 'Transfer' ? cashConsumption : cardConsumption)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</b>
                                 <span className="mx-2">|</span>
-                                Límite: <b>${((paymentMethod === 'Cash' || paymentMethod === 'Transfer' ? cashLimit : cardLimit)).toLocaleString()}</b>
+                                Límite: <b>${((paymentMethod === 'Cash' || paymentMethod === 'Transfer' ? cashLimit : cardLimit)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</b>
                             </span>
                         </p>
 
