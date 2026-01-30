@@ -192,6 +192,8 @@
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
+        /* Prevent flex items from refusing to shrink */
         box-sizing: border-box !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
@@ -209,12 +211,17 @@
     }
 
     .table tbody tr {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 0 !important;
         background: white;
         margin-bottom: 1rem;
         border-radius: var(--radius);
         box-shadow: var(--shadow-lg);
         border: 1px solid var(--gray-200);
         padding: 1rem;
+        overflow: hidden !important;
+        /* Contain internal overflow */
     }
 
     .table td {
