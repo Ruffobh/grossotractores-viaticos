@@ -34,6 +34,11 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
             invoiceType: parsed.invoiceType || invoice.invoice_type || 'FC', // Default to FC/C
             date: parsed.date || invoice.date,
             totalAmount: parsed.totalAmount || invoice.total_amount || 0,
+            // Fallback for Net Amount if explicit
+            netAmount: parsed.netAmount,
+            // Fallback for Perceptions if explicit
+            perceptionsAmount: parsed.perceptionsAmount,
+
             currency: parsed.currency || invoice.currency || 'ARS',
             exchangeRate: parsed.exchangeRate || 1,
 

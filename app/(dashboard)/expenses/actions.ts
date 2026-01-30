@@ -22,7 +22,9 @@ export async function processReceipt(imageUrl: string) {
 
         const prompt = `
         Analiza esta factura. Extrae cabecera, CUIT del proveedor, moneda, y un desglose detallado de impuestos.
-        IMPORTANTE: Debes separar el IVA (21%, 10.5%) de otros impuestos (Percepciones IIBB, Impuestos Internos, Percepción IVA).
+        IMPORTANTE: 
+        1. El proveedor NO es "GROSSO TRACTORES SA". Ese es el cliente. Busca el emisor (logotipo arriba a la izquierda).
+        2. Debes separar el IVA (21%, 10.5%) de otros impuestos (Percepciones IIBB, Impuestos Internos, Percepción IVA).
         Si la factura tiene ítems, extrae el detalle. Si es manuscrita o borrosa, haz tu mejor esfuerzo.
 
         CRITICAL OUTPUT FORMAT:
@@ -34,6 +36,9 @@ export async function processReceipt(imageUrl: string) {
           "invoiceType": string (One of: "FA", "FC", "CF", "ND", "NC"),
           "date": string (YYYY-MM-DD),
           "totalAmount": number,
+          "netAmount": number,
+          "taxAmount": number, 
+          "perceptionsAmount": number,
           "currency": string ("ARS" or "USD"),
           "exchangeRate": number,
           "taxes": [

@@ -140,7 +140,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                     />
                 </div>
 
-                // ...
+
 
                 <div>
                     <label className={styles.label}>Tipo Factura</label>
