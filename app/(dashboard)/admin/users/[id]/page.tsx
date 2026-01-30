@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import UserForm from './user-form'
+import { BRANCHES } from '@/app/constants'
 
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params

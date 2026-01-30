@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import NewUserForm from './user-form'
+import { BRANCHES } from '@/app/constants'
 
 export default async function NewUserPage() {
     const supabase = await createClient()
@@ -16,9 +17,7 @@ export default async function NewUserPage() {
         return <div className="p-8">Acceso denegado.</div>
     }
 
-    import { BRANCHES } from '@/app/constants'
-
-    // Fetch branches for selection
+    // Verify Admin Access
     const { data: branchesData } = await supabase
         .from('branches')
         .select('name')
