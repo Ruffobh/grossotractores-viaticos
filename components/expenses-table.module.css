@@ -184,10 +184,24 @@
 /* Empty State */
 /* Mobile Card View Adaptation */
 @media (max-width: 1024px) {
+
+    .tableWrapper,
+    .table,
+    .table tbody,
+    .table tr {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
     .tableWrapper {
         background: transparent !important;
         box-shadow: none !important;
         border: none !important;
+        padding: 0 !important;
     }
 
     .table thead {
@@ -195,7 +209,6 @@
     }
 
     .table tbody tr {
-        display: block !important;
         background: white;
         margin-bottom: 1rem;
         border-radius: var(--radius);
@@ -208,13 +221,14 @@
         display: flex !important;
         justify-content: space-between;
         align-items: center;
+        width: 100% !important;
+        box-sizing: border-box !important;
         padding: 0.75rem 0;
-        /* More padding */
         border-bottom: 1px solid var(--gray-100);
         text-align: right;
         color: var(--nh-black);
-        /* Enforce dark color */
         font-weight: 500;
+        gap: 1rem;
     }
 
     .table td:last-child {
@@ -228,18 +242,22 @@
         text-transform: uppercase;
         font-size: 0.7rem;
         text-align: left;
-        padding-right: 1rem;
+        padding-right: 0.5rem;
+        /* Reduce padding to save space */
+        flex-shrink: 0;
+        width: 40%;
+        /* Fixed width for alignment */
+        max-width: 40%;
     }
 
     /* Center the actions button on mobile */
     .table td:last-child {
         justify-content: flex-end;
-        /* Align actions to right */
         padding-top: 1rem;
         margin-top: 0.5rem;
         border-top: 1px solid var(--gray-100);
-        gap: 1rem;
-        /* Space between buttons */
+        gap: 0.5rem;
+        /* Reduce gap slightly */
     }
 
     .table td:last-child::before {
@@ -264,23 +282,25 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         max-width: 150px;
-        /* Fallback */
         width: 100%;
         text-align: right;
     }
 
-    .table td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid var(--gray-100);
+    /* Wrap content if it's too long, don't just push it out */
+    .tableValue {
+        white-space: normal !important;
+        /* Allow wrapping */
+        word-break: break-word;
+        /* Break long words if needed */
         text-align: right;
-        color: var(--nh-black);
-        font-weight: 500;
-        /* overflow: hidden;  <-- Removing this to prevent clipping */
-        gap: 1rem;
+        display: block;
+        color: var(--nh-black) !important;
+        flex: 1;
+        max-width: 60%;
+        /* Ensure it doesn't take over the label space too much */
     }
+
+
 
     /* Assign max-width to the value part (right side) */
     .table td>span {
