@@ -56,9 +56,7 @@ export default async function ExpensesPage({
     // ...
 
     // 5. Client-side Filtering (for the main list/charts)
-    if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
-        invoices = invoices.filter((inv: any) => userBranches.includes(inv.profiles?.branch))
-    }
+
 
     // Advanced Filters (Manager/Admin Only)
     // IMPORTANT: Manager should ONLY be able to filter by branches they are assigned to.
@@ -70,11 +68,18 @@ export default async function ExpensesPage({
         if (params.payment_method) query = query.eq('payment_method', params.payment_method as string)
     }
 
-    const { data: expenses, error } = await query
+    const { data: rawExpenses, error } = await query
 
     if (error) {
         console.error(error)
         return <div>Error al cargar comprobantes.</div>
+    }
+
+    let expenses = rawExpenses || []
+
+    // 5. Client-side Filtering (for the main list/charts)
+    if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
+        expenses = expenses.filter((inv: any) => userBranches.includes(inv.profiles?.branch))
     }
 
     return (
