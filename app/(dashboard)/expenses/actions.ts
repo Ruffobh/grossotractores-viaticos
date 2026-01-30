@@ -230,7 +230,7 @@ export async function markInvoiceAsSubmitted(id: string) {
     console.log(`[markInvoiceAsSubmitted] User: ${user.email}, Role: ${role}, InvoiceId: ${id}`)
 
     // Bypass RLS for Admins and Managers using Service Role
-    if (role === 'admin' || role === 'manager') {
+    if (role === 'admin' || role === 'manager' || role === 'branch_manager') {
         console.log("[markInvoiceAsSubmitted] Using Admin Client")
         const { createAdminClient } = await import('@/utils/supabase/admin')
         const adminClient = createAdminClient()
