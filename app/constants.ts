@@ -24,7 +24,8 @@ export const AREAS = [
     'Grupo-Soporte-Staff',
     'Maquinaria',
     'Operaciones',
-    'Repuestos'
+    'Repuestos',
+    'Servicios'
 ] as const;
 
 export const DEPARTMENTS = AREAS; // Alias for backward compatibility if needed
