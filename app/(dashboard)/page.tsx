@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import styles from './page.module.css'
 import { AnalyticsDashboard } from '@/components/analytics-dashboard'
 import { DashboardFilters } from '@/components/dashboard-filters'
+import { EXPENSE_TYPES, AREAS } from '@/app/constants'
 
 export default async function DashboardPage({
     searchParams,
@@ -27,8 +28,6 @@ export default async function DashboardPage({
     // 1. Fetch Filter Options
     const { data: branchesData } = await supabase.from('branches').select('name').order('name')
     const branchesOptions = branchesData?.map(b => b.name) || []
-
-    import { EXPENSE_TYPES, AREAS } from '@/app/constants'
 
     const distinctTypes = EXPENSE_TYPES
     const distinctAreas = AREAS
