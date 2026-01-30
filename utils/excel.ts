@@ -28,6 +28,7 @@ export interface InvoiceData {
 
     userBranch?: string;
     userArea?: string;
+    expenseType?: string;
 }
 
 export interface BCRow {
@@ -56,7 +57,8 @@ const AREA_MAP: Record<string, string> = {
     'Gerencia': 'GTOS-GER',
     'Ventas': 'COM-VTAS',
     'Posventa': 'COM-POSV',
-    'General': 'ADM-GEN'
+    'General': 'ADM-GEN',
+    'Grupo-Soporte-Staff': 'GSS'
 };
 
 const BRANCH_MAP: Record<string, string> = {
@@ -76,12 +78,20 @@ const formatNumber = (num: number) => {
 export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
     const rows: BCRow[] = [];
 
+
+    let accountNumber = '540105';
+    if (invoice.expenseType === 'Capacitaciones') {
+        accountNumber = '540108';
+    } else if (invoice.expenseType === 'Marketing') {
+        accountNumber = '520209';
+    }
+
     const defaults = {
         tipo: 'Cuenta',
-        n: '540105',
+        n: accountNumber,
         udn: 'CON',
         cod_area_impuesto: 'PRO-RI',
-        provincia: 'ER',
+        provincia: '', // Empty as requested
         op: '',
         descuento: ''
     };
@@ -132,7 +142,7 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
 
         rows.push({
             ...defaults,
-            descripcion: invoice.vendorName || '',
+            descripcion: invoice.items?.[0]?.description || invoice.vendorName || '',
             grupo_iva: ivaRate,
             cantidad: 1,
             coste_unit: formatNumber(netAmount),
@@ -157,7 +167,7 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
     } else {
         rows.push({
             ...defaults,
-            descripcion: invoice.vendorName || '',
+            descripcion: invoice.items?.[0]?.description || invoice.vendorName || '',
             grupo_iva: 'IVA NO GRAV',
             cantidad: 1,
             coste_unit: formatNumber(invoice.totalAmount),

@@ -3,6 +3,8 @@ export const EXPENSE_TYPES = [
     'Alojamiento',
     'Combustible',
     'Peaje',
+    'Capacitaciones',
+    'Marketing',
     'Varios'
 ] as const;
 
