@@ -139,12 +139,16 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                     />
                 </div>
 
+                import {EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS} from '@/app/constants'
+
+                // ...
+
                 <div>
                     <label className={styles.label}>Tipo Factura</label>
                     <select name="invoice_type" defaultValue={invoice.invoice_type || 'FACTURA A'} className={styles.input}>
-                        <option value="FACTURA A">FACTURA A</option>
-                        <option value="FACTURA C">FACTURA C</option>
-                        <option value="CONSUMIDOR FINAL">CONSUMIDOR FINAL</option>
+                        {INVOICE_TYPES.map(t => (
+                            <option key={t} value={t}>{t}</option>
+                        ))}
                     </select>
                 </div>
 
@@ -172,11 +176,9 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 <div>
                     <label className={styles.label}>Tipo de Gasto</label>
                     <select name="expense_category" defaultValue={invoice.expense_category || 'Varios'} className={styles.input}>
-                        <option value="Comida">Comida</option>
-                        <option value="Alojamiento">Alojamiento</option>
-                        <option value="Combustible">Combustible</option>
-                        <option value="Peaje">Peaje</option>
-                        <option value="Varios">Varios</option>
+                        {EXPENSE_TYPES.map(t => (
+                            <option key={t} value={t}>{t}</option>
+                        ))}
                     </select>
                 </div>
 
@@ -188,9 +190,9 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className={styles.input}
                     >
-                        <option value="Cash">Efectivo</option>
-                        <option value="Card">Tarjeta</option>
-                        <option value="Transfer">Transferencia</option>
+                        {PAYMENT_METHODS.map(m => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
                     </select>
                 </div>
 

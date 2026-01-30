@@ -53,16 +53,16 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                         </select>
                     </div>
 
+                    import {AREAS} from '@/app/constants'
+
+                    // ... inside the component
                     <div>
                         <label className={styles.label}>Área</label>
                         <select name="area" defaultValue={profile.area || ''} className={styles.input}>
                             <option value="" disabled>Seleccionar área...</option>
-                            <option value="Administracion">Administracion</option>
-                            <option value="Repuestos">Repuestos</option>
-                            <option value="Servicios">Servicios</option>
-                            <option value="Maquinaria">Maquinaria</option>
-                            <option value="Grupo-Staff-Soporte">Grupo-Staff-Soporte</option>
-                            <option value="Operaciones">Operaciones</option>
+                            {AREAS.map(area => (
+                                <option key={area} value={area}>{area}</option>
+                            ))}
                         </select>
                     </div>
 

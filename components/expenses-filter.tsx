@@ -106,11 +106,9 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
                         onChange={(e) => handleChange('expense_category', e.target.value)}
                     >
                         <option value="">Todos</option>
-                        <option value="Comida">Comida</option>
-                        <option value="Alojamiento">Alojamiento</option>
-                        <option value="Combustible">Combustible</option>
-                        <option value="Peaje">Peaje</option>
-                        <option value="Varios">Varios</option>
+                        {EXPENSE_TYPES.map(t => (
+                            <option key={t} value={t}>{t}</option>
+                        ))}
                     </select>
                 </div>
 
@@ -123,9 +121,9 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
                         onChange={(e) => handleChange('payment_method', e.target.value)}
                     >
                         <option value="">Todas</option>
-                        <option value="Cash">Efectivo</option>
-                        <option value="Card">Tarjeta</option>
-                        <option value="Transfer">Transferencia</option>
+                        {PAYMENT_METHODS.map(m => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
                     </select>
                 </div>
             </div>

@@ -28,8 +28,10 @@ export default async function DashboardPage({
     const { data: branchesData } = await supabase.from('branches').select('name').order('name')
     const branchesOptions = branchesData?.map(b => b.name) || []
 
-    const distinctTypes = ['Comida', 'Combustible', 'Hotel', 'Peaje', 'Varios', 'Repuestos']
-    const distinctAreas = ['Gerencia', 'Ventas', 'Posventa', 'Administracion', 'Repuestos', 'Servicio']
+    import { EXPENSE_TYPES, AREAS } from '@/app/constants'
+
+    const distinctTypes = EXPENSE_TYPES
+    const distinctAreas = AREAS
 
     // 2. Parse Filters
     const now = new Date()
@@ -189,8 +191,8 @@ export default async function DashboardPage({
                                     {monthlyLimit > 0 ? (
                                         <div
                                             className={`${styles.limitBar} ${(myCardConsumption / monthlyLimit) > 1 ? styles.bgRed :
-                                                    (myCardConsumption / monthlyLimit) > 0.85 ? styles.bgYellow :
-                                                        styles.bgBlue
+                                                (myCardConsumption / monthlyLimit) > 0.85 ? styles.bgYellow :
+                                                    styles.bgBlue
                                                 }`}
                                             style={{ width: `${Math.min(100, (myCardConsumption / monthlyLimit) * 100)}%` }}
                                         />
@@ -236,8 +238,8 @@ export default async function DashboardPage({
                                     {(profile?.cash_limit || 0) > 0 ? (
                                         <div
                                             className={`${styles.limitBar} ${(myCashConsumption / (profile?.cash_limit || 0)) > 1 ? styles.bgRed :
-                                                    (myCashConsumption / (profile?.cash_limit || 0)) > 0.85 ? styles.bgYellow :
-                                                        styles.bgGreen
+                                                (myCashConsumption / (profile?.cash_limit || 0)) > 0.85 ? styles.bgYellow :
+                                                    styles.bgGreen
                                                 }`}
                                             style={{ width: `${Math.min(100, (myCashConsumption / (profile?.cash_limit || 0)) * 100)}%` }}
                                         />
