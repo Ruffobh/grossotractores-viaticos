@@ -5,6 +5,8 @@ import styles from './style.module.css'
 import { approveExpense, rejectExpense } from './actions'
 import { CheckCircle, XCircle } from 'lucide-react'
 import { BCExportButton } from '@/components/bc-export-button'
+import { EditableDetailRow } from '@/components/editable-detail-row'
+import { EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS } from '@/app/constants'
 
 export default async function ExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -80,13 +82,62 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                 </div>
 
                 <div className={styles.gridSection}>
-                    <DetailRow label="Proveedor" value={invoice.vendor_name} />
-                    <DetailRow label="CUIT" value={invoice.vendor_cuit} />
-                    <DetailRow label="Tipo de Gasto" value={invoice.expense_category} />
-                    <DetailRow label="Fecha" value={new Date(invoice.date).toLocaleDateString()} />
-                    <DetailRow label="Tipo Factura" value={invoice.invoice_type} />
-                    <DetailRow label="Forma de Pago" value={formatPaymentMethod(invoice.payment_method)} />
-                    <DetailRow label="Nº Comprobante" value={invoice.invoice_number || invoice.id.slice(0, 8)} />
+                    <EditableDetailRow
+                        label="Proveedor"
+                        value={invoice.vendor_name}
+                        field="vendor_name"
+                        invoiceId={invoice.id}
+                        canEdit={isAdmin || isManager}
+                    />
+                    <EditableDetailRow
+                        label="CUIT"
+                        value={invoice.vendor_cuit}
+                        field="vendor_cuit"
+                        invoiceId={invoice.id}
+                        canEdit={isAdmin || isManager}
+                    />
+                    <EditableDetailRow
+                        label="Tipo de Gasto"
+                        value={invoice.expense_category}
+                        field="expense_category"
+                        invoiceId={invoice.id}
+                        canEdit={isAdmin || isManager}
+                        type="select"
+                        options={EXPENSE_TYPES.map(t => ({ label: t, value: t }))}
+                    />
+                    <EditableDetailRow
+                        label="Fecha"
+                        value={invoice.date}
+                        field="date"
+                        invoiceId={invoice.id}
+                        canEdit={isAdmin || isManager}
+                        type="date"
+                    />
+                    <EditableDetailRow
+                        label="Tipo Factura"
+                        value={invoice.invoice_type}
+                        field="invoice_type"
+                        invoiceId={invoice.id}
+                        canEdit={isAdmin || isManager}
+                        type="select"
+                        options={INVOICE_TYPES.map(t => ({ label: t, value: t }))}
+                    />
+                    <EditableDetailRow
+                        label="Forma de Pago"
+                        value={invoice.payment_method}
+                        field="payment_method"
+                        invoiceId={invoice.id}
+                        canEdit={isAdmin || isManager}
+                        type="select"
+                        options={[...PAYMENT_METHODS]}
+                    />
+                    <EditableDetailRow
+                        label="Nº Comprobante"
+                        value={invoice.invoice_number}
+                        field="invoice_number"
+                        invoiceId={invoice.id}
+                        canEdit={isAdmin || isManager}
+                    />
                 </div>
 
                 <div className={styles.commentsSection}>
