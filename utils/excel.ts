@@ -64,9 +64,9 @@ const BRANCH_MAP: Record<string, string> = {
     'San Francisco': 'SF',
     'San Justo': 'SJ',
     'Bandera': 'BA',
-    'Quimili': 'QU',
-    'General': 'GR',
-    'Franck': 'FR',
+    'Quimili': 'QM',
+    'General': 'GRAL',
+    'Franck': 'FK',
 };
 
 const formatNumber = (num: number) => {
@@ -89,7 +89,7 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
     const userBranch = invoice.userBranch || 'General';
     const userArea = invoice.userArea || 'Administracion';
 
-    const branchCode = BRANCH_MAP[userBranch] || 'GR';
+    const branchCode = BRANCH_MAP[userBranch] || 'GRAL';
     const areaCode = AREA_MAP[userArea] || 'GTOS-ADM';
 
     const typeUpper = (invoice.invoiceType || '').toUpperCase();
