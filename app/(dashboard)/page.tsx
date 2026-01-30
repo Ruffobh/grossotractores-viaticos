@@ -128,7 +128,7 @@ export default async function DashboardPage({
                     <h1 className={styles.title}>Panel Principal</h1>
                     <p className={styles.subtitle}>
                         {profile?.full_name}
-                        {userBranch ? ` | ${userBranch}` : ''}
+                        {profile?.branch ? ` | ${profile.branch}` : ''}
                     </p>
 
                     <div className="mt-4">
