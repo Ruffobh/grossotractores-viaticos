@@ -83,6 +83,7 @@ export default async function DashboardPage({
         .from('invoices')
         .select('total_amount, payment_method')
         .eq('user_id', user.id)
+        .neq('status', 'rejected') // Exclude rejected
         .gte('date', startOfCurrentMonth)
         .lte('date', endOfCurrentMonth)
 
@@ -117,7 +118,10 @@ export default async function DashboardPage({
     }
 
     // KPI Calculations
-    const consumedAmount = invoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0)
+    const consumedAmount = invoices.reduce((sum, inv) => {
+        if (inv.status === 'rejected') return sum
+        return sum + (inv.total_amount || 0)
+    }, 0)
     const pendingCount = invoices.filter(inv => inv.status === 'pending_approval' || inv.status === 'exceeded_budget').length
     const monthlyLimit = profile?.monthly_limit || 0
 

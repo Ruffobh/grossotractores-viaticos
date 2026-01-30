@@ -30,6 +30,7 @@ interface Invoice {
         branch: string | null
         area: string | null
     } | null
+    status: string | null // Added status
 }
 
 interface AnalyticsDashboardProps {
@@ -44,6 +45,7 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
     // 1. Process Data: Total by Branch
     const branchDataMap = new Map<string, number>()
     invoices.forEach(inv => {
+        if (inv.status === 'rejected') return
         const branch = inv.profiles?.branch || 'Sin Sucursal'
         const amount = inv.total_amount || 0
         if (inv.currency === 'ARS') {
@@ -55,6 +57,7 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
     // 2. Process Data: Expense Type Distribution (Using Area as proxy)
     const typeDataMap = new Map<string, number>()
     invoices.forEach(inv => {
+        if (inv.status === 'rejected') return
         const type = inv.expense_category || 'Sin Categoría'
         const amount = inv.total_amount || 0
         // Group by Category and Sum Amount
@@ -75,6 +78,7 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
     // 3. Process Data: Timeline
     const timelineDataMap = new Map<string, number>()
     invoices.forEach(inv => {
+        if (inv.status === 'rejected') return
         const date = new Date(inv.date).toLocaleDateString()
         const amount = inv.total_amount || 0
         if (inv.currency === 'ARS') {
