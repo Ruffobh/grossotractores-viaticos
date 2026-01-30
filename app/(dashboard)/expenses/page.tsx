@@ -38,7 +38,7 @@ export default async function ExpensesPage({
     // 2. Build Query
     let query = supabase
         .from('invoices')
-        .select('*, profiles(full_name)')
+        .select('*, profiles(full_name, branch)')
         .order('date', { ascending: false })
 
     // RLS usually handles this, but we force it here for safety and UI consistency
