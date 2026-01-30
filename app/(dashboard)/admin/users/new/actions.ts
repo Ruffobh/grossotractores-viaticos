@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -23,19 +24,28 @@ export async function createUser(formData: FormData) {
     const password = formData.get('password') as string
     const full_name = formData.get('full_name') as string
     const role = formData.get('role') as string
-    const branch = formData.get('branch') as string
     const area = formData.get('area') as string
     const monthlyLimit = Number(formData.get('monthly_limit')) || 0
     const cashLimit = Number(formData.get('cash_limit')) || 0
 
+    // Parse branches JSON
+    const branchesJson = formData.get('branches') as string
+    let branches: string[] = []
+    try {
+        branches = branchesJson ? JSON.parse(branchesJson) : []
+    } catch (e) {
+        console.error("Error parsing branches", e)
+    }
+
     // Use Service Client to Create Auth User
+    // We need 'supabase-js' here because 'utils/supabase/server' uses the request context (cookies)
+    // and we need a privileged client to create users via Admin API.
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     if (!serviceRoleKey) {
         throw new Error('Missing Service Role Key')
     }
 
-    const { createClient: createAdminClient } = require('@supabase/supabase-js')
-    const adminAuthClient = createAdminClient(
+    const adminAuthClient = createSupabaseClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         serviceRoleKey,
         {
@@ -46,14 +56,6 @@ export async function createUser(formData: FormData) {
         }
     )
 
-    const branchesJson = formData.get('branches') as string
-    let branches: string[] = []
-    try {
-        branches = branchesJson ? JSON.parse(branchesJson) : []
-    } catch (e) {
-        console.error("Error parsing branches", e)
-    }
-
     // 1. Create Auth User
     const { data: newUser, error: authError } = await adminAuthClient.auth.admin.createUser({
         email,
@@ -62,12 +64,16 @@ export async function createUser(formData: FormData) {
         user_metadata: { full_name, branch: branches[0] || null, area, role, branches }
     })
 
-    // ...error handling...
+    if (authError) {
+        console.error('Auth Create Error:', authError)
+        throw new Error(authError.message)
+    }
 
     if (!newUser?.user) {
         throw new Error('Failed to create user object')
     }
 
+    // 2. Create Profile
     const { error: profileError } = await adminAuthClient
         .from('profiles')
         .upsert({
@@ -84,9 +90,6 @@ export async function createUser(formData: FormData) {
 
     if (profileError) {
         console.error('Profile Upsert Error:', profileError)
-        // Note: User is created in Auth but profile might be partial. 
-        // We warn but don't fail completely? Ideally we should rollback (delete user), but Supabase doesn't support transactions across Auth/DB easily.
-        // We throw to show error.
         throw new Error('User created but profile update failed: ' + profileError.message)
     }
 
