@@ -12,65 +12,44 @@ export async function processReceipt(imageUrl: string) {
 
         if (!user) return { error: 'Unauthorized' }
 
-        // DEBUG: Log loaded environment variables (Keys only for security)
-        console.log("🔍 DEBUG - Runtime Environment Variables check:");
-        console.log("Keys found:", Object.keys(process.env));
-        console.log("GOOGLE_API_KEY exists?", !!process.env.GOOGLE_API_KEY);
-        console.log("GOOGLE_API_KEY length:", process.env.GOOGLE_API_KEY?.length);
-        console.log("RESEND_API_KEY exists?", !!process.env.RESEND_API_KEY);
-
-
-        // 1. Fetch image data (Gemini needs base64 or file part)
-        // Since we have a public URL, we can fetch it.
+        // 1. Fetch image data
         const imageResp = await fetch(imageUrl)
         const imageBuffer = await imageResp.arrayBuffer()
         const base64Image = Buffer.from(imageBuffer).toString('base64')
 
-        // 2. Prompt Gemini
-        // Detect Mime Type
+        // 2. Prompt Gemini with Structured Output
         const mimeType = imageResp.headers.get('content-type') || 'image/jpeg'
 
         const prompt = `
-      Extract the following data from this receipt image in JSON format.
-      
-      CRITICAL RULES:
-      1. **Vendor Name**: The vendor is the ISSUER of the invoice, usually found at the VERY TOP of the image. 
-         - WARNING: "GROSSO TRACTORES SA" and "Grosso Tractores" are the RECIPIENTS (Client). NEVER set them as the vendor_name.
-         - Look for logos or bold text at the top (e.g., "ESRA SRI", "SHELL", "YPF").
-      
-      2. **Vendor CUIT**: 
-         - WARNING: NEVER use "30-71024933-0" or "30710249330". This is the client's (Grosso Tractores) CUIT.
-         - If the only CUIT found is 30-71024933-0, search again for another CUIT belonging to the emitter.
+        Analiza esta factura. Extrae cabecera, CUIT del proveedor, moneda, y un desglose detallado de impuestos.
+        IMPORTANTE: Debes separar el IVA (21%, 10.5%) de otros impuestos (Percepciones IIBB, Impuestos Internos, Percepción IVA).
+        Si la factura tiene ítems, extrae el detalle. Si es manuscrita o borrosa, haz tu mejor esfuerzo.
 
-      3. **Invoice Number**: Look for "Nro. Comprobante", "Factura Nº", "Ticket Nº".
-         - Format is usually 5 digits - 8 digits (e.g., 00011-00074636).
-         - Sometimes labeled as "P.V." (Punto Venta) and "Nro." separately. Join them with a hyphen.
-         - Do NOT use internal codes like "Cod. 081" or random hex strings.
-      
-      4. **Money Amounts**:
-         - **net_amount**: The subtotal BEFORE taxes (Neto Gravado).
-         - **tax_amount**: The total amount of VAT (IVA).
-         - **perceptions_amount**: Sum of other taxes (IIBB, Percepciones, Impuesto Interno).
-         - **total_amount**: The final total to pay.
-         
-      5. **Data Fields to Extract**:
-      - vendor_name (string)
-      - vendor_cuit (string, format XX-XXXXXXXX-X)
-      - invoice_type (string, EXACTLY one of: "FACTURA A", "FACTURA C", "CONSUMIDOR FINAL")
-      - invoice_number (string, format 00000-00000000)
-      - date (string, YYYY-MM-DD)
-      - total_amount (number)
-      - net_amount (number)
-      - tax_amount (number)
-      - iva_rate (string, e.g., "21%", "10.5%")
-      - perceptions_amount (number)
-      - currency (string, "ARS" or "USD")
-      - payment_method (string, guess based on context like "Efectivo", "Tarjeta", "Cta Cte")
-      - items (array of objects with description and amount)
-
-      Only return the JSON. Do not include markdown formatting.
-    `
-
+        CRITICAL OUTPUT FORMAT:
+        You MUST return a JSON object strictly adhering to this schema:
+        {
+          "vendorName": string, 
+          "vendorCuit": string (format XX-XXXXXXXX-X),
+          "invoiceNumber": string,
+          "invoiceType": string (One of: "FA", "FC", "CF", "ND", "NC"),
+          "date": string (YYYY-MM-DD),
+          "totalAmount": number,
+          "currency": string ("ARS" or "USD"),
+          "exchangeRate": number,
+          "taxes": [
+            { "name": string, "amount": number }
+          ],
+          "items": [
+            { "description": string, "quantity": number, "unitPrice": number, "total": number }
+          ]
+        }
+        
+        Example of taxes array:
+        [
+            { "name": "IVA 21%", "amount": 210.00 },
+            { "name": "Percepción IIBB Santa Fe", "amount": 45.50 }
+        ]
+        `
 
         let result;
         let retryCount = 0;
@@ -88,7 +67,7 @@ export async function processReceipt(imageUrl: string) {
                         },
                     },
                 ]);
-                break; // Success, exit loop
+                break;
             } catch (error: any) {
                 const isRetryable =
                     error.message.includes('429') ||
@@ -99,17 +78,15 @@ export async function processReceipt(imageUrl: string) {
 
                 if (isRetryable) {
                     retryCount++;
-                    if (retryCount > maxRetries) throw error; // Give up
-
-                    const waitTime = 2000 * Math.pow(2, retryCount - 1); // 2s, 4s, 8s
+                    if (retryCount > maxRetries) throw error;
+                    const waitTime = 2000 * Math.pow(2, retryCount - 1);
                     console.log(`Rate limited (429). Retrying in ${waitTime}ms... (Attempt ${retryCount}/${maxRetries})`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
                 } else {
-                    throw error; // Other error, throw immediately
+                    throw error;
                 }
             }
         }
-
 
         if (!result) throw new Error('Failed to get response from Gemini')
         const response = await result.response
@@ -117,7 +94,7 @@ export async function processReceipt(imageUrl: string) {
 
         console.log("Gemini Raw Response:", text)
 
-        // Clean markdown code blocks if present
+        // Clean markdown if present
         text = text.replace(/```json/g, '').replace(/```/g, '').trim()
 
         let parsedData: any = {}
@@ -125,7 +102,6 @@ export async function processReceipt(imageUrl: string) {
             parsedData = JSON.parse(text)
         } catch (e) {
             console.error("JSON Parse Error:", e)
-            // Continue with empty data instead of failing completely, so user can edit manually
         }
 
         // 2b. Fetch User Profile for Branch
@@ -137,23 +113,30 @@ export async function processReceipt(imageUrl: string) {
 
         const userBranch = profile?.branch || null
 
+        // Map new schema to database fields
+        // Note: DB expects vendor_name, vendor_cuit (snake_case)
+        // parsedData is camelCase. We map it.
+
+        const mappedData = {
+            vendor_name: parsedData.vendorName || 'Desconocido',
+            vendor_cuit: parsedData.vendorCuit,
+            invoice_number: parsedData.invoiceNumber,
+            invoice_type: parsedData.invoiceType, // "FA", "FC" etc.
+            date: parsedData.date || new Date().toISOString().split('T')[0],
+            total_amount: parsedData.totalAmount || 0,
+            currency: parsedData.currency || 'ARS',
+            // Store the FULL rich objects in parsed_data jsonb column
+            parsed_data: parsedData,
+            branch: userBranch,
+            user_id: user.id,
+            file_url: imageUrl,
+            status: 'pending_approval'
+        }
+
         // 3. Create generic Invoice record
         const { data: invoice, error } = await supabase
             .from('invoices')
-            .insert({
-                user_id: user.id,
-                file_url: imageUrl,
-                status: 'pending_approval',
-                vendor_name: parsedData.vendor_name || 'Desconocido',
-                vendor_cuit: parsedData.vendor_cuit,
-                invoice_number: parsedData.invoice_number,
-                invoice_type: parsedData.invoice_type,
-                date: parsedData.date || new Date().toISOString().split('T')[0],
-                total_amount: parsedData.total_amount || 0,
-                currency: parsedData.currency || 'ARS',
-                parsed_data: parsedData,
-                branch: userBranch
-            })
+            .insert(mappedData)
             .select()
             .single()
 
@@ -162,9 +145,6 @@ export async function processReceipt(imageUrl: string) {
             return { error: 'Failed to save invoice (DB Error): ' + error.message }
         }
 
-        console.log("Invoice created:", invoice.id)
-
-        // Redirect handled by client
         return { success: true, invoiceId: invoice.id }
 
     } catch (err: any) {

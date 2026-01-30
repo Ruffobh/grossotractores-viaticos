@@ -22,16 +22,41 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
     const rows = useMemo(() => {
         if (!invoice) return []
 
+        // Extract the rich data from the JSONB column 'parsed_data'
+        // Fallback to top-level columns if parsed_data is missing or old format
+        const parsed = invoice.parsed_data || {};
+
         const invoiceData: InvoiceData = {
-            invoice_type: invoice.invoice_type || 'C',
-            total_amount: invoice.total_amount || 0,
-            net_amount: invoice.parsed_data?.net_amount,
-            tax_amount: invoice.parsed_data?.tax_amount,
-            perceptions_amount: invoice.parsed_data?.perceptions_amount,
-            iva_rate: invoice.parsed_data?.iva_rate,
-            vendor_name: invoice.vendor_name,
-            branch: invoice.branch || profile?.branch,
-            area: profile?.area
+            // Prefer parsed_data fields (camelCase) from new logic, fallback to legacy
+            vendorName: parsed.vendorName || invoice.vendor_name,
+            vendorCuit: parsed.vendorCuit || invoice.vendor_cuit,
+            invoiceNumber: parsed.invoiceNumber || invoice.invoice_number,
+            invoiceType: parsed.invoiceType || invoice.invoice_type || 'FC', // Default to FC/C
+            date: parsed.date || invoice.date,
+            totalAmount: parsed.totalAmount || invoice.total_amount || 0,
+            currency: parsed.currency || invoice.currency || 'ARS',
+            exchangeRate: parsed.exchangeRate || 1,
+
+            // Taxes are CRITICAL. If old format (no taxes array), we might need to simulate it 
+            // from tax_amount/perceptions_amount headers if valid, or just empty.
+            taxes: parsed.taxes || [],
+
+            items: parsed.items || [],
+
+            // Context
+            userBranch: invoice.branch || profile?.branch,
+            userArea: profile?.area
+        }
+
+        // Backward compatibility: If no taxes array but we have tax_amount (old logic), 
+        // try to reconstruct basic IVA.
+        if ((!invoiceData.taxes || invoiceData.taxes.length === 0) && parsed.tax_amount) {
+            invoiceData.taxes = [{ name: "IVA Estimado", amount: parsed.tax_amount }];
+        }
+
+        // Same for perceptions if explicit
+        if (parsed.perceptions_amount && (!invoiceData.taxes || !invoiceData.taxes.find((t: any) => t.name.includes('Percep')))) {
+            invoiceData.taxes.push({ name: "Percepciones Estimadas", amount: parsed.perceptions_amount });
         }
 
         return generateBCRowsForInvoice(invoiceData)
