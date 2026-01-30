@@ -278,7 +278,7 @@
         text-align: right;
         color: var(--nh-black);
         font-weight: 500;
-        overflow: hidden;
+        /* overflow: hidden;  <-- Removing this to prevent clipping */
         gap: 1rem;
     }
 
