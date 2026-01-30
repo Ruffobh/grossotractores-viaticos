@@ -103,7 +103,7 @@ export default async function DashboardPage({
 
 
     // 5. Client-side Filtering (for the main list/charts)
-    if (role === 'manager' && userBranch) {
+    if ((role === 'manager' || role === 'branch_manager') && userBranch) {
         invoices = invoices.filter((inv: any) => inv.profiles?.branch === userBranch)
     }
 

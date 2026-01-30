@@ -24,7 +24,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
     const { data: { user } } = await supabase.auth.getUser()
     const { data: currentUserProfile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
     const isAdmin = currentUserProfile?.role === 'admin'
-    const isManager = currentUserProfile?.role === 'manager'
+    const isManager = currentUserProfile?.role === 'manager' || currentUserProfile?.role === 'branch_manager'
     const canExport = isAdmin || isManager
 
     // Determine if actions are needed

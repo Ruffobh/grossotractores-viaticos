@@ -113,7 +113,7 @@ export function Sidebar({ profile, role }: SidebarProps) {
                                 {profile?.full_name || 'Usuario'}
                             </span>
                             <span className={styles.userRole}>
-                                {role === 'admin' ? 'Administrador' : role === 'manager' ? 'Encargado' : 'Usuario'}
+                                {role === 'admin' ? 'Administrador' : (role === 'manager' || role === 'branch_manager') ? 'Encargado' : 'Usuario'}
                             </span>
                         </div>
                     </div>

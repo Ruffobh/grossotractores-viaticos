@@ -20,7 +20,7 @@ export default async function ExpensesPage({
     if (!user) return <div>No autenticado</div>
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    const isManagerOrAdmin = profile?.role === 'manager' || profile?.role === 'admin'
+    const isManagerOrAdmin = profile?.role === 'manager' || profile?.role === 'branch_manager' || profile?.role === 'admin'
     const role = profile?.role || 'user'
 
     // Fetch data for filters (only needed if manager/admin)
