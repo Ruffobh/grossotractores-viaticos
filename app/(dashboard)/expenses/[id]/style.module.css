@@ -158,6 +158,30 @@
     margin-top: 1rem;
 }
 
+.adminFeedback {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--warning-bg, #fffbeb);
+    border: 1px solid var(--warning-border, #fcd34d);
+    border-radius: 0.5rem;
+}
+
+.adminFeedbackTitle {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--warning-text, #92400e);
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.adminFeedbackText {
+    font-size: 0.95rem;
+    color: var(--gray-800);
+    margin: 0;
+    line-height: 1.5;
+}
+
 .detailRow {
     display: flex;
     flex-direction: column;

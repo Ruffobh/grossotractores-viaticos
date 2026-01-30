@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export async function approveExpense(id: string) {
+export async function approveExpense(id: string, comment: string | null = null) {
     const supabase = await createClient()
 
     // Verify admin
@@ -15,7 +15,7 @@ export async function approveExpense(id: string) {
         throw new Error('Unauthorized')
     }
 
-    const { error } = await supabase.from('invoices').update({ status: 'approved' }).eq('id', id)
+    const { error } = await supabase.from('invoices').update({ status: 'approved', admin_comments: comment }).eq('id', id)
 
     if (error) throw error
 
@@ -24,7 +24,7 @@ export async function approveExpense(id: string) {
     redirect('/expenses')
 }
 
-export async function rejectExpense(id: string) {
+export async function rejectExpense(id: string, comment: string | null = null) {
     const supabase = await createClient()
 
     // Verify admin
@@ -35,7 +35,7 @@ export async function rejectExpense(id: string) {
         throw new Error('Unauthorized')
     }
 
-    const { error } = await supabase.from('invoices').update({ status: 'rejected' }).eq('id', id)
+    const { error } = await supabase.from('invoices').update({ status: 'rejected', admin_comments: comment }).eq('id', id)
 
     if (error) throw error
 

@@ -6,6 +6,7 @@ import { approveExpense, rejectExpense } from './actions'
 import { CheckCircle, XCircle } from 'lucide-react'
 import { BCExportButton } from '@/components/bc-export-button'
 import { EditableDetailRow } from '@/components/editable-detail-row'
+import { AdminActions } from '@/components/admin-actions'
 import { EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS } from '@/app/constants'
 
 export default async function ExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -141,24 +142,17 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                 </div>
 
                 <div className={styles.commentsSection}>
-                    <DetailRow label="Comentarios" value={invoice.comments} />
+                    <DetailRow label="Comentarios del Usuario" value={invoice.comments} />
+                    {invoice.admin_comments && (
+                        <div className={styles.adminFeedback}>
+                            <h4 className={styles.adminFeedbackTitle}>Comentarios del Administrador</h4>
+                            <p className={styles.adminFeedbackText}>{invoice.admin_comments}</p>
+                        </div>
+                    )}
                 </div>
 
                 {showAdminActions && (
-                    <div className={styles.actions}>
-                        <form action={approveExpense.bind(null, invoice.id)} style={{ flex: 1 }}>
-                            <button type="submit" className={styles.approveButton}>
-                                <CheckCircle size={20} />
-                                Aprobar
-                            </button>
-                        </form>
-                        <form action={rejectExpense.bind(null, invoice.id)} style={{ flex: 1 }}>
-                            <button type="submit" className={styles.rejectButton}>
-                                <XCircle size={20} />
-                                Rechazar
-                            </button>
-                        </form>
-                    </div>
+                    <AdminActions invoiceId={invoice.id} />
                 )}
             </div>
         </div>
