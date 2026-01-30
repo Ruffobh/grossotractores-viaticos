@@ -28,7 +28,7 @@ export default async function ExpensesPage({
     let branchesList: any[] = []
 
     if (isManagerOrAdmin) {
-        const { data: uData } = await supabase.from('profiles').select('id, full_name').order('full_name')
+        const { data: uData } = await supabase.from('profiles').select('id, full_name').order('full_name', { ascending: true })
         usersList = uData || []
 
         const { data: bData } = await supabase.from('branches').select('id, name').order('name')

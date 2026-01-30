@@ -22,7 +22,7 @@ export default async function UsersListPage() {
     const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
-        .order('full_name')
+        .order('full_name', { ascending: true })
 
     // 2. Fetch Consumption for Current Month (Split by Type)
     const now = new Date()
@@ -96,7 +96,7 @@ export default async function UsersListPage() {
                                     <td data-label="Email" className={styles.emailCell} title={profile.email}>{profile.email}</td>
                                     <td data-label="Rol">
                                         <span className={`${styles.badge} ${profile.role === 'branch_manager' ? styles.manager :
-                                                styles[profile.role || 'user']
+                                            styles[profile.role || 'user']
                                             }`}>
                                             {profile.role === 'branch_manager' ? 'MANAGER' : (profile.role || 'user')}
                                         </span>
