@@ -27,7 +27,79 @@ export default async function DashboardPage({
 
     // 1. Fetch Filter Options
     const { data: branchesData } = await supabase.from('branches').select('name').order('name')
-    // ... (skip unchanged lines)
+    const branchesOptions = branchesData?.map(b => b.name) || []
+
+    const distinctTypes = EXPENSE_TYPES
+    const distinctAreas = AREAS
+
+    // 2. Parse Filters
+    const now = new Date()
+    const selectedMonth = params.month === 'all' ? 'all' : (params.month ? parseInt(params.month as string) : (now.getMonth() + 1))
+    const selectedYear = params.year ? parseInt(params.year as string) : now.getFullYear()
+
+    const filterBranches = params.branches ? (params.branches as string).split(',') : []
+    const filterAreas = params.areas ? (params.areas as string).split(',') : []
+    const filterTypes = params.types ? (params.types as string).split(',') : []
+
+    // 3. Main Query
+    let startDate: string, endDate: string
+
+    if (selectedMonth === 'all') {
+        startDate = new Date(selectedYear, 0, 1).toISOString()
+        endDate = new Date(selectedYear, 11, 31, 23, 59, 59).toISOString()
+    } else {
+        startDate = new Date(selectedYear, (selectedMonth as number) - 1, 1).toISOString()
+        endDate = new Date(selectedYear, (selectedMonth as number), 0, 23, 59, 59).toISOString()
+    }
+
+    let query = supabase
+        .from('invoices')
+        .select('*, profiles(branch, area, full_name), expense_category')
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false })
+
+    if (role === 'user') {
+        query = query.eq('user_id', user.id)
+    }
+
+    const { data: rawInvoices, error } = await query
+
+    if (error) {
+        console.error("Dashboard Load Error:", error)
+        return <div>Error al cargar datos.</div>
+    }
+
+    let invoices = rawInvoices || []
+
+    // 4. Calculate Personal Consumption (Independent of Dashboard Filters)
+    // Always fetch the user's consumption for the CURRENT month to show in the budget widget
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth() + 1
+    const startOfCurrentMonth = new Date(currentYear, currentMonth - 1, 1).toISOString()
+    const endOfCurrentMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59).toISOString()
+
+    const { data: myInvoices } = await supabase
+        .from('invoices')
+        .select('total_amount, payment_method')
+        .eq('user_id', user.id)
+        .gte('date', startOfCurrentMonth)
+        .lte('date', endOfCurrentMonth)
+
+    const myConsumption = myInvoices?.reduce((sum, inv) => sum + (inv.total_amount || 0), 0) || 0
+
+    // Split Consumption by Type
+    let myCardConsumption = 0
+    let myCashConsumption = 0
+    myInvoices?.forEach(inv => {
+        const amt = inv.total_amount || 0
+        const method = inv.payment_method
+        if (method === 'Cash' || method === 'Transfer') {
+            myCashConsumption += amt
+        } else {
+            myCardConsumption += amt
+        }
+    })
 
     // 5. Client-side Filtering (for the main list/charts)
     if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
