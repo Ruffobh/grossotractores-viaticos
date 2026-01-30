@@ -216,40 +216,46 @@ export async function markInvoiceAsSubmitted(id: string) {
     if (!user) return { error: 'Unauthorized' }
 
     // Check user role
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single()
 
-    const role = profile?.role
+    if (profileError) {
+        console.error("Error fetching profile:", profileError)
+    }
 
-    console.log("Marking invoice as submitted. User Role:", role)
+    const role = profile?.role
+    console.log(`[markInvoiceAsSubmitted] User: ${user.email}, Role: ${role}, InvoiceId: ${id}`)
 
     // Bypass RLS for Admins and Managers using Service Role
     if (role === 'admin' || role === 'manager') {
+        console.log("[markInvoiceAsSubmitted] Using Admin Client")
         const { createAdminClient } = await import('@/utils/supabase/admin')
         const adminClient = createAdminClient()
 
-        const { error } = await adminClient
+        const { error, data } = await adminClient
             .from('invoices')
             .update({ status: 'submitted_to_bc' })
             .eq('id', id)
+            .select()
 
         if (error) {
-            console.error("Admin Client Update Error:", error)
+            console.error("[markInvoiceAsSubmitted] Admin Client Update Error:", error)
             return { error: 'Error al actualizar estado (Admin/Manager): ' + error.message }
         }
+        console.log("[markInvoiceAsSubmitted] Update Success:", data)
     } else {
+        console.log("[markInvoiceAsSubmitted] Using Standard Client")
         // Fallback for standard users (though they shouldn't see this button usually)
-        // This will likely fail if RLS blocks it, which is correct behavior for non-authorized users
         const { error } = await supabase
             .from('invoices')
             .update({ status: 'submitted_to_bc' })
             .eq('id', id)
 
         if (error) {
-            console.error("Standard Update Error:", error)
+            console.error("[markInvoiceAsSubmitted] Standard Update Error:", error)
             return { error: 'No tienes permisos para realizar esta acción o ocurrió un error.' }
         }
     }
