@@ -5,6 +5,7 @@ import { AlertTriangle } from 'lucide-react'
 import { updateInvoice } from './actions'
 import { deleteExpense } from '../../actions'
 import { useRouter } from 'next/navigation'
+import { EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS } from '@/app/constants'
 
 interface ValidationFormProps {
     invoice: any
@@ -138,8 +139,6 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                         required
                     />
                 </div>
-
-                import {EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS} from '@/app/constants'
 
                 // ...
 

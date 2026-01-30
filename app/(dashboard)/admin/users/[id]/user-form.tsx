@@ -6,6 +6,7 @@ import styles from './style.module.css'
 import { ArrowLeft, Save } from 'lucide-react'
 import { updateUserProfile } from './actions'
 import { MultiSelect } from '@/components/multi-select'
+import { AREAS } from '@/app/constants'
 
 interface UserFormProps {
     profile: any
@@ -53,9 +54,6 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                         </select>
                     </div>
 
-                    import {AREAS} from '@/app/constants'
-
-                    // ... inside the component
                     <div>
                         <label className={styles.label}>Área</label>
                         <select name="area" defaultValue={profile.area || ''} className={styles.input}>

@@ -135,8 +135,8 @@ export default async function DashboardPage({
                     <div className="mt-4">
                         <DashboardFilters
                             branches={branchesOptions}
-                            areas={distinctAreas}
-                            types={distinctTypes}
+                            areas={[...distinctAreas]}
+                            types={[...distinctTypes]}
                             role={role}
                         />
                     </div>
