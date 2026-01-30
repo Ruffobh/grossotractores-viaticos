@@ -1,8 +1,9 @@
 .container {
-    max-width: 1400px;
-    /* Wider for tables */
+    max-width: 98%;
+    /* Use most of the screen */
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
+    /* Reduce padding */
 }
 
 .header {
