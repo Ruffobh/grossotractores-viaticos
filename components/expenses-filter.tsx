@@ -11,6 +11,7 @@ interface FilterProps {
 }
 
 import styles from './expenses-filter.module.css'
+import { EXPENSE_TYPES, PAYMENT_METHODS } from '@/app/constants'
 
 export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProps) {
     const router = useRouter()
