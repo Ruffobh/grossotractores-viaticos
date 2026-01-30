@@ -247,14 +247,52 @@
     }
 
     /* Prevent horizontal overflow on small screens */
+    .tableWrapper {
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .table tbody tr {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .cellContent {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 150px;
+        /* Fallback */
+        width: 100%;
+        text-align: right;
+    }
+
+    .table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-100);
+        text-align: right;
+        color: var(--nh-black);
+        font-weight: 500;
+        overflow: hidden;
+        gap: 1rem;
+    }
+
+    /* Assign max-width to the value part (right side) */
+    .table td>span {
+        max-width: 60%;
+    }
+
     .amount {
         font-size: 1.1rem;
-        /* Slightly larger for readability */
     }
 
     .deleteButton {
         padding: 0.5rem;
-        /* Larger touch target */
     }
 }
 
