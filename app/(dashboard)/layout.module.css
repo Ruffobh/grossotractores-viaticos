@@ -147,5 +147,9 @@
 
     .main {
         margin-left: 0;
+        padding-top: 80px;
+        /* Space for fixed mobile header */
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 }

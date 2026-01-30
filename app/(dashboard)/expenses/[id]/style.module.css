@@ -326,9 +326,10 @@
     }
 
     .imageSection {
-        height: 50vh;
-        min-height: 400px;
-        padding: 1rem;
+        height: 35vh;
+        /* Reduced height */
+        min-height: 250px;
+        padding: 0.5rem;
     }
 
     .formSection {
@@ -336,6 +337,23 @@
         border-left: none;
         box-shadow: none;
         width: 100%;
+        padding: 1.5rem;
+        /* Reduced padding */
+    }
+
+    .title {
+        font-size: 1.25rem;
+        /* Smaller title */
+    }
+
+    .amountValue {
+        font-size: 1.5rem;
+        /* Smaller amount */
+    }
+
+    .amountCard {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
     }
 }
 

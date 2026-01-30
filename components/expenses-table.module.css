@@ -233,14 +233,28 @@
 
     /* Center the actions button on mobile */
     .table td:last-child {
-        justify-content: center;
+        justify-content: flex-end;
+        /* Align actions to right */
         padding-top: 1rem;
         margin-top: 0.5rem;
         border-top: 1px solid var(--gray-100);
+        gap: 1rem;
+        /* Space between buttons */
     }
 
     .table td:last-child::before {
         display: none;
+    }
+
+    /* Prevent horizontal overflow on small screens */
+    .amount {
+        font-size: 1.1rem;
+        /* Slightly larger for readability */
+    }
+
+    .deleteButton {
+        padding: 0.5rem;
+        /* Larger touch target */
     }
 }
 
