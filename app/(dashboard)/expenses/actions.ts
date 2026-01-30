@@ -215,14 +215,45 @@ export async function markInvoiceAsSubmitted(id: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    const { error } = await supabase
-        .from('invoices')
-        .update({ status: 'submitted_to_bc' })
-        .eq('id', id)
+    // Check user role
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
 
-    if (error) {
-        return { error: error.message }
+    const role = profile?.role
+
+    console.log("Marking invoice as submitted. User Role:", role)
+
+    // Bypass RLS for Admins and Managers using Service Role
+    if (role === 'admin' || role === 'manager') {
+        const { createAdminClient } = await import('@/utils/supabase/admin')
+        const adminClient = createAdminClient()
+
+        const { error } = await adminClient
+            .from('invoices')
+            .update({ status: 'submitted_to_bc' })
+            .eq('id', id)
+
+        if (error) {
+            console.error("Admin Client Update Error:", error)
+            return { error: 'Error al actualizar estado (Admin/Manager): ' + error.message }
+        }
+    } else {
+        // Fallback for standard users (though they shouldn't see this button usually)
+        // This will likely fail if RLS blocks it, which is correct behavior for non-authorized users
+        const { error } = await supabase
+            .from('invoices')
+            .update({ status: 'submitted_to_bc' })
+            .eq('id', id)
+
+        if (error) {
+            console.error("Standard Update Error:", error)
+            return { error: 'No tienes permisos para realizar esta acción o ocurrió un error.' }
+        }
     }
 
+    revalidatePath('/expenses')
     return { success: true }
 }
