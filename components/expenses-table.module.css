@@ -183,19 +183,19 @@
 
 /* Empty State */
 /* Mobile Card View Adaptation */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .tableWrapper {
-        background: transparent;
-        box-shadow: none;
-        border: none;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
     }
 
     .table thead {
-        display: none;
+        display: none !important;
     }
 
     .table tbody tr {
-        display: block;
+        display: block !important;
         background: white;
         margin-bottom: 1rem;
         border-radius: var(--radius);
@@ -205,7 +205,7 @@
     }
 
     .table td {
-        display: flex;
+        display: flex !important;
         justify-content: space-between;
         align-items: center;
         padding: 0.75rem 0;

@@ -98,10 +98,15 @@
         padding-bottom: 0.5rem;
         /* Space for scrollbar */
         -webkit-overflow-scrolling: touch;
+        display: flex;
+        /* Ensure flex for scroll */
+        gap: 0.5rem;
     }
 
     .filters::-webkit-scrollbar {
         height: 4px;
+        display: none;
+        /* Hide scrollbar for cleaner look on mobile if preferred, or keep small */
     }
 
     .filters::-webkit-scrollbar-thumb {
