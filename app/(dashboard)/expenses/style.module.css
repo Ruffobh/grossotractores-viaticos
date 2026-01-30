@@ -76,6 +76,8 @@
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
+        width: 100%;
+        overflow-x: hidden;
     }
 
     .header {
