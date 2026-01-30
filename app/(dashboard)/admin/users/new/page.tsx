@@ -16,6 +16,8 @@ export default async function NewUserPage() {
         return <div className="p-8">Acceso denegado.</div>
     }
 
+    import { BRANCHES } from '@/app/constants'
+
     // Fetch branches for selection
     const { data: branchesData } = await supabase
         .from('branches')
@@ -25,16 +27,10 @@ export default async function NewUserPage() {
     // Map to options for MultiSelect
     let branchesOptions = branchesData?.map(b => ({ label: b.name, value: b.name })) || []
 
-    // Fallback options
+    // Fallback if DB is empty
     if (branchesOptions.length === 0) {
-        branchesOptions = [
-            { label: 'Casilda', value: 'Casilda' },
-            { label: 'Rafaela', value: 'Rafaela' },
-            { label: 'San Francisco', value: 'San Francisco' },
-            { label: 'General', value: 'General' }
-        ]
+        branchesOptions = BRANCHES.map(b => ({ label: b, value: b }))
     }
 
     return <NewUserForm branchesOptions={branchesOptions} />
 }
-

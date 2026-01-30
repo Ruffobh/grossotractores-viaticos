@@ -28,4 +28,14 @@ export const AREAS = [
     'Servicios'
 ] as const;
 
+export const BRANCHES = [
+    'Bandera',
+    'Franck',
+    'General',
+    'Quimili',
+    'Rafaela',
+    'San Francisco',
+    'San Justo'
+] as const;
+
 export const DEPARTMENTS = AREAS; // Alias for backward compatibility if needed

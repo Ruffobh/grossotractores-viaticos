@@ -37,16 +37,10 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     // Map to options for MultiSelect
     let branchesOptions = branchesData?.map(b => ({ label: b.name, value: b.name })) || []
 
-    // Fallback options if DB is empty (should probably rely on DB but keeping consistency)
+    // Fallback if DB is empty
     if (branchesOptions.length === 0) {
-        branchesOptions = [
-            { label: 'Casilda', value: 'Casilda' },
-            { label: 'Rafaela', value: 'Rafaela' },
-            { label: 'San Francisco', value: 'San Francisco' },
-            { label: 'General', value: 'General' }
-        ]
+        branchesOptions = BRANCHES.map(b => ({ label: b, value: b }))
     }
 
     return <UserForm profile={profile} branchesOptions={branchesOptions} />
 }
-
