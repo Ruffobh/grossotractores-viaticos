@@ -20,14 +20,11 @@ export const PAYMENT_METHODS = [
 
 export const AREAS = [
     'Administracion',
-    'Repuestos',
-    'Servicios',
-    'Maquinaria',
-    'Grupo-Staff-Soporte',
-    'Operaciones',
     'Gerencia',
-    'Ventas',
-    'Posventa'
+    'Grupo-Soporte-Staff',
+    'Maquinaria',
+    'Operaciones',
+    'Repuestos'
 ] as const;
 
 export const DEPARTMENTS = AREAS; // Alias for backward compatibility if needed
