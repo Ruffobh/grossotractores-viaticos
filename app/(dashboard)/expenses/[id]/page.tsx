@@ -131,7 +131,8 @@ function formatStatus(status: string) {
         'approved': 'Aprobado',
         'rejected': 'Rechazado',
         'exceeded_budget': 'Excede Presupuesto',
-        'pending': 'Pendiente'
+        'pending': 'Pendiente',
+        'submitted_to_bc': 'Cargado a BC'
     }
     return map[status] || status
 }
@@ -142,7 +143,8 @@ function getStatusClass(status: string) {
         'approved': 'statusApproved',
         'rejected': 'statusRejected',
         'exceeded_budget': 'statusExceeded',
-        'pending': 'statusPending'
+        'pending': 'statusPending',
+        'submitted_to_bc': 'statusSubmitted'
     }
     return map[status] || 'statusPending'
 }

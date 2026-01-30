@@ -279,6 +279,13 @@
     border-radius: 4px;
 }
 
+.statusSubmitted {
+    color: #1e40af;
+    background: #dbeafe;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
 .statusExceeded {
     color: #7e22ce;
     background: #f3e8ff;
