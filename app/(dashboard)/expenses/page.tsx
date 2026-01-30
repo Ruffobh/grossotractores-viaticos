@@ -19,7 +19,7 @@ export default async function ExpensesPage({
     // Handle unauthenticated case (though middleware catches this)
     if (!user) return <div>No autenticado</div>
 
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const { data: profile } = await supabase.from('profiles').select('role, branch, branches').eq('id', user.id).single()
     const isManagerOrAdmin = profile?.role === 'manager' || profile?.role === 'branch_manager' || profile?.role === 'admin'
     const role = profile?.role || 'user'
 
@@ -51,7 +51,18 @@ export default async function ExpensesPage({
         query = query.eq('status', params.status as string)
     }
 
+    const userBranches = profile?.branches || (profile?.branch ? [profile.branch] : [])
+
+    // ...
+
+    // 5. Client-side Filtering (for the main list/charts)
+    if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
+        invoices = invoices.filter((inv: any) => userBranches.includes(inv.profiles?.branch))
+    }
+
     // Advanced Filters (Manager/Admin Only)
+    // IMPORTANT: Manager should ONLY be able to filter by branches they are assigned to.
+    // The UI should already restrict the dropdown options.
     if (isManagerOrAdmin) {
         if (params.user_id) query = query.eq('user_id', params.user_id as string)
         if (params.branch) query = query.eq('branch', params.branch as string)
