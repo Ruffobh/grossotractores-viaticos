@@ -60,7 +60,7 @@ export function EditableDetailRow({
         // But input type=date needs yyyy-mm-dd
         // Display needs locale
         try {
-            displayValue = new Date(value as string).toLocaleDateString()
+            displayValue = new Date(value as string).toLocaleDateString('es-AR', { timeZone: 'UTC' })
         } catch (e) { displayValue = value }
     }
 

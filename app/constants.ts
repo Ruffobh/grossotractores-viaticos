@@ -16,7 +16,7 @@ export const INVOICE_TYPES = [
 
 export const PAYMENT_METHODS = [
     { label: 'Efectivo', value: 'Cash' },
-    { label: 'Tarjeta', value: 'Card' },
+    { label: 'Tarjeta Crédito', value: 'Card' },
     { label: 'Transferencia', value: 'Transfer' }
 ] as const;
 

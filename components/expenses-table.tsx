@@ -65,12 +65,12 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                     <tbody>
                         {expenses.map((expense) => (
                             <tr key={expense.id}>
-                                <td data-label="Fecha">{new Date(expense.date).toLocaleDateString()}</td>
+                                <td data-label="Fecha">{new Date(expense.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</td>
                                 {isManagerOrAdmin && <td data-label="Usuario">{expense.profiles?.full_name || 'Desconocido'}</td>}
                                 <td data-label="Proveedor">{expense.vendor_name}</td>
                                 <td data-label="Tipo">{expense.invoice_type}</td>
                                 <td className={styles.amount} data-label="Monto">
-                                    {expense.currency} {expense.total_amount?.toLocaleString()}
+                                    {expense.currency} {expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                 </td>
                                 <td data-label="Estado">
                                     <span className={`${styles.badge} ${styles[expense.status || 'pending']}`}>
