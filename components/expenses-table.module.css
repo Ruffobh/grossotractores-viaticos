@@ -7,7 +7,93 @@
     border: 1px solid var(--gray-200);
     border-top: 4px solid var(--nh-blue);
     overflow: hidden;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
+    overflow-x: auto;
+}
+
+/* Controls Bar */
+.controlsBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.searchWrapper {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+    max-width: 400px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-500);
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--nh-blue);
+    box-shadow: 0 0 0 3px rgba(0, 69, 137, 0.1);
+}
+
+.exportButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--gray-300);
+    background-color: white;
+    color: var(--nh-green);
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.exportButton:hover {
+    background-color: var(--nh-green);
+    color: white;
+    border-color: var(--nh-green);
+}
+
+/* Sortable Headers */
+.sortableHeader {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+.sortableHeader:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.sortIcon {
+    display: inline-block;
+    margin-left: 0.5rem;
+    opacity: 0.5;
+    vertical-align: middle;
+}
+
+.activeSort {
+    opacity: 1;
+    color: var(--nh-blue);
 }
 
 .table {

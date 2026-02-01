@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Search, Download, ArrowUp, ArrowDown } from 'lucide-react'
 import styles from './expenses-table.module.css'
 import { deleteExpense } from '@/app/(dashboard)/expenses/actions'
 import { useRouter } from 'next/navigation'
@@ -11,6 +11,7 @@ interface Expense {
     id: string
     date: string
     vendor_name: string | null
+    invoice_number: string | null
     invoice_type: string | null
     total_amount: number | null
     currency: string | null
@@ -24,6 +25,8 @@ interface Expense {
 export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expense[], isManagerOrAdmin: boolean }) {
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc' }) // Default sort
     const router = useRouter()
 
     const handleDeleteClick = (id: string) => {
@@ -47,27 +50,130 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
         }
     }
 
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortedExpenses = () => {
+        let filtered = [...expenses];
+
+        if (searchTerm) {
+            const lowerTerm = searchTerm.toLowerCase();
+            filtered = filtered.filter(expense =>
+                (expense.vendor_name?.toLowerCase().includes(lowerTerm)) ||
+                (expense.invoice_number?.toLowerCase().includes(lowerTerm)) ||
+                (expense.profiles?.full_name?.toLowerCase().includes(lowerTerm)) ||
+                (expense.total_amount?.toString().includes(lowerTerm))
+            );
+        }
+
+        if (sortConfig) {
+            filtered.sort((a, b) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+
+                // Handle nested profile name
+                if (sortConfig.key === 'user') {
+                    aValue = a.profiles?.full_name || '';
+                    bValue = b.profiles?.full_name || '';
+                }
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return filtered;
+    };
+
+    const exportToExcel = () => {
+        const dataToExport = getSortedExpenses().map(exp => ({
+            Fecha: new Date(exp.date).toLocaleDateString('es-AR'),
+            Usuario: exp.profiles?.full_name || 'Desconocido',
+            Proveedor: exp.vendor_name || '',
+            'N° Comprobante': exp.invoice_number || '',
+            Tipo: exp.invoice_type || '',
+            Monto: exp.total_amount || 0,
+            Moneda: exp.currency || 'ARS',
+            Estado: formatStatus(exp.status)
+        }));
+
+        const headers = Object.keys(dataToExport[0]).join(',');
+        const rows = dataToExport.map(obj => Object.values(obj).map(val => `"${val}"`).join(',')).join('\n');
+        const csvContent = `\uFEFF${headers}\n${rows}`; // Add BOM for Excel UTF-8
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', `comprobantes_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const displayedExpenses = getSortedExpenses();
+
     return (
         <div>
+            {isManagerOrAdmin && (
+                <div className={styles.controlsBar}>
+                    <div className={styles.searchWrapper}>
+                        <Search className={styles.searchIcon} size={18} />
+                        <input
+                            type="text"
+                            placeholder="Buscar (Proveedor, Usuario, N°...)"
+                            className={styles.searchInput}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <button onClick={exportToExcel} className={styles.exportButton}>
+                        <Download size={18} /> Exportar Excel
+                    </button>
+                </div>
+            )}
+
             <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            {isManagerOrAdmin && <th>Usuario</th>}
-                            <th>Proveedor</th>
-                            <th>Tipo</th>
-                            <th>Monto</th>
+                            <th onClick={() => isManagerOrAdmin && handleSort('date')} className={isManagerOrAdmin ? styles.sortableHeader : ''}>
+                                Fecha {isManagerOrAdmin && sortConfig?.key === 'date' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
+                            </th>
+                            {isManagerOrAdmin && (
+                                <th onClick={() => handleSort('user')} className={styles.sortableHeader}>
+                                    Usuario {sortConfig?.key === 'user' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.activeSort} /> : <ArrowDown size={14} className={styles.activeSort} />)}
+                                </th>
+                            )}
+                            <th onClick={() => isManagerOrAdmin && handleSort('vendor_name')} className={isManagerOrAdmin ? styles.sortableHeader : ''}>
+                                Proveedor {isManagerOrAdmin && sortConfig?.key === 'vendor_name' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
+                            </th>
+                            <th>N° Comp.</th>
+                            <th onClick={() => isManagerOrAdmin && handleSort('invoice_type')} className={isManagerOrAdmin ? styles.sortableHeader : ''}>
+                                Tipo {isManagerOrAdmin && sortConfig?.key === 'invoice_type' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
+                            </th>
+                            <th onClick={() => isManagerOrAdmin && handleSort('total_amount')} className={isManagerOrAdmin ? styles.sortableHeader : ''}>
+                                Monto {isManagerOrAdmin && sortConfig?.key === 'total_amount' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
+                            </th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {expenses.map((expense) => (
+                        {displayedExpenses.map((expense) => (
                             <tr key={expense.id}>
                                 <td data-label="Fecha"><span className={styles.tableValue}>{new Date(expense.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</span></td>
                                 {isManagerOrAdmin && <td data-label="Usuario"><span className={styles.cellContent}>{expense.profiles?.full_name || 'Desconocido'}</span></td>}
                                 <td data-label="Proveedor"><span className={styles.cellContent}>{expense.vendor_name}</span></td>
+                                <td data-label="N° Comp."><span className={styles.cellContent}>{expense.invoice_number || '-'}</span></td>
                                 <td data-label="Tipo"><span className={styles.cellContent}>{expense.invoice_type}</span></td>
                                 <td className={styles.amount} data-label="Monto">
                                     <span className={styles.tableValue}>
@@ -96,7 +202,7 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                 </td>
                             </tr>
                         ))}
-                        {expenses.length === 0 && (
+                        {displayedExpenses.length === 0 && (
                             <tr>
                                 <td colSpan={7} className="text-center p-4 text-gray-500">No se encontraron comprobantes.</td>
                             </tr>
