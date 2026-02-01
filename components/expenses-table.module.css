@@ -223,7 +223,8 @@
         border-radius: var(--radius);
         box-shadow: var(--shadow-lg);
         border: 1px solid var(--gray-200);
-        padding: 1rem;
+        padding: 1rem 1.5rem 1rem 0.5rem;
+        /* Less left, more right */
         overflow: hidden !important;
         /* Contain internal overflow */
     }
