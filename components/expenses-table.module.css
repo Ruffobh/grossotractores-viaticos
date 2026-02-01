@@ -12,6 +12,15 @@
     width: 100%;
 }
 
+.sortableHeader {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.sortableHeader:hover {
+    background-color: var(--gray-100) !important;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
