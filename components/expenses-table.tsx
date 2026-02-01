@@ -216,7 +216,7 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                 {isManagerOrAdmin && <td data-label="Usuario"><span className={styles.cellContent}>{expense.profiles?.full_name || 'Desconocido'}</span></td>}
                                 <td data-label="Proveedor"><span className={styles.cellContent}>{expense.vendor_name}</span></td>
                                 <td data-label="N° Comp."><span className={styles.cellContent}>{expense.invoice_number || '-'}</span></td>
-                                <td data-label="Tipo"><span className={styles.cellContent}>{expense.invoice_type}</span></td>
+                                <td data-label="Tipo"><span className={styles.cellContent}>{formatInvoiceType(expense.invoice_type)}</span></td>
                                 <td className={styles.amount} data-label="Monto">
                                     <span className={styles.tableValue}>
                                         {expense.currency} {expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
@@ -296,4 +296,13 @@ function formatStatus(status: string | null) {
         case 'submitted_to_bc': return 'Cargado en BC'
         default: return status
     }
+}
+
+function formatInvoiceType(type: string | null) {
+    if (!type) return '-'
+    const t = type.toUpperCase()
+    if (t.includes('FACTURA A')) return 'FA'
+    if (t.includes('FACTURA C')) return 'FC'
+    if (t.includes('CONSUMIDOR FINAL')) return 'CF'
+    return type
 }
