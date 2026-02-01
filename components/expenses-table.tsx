@@ -94,7 +94,11 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
         return filtered;
     };
 
-    const exportToExcel = () => {
+    const exportToExcel = async () => {
+        // Dynamic import to avoid SSR issues with some libs, though xlsx is usually fine.
+        // Better to be safe or just standard import if "use client"
+        const XLSX = await import('xlsx');
+
         const dataToExport = getSortedExpenses().map(exp => ({
             Fecha: new Date(exp.date).toLocaleDateString('es-AR'),
             Usuario: exp.profiles?.full_name || 'Desconocido',
@@ -106,17 +110,24 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
             Estado: formatStatus(exp.status)
         }));
 
-        const headers = Object.keys(dataToExport[0]).join(',');
-        const rows = dataToExport.map(obj => Object.values(obj).map(val => `"${val}"`).join(',')).join('\n');
-        const csvContent = `\uFEFF${headers}\n${rows}`; // Add BOM for Excel UTF-8
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Comprobantes");
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute('download', `comprobantes_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Column width adjustments (optional but nice)
+        const wscols = [
+            { wch: 12 }, // Fecha
+            { wch: 20 }, // Usuario
+            { wch: 25 }, // Proveedor
+            { wch: 20 }, // N° Comp
+            { wch: 15 }, // Tipo
+            { wch: 15 }, // Monto
+            { wch: 10 }, // Moneda
+            { wch: 15 }  // Estado
+        ];
+        worksheet['!cols'] = wscols;
+
+        XLSX.writeFile(workbook, `comprobantes_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     const displayedExpenses = getSortedExpenses();
