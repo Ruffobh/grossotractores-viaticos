@@ -95,44 +95,40 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
     };
 
     const exportToExcel = async () => {
-        // Dynamic import for exceljs
         const ExcelJS = (await import('exceljs')).default;
 
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Comprobantes');
 
-        // Define columns
-        worksheet.columns = [
-            { header: 'Fecha', key: 'date', width: 12 },
-            { header: 'Usuario', key: 'user', width: 25 },
-            { header: 'Proveedor', key: 'vendor', width: 25 },
-            { header: 'N° Comprobante', key: 'invoice_number', width: 20 },
-            { header: 'Tipo', key: 'type', width: 15 },
-            { header: 'Monto', key: 'amount', width: 15 },
-            { header: 'Moneda', key: 'currency', width: 10 },
-            { header: 'Estado', key: 'status', width: 15 },
-        ];
+        // Set column widths but NOT headers (Table will handle headers)
+        worksheet.getColumn(1).width = 12; // Fecha
+        worksheet.getColumn(2).width = 25; // Usuario
+        worksheet.getColumn(3).width = 25; // Proveedor
+        worksheet.getColumn(4).width = 20; // N° Comp
+        worksheet.getColumn(5).width = 15; // Tipo
+        worksheet.getColumn(6).width = 15; // Monto
+        worksheet.getColumn(7).width = 10; // Moneda
+        worksheet.getColumn(8).width = 15; // Estado
 
-        // Format data rows
-        const rows = getSortedExpenses().map(exp => ({
-            date: new Date(exp.date).toLocaleDateString('es-AR'),
-            user: exp.profiles?.full_name || 'Desconocido',
-            vendor: exp.vendor_name || '',
-            invoice_number: exp.invoice_number || '',
-            type: exp.invoice_type || '',
-            amount: exp.total_amount || 0,
-            currency: exp.currency || 'ARS',
-            status: formatStatus(exp.status)
-        }));
+        // Prepare data
+        const rows = getSortedExpenses().map(exp => [
+            new Date(exp.date).toLocaleDateString('es-AR'),
+            exp.profiles?.full_name || 'Desconocido',
+            exp.vendor_name || '',
+            exp.invoice_number || '',
+            exp.invoice_type || '',
+            exp.total_amount || 0,
+            exp.currency || 'ARS',
+            formatStatus(exp.status)
+        ]);
 
-        // Add the table to the worksheet
+        // Add Table with "TableStyleMedium2" (Blue with headers and filters)
         worksheet.addTable({
             name: 'ComprobantesTable',
             ref: 'A1',
             headerRow: true,
-            totalsRow: false,
             style: {
-                theme: 'TableStyleMedium2', // Standard Blue Table Theme
+                theme: 'TableStyleMedium2',
                 showRowStripes: true,
             },
             columns: [
@@ -145,10 +141,9 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                 { name: 'Moneda', filterButton: true },
                 { name: 'Estado', filterButton: true },
             ],
-            rows: rows.map(r => Object.values(r)),
+            rows: rows,
         });
 
-        // Write to buffer and download
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         const link = document.createElement('a');
