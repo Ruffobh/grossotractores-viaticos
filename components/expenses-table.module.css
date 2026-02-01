@@ -12,6 +12,39 @@
     width: 100%;
 }
 
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    /* Crucial for text-overflow to work */
+}
+
+.table th {
+    background-color: #f9fafb;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--gray-200);
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    color: #374151;
+    vertical-align: middle;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 0;
+}
+
 /* Controls Bar */
 .controlsBar {
     display: flex;
