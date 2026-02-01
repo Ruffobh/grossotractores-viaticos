@@ -45,6 +45,14 @@
     max-width: 0;
 }
 
+/* Actions Column Exception - Never truncate */
+.table td:last-child {
+    overflow: visible;
+    max-width: none;
+    width: auto;
+    text-overflow: clip;
+}
+
 /* Controls Bar */
 .controlsBar {
     display: flex;
