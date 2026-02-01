@@ -39,7 +39,12 @@ export function AdminActions({ invoiceId }: AdminActionsProps) {
                 await rejectExpense(invoiceId, comment)
             }
             // Server action redirects, so no need to close manually or reset state usually
-        } catch (error) {
+        } catch (error: any) {
+            if (error.message === 'NEXT_REDIRECT' || error.digest?.includes('NEXT_REDIRECT')) {
+                // Redirecting, do nothing or explicitly set submitting false
+                setIsSubmitting(true) // Keep it true while redirecting
+                return
+            }
             console.error(error)
             alert('Ocurrió un error al procesar la solicitud.')
             setIsSubmitting(false)
