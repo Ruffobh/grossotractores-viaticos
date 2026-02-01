@@ -94,6 +94,7 @@ export type Database = {
                     full_name: string | null
                     id: string
                     monthly_limit: number | null
+                    permissions: Json | null
                     role: string | null
                 }
                 Insert: {
@@ -104,6 +105,7 @@ export type Database = {
                     full_name?: string | null
                     id: string
                     monthly_limit?: number | null
+                    permissions?: Json | null
                     role?: string | null
                 }
                 Update: {
@@ -114,6 +116,7 @@ export type Database = {
                     full_name?: string | null
                     id?: string
                     monthly_limit?: number | null
+                    permissions?: Json | null
                     role?: string | null
                 }
                 Relationships: []

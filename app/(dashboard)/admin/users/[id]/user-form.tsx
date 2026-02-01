@@ -6,7 +6,7 @@ import styles from './style.module.css'
 import { ArrowLeft, Save } from 'lucide-react'
 import { updateUserProfile } from './actions'
 import { MultiSelect } from '@/components/multi-select'
-import { AREAS } from '@/app/constants'
+import { AREAS, PERMISSIONS } from '@/app/constants'
 
 interface UserFormProps {
     profile: any
@@ -17,6 +17,21 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
     const [selectedBranches, setSelectedBranches] = useState<string[]>(
         profile.branches || (profile.branch ? [profile.branch] : [])
     )
+
+    // Parse permissions (handle null/string/object safely)
+    const [permissions, setPermissions] = useState<Record<string, boolean>>(() => {
+        try {
+            if (!profile.permissions) return {}
+            if (typeof profile.permissions === 'string') return JSON.parse(profile.permissions)
+            return profile.permissions as Record<string, boolean>
+        } catch {
+            return {}
+        }
+    })
+
+    const togglePermission = (key: string) => {
+        setPermissions(prev => ({ ...prev, [key]: !prev[key] }))
+    }
 
     return (
         <div className={styles.container}>
@@ -34,6 +49,7 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
 
                     {/* Hidden input to pass branches array */}
                     <input type="hidden" name="branches" value={JSON.stringify(selectedBranches)} />
+                    <input type="hidden" name="permissions" value={JSON.stringify(permissions)} />
 
                     <div className={styles.fullWidth}>
                         <label className={styles.label}>Nombre Completo</label>
@@ -72,6 +88,31 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                             onChange={setSelectedBranches}
                             placeholder="Seleccionar sucursales..."
                         />
+                    </div>
+
+                    <div className={styles.fullWidth}>
+                        <h3 className="text-lg font-semibold mt-4 mb-2 text-gray-800 border-t pt-4">Permisos Adicionales</h3>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Otorga capacidades especiales a usuarios que no son administradores.
+                        </p>
+                        <div className="space-y-3">
+                            {PERMISSIONS.map((perm) => (
+                                <div key={perm.key} className="flex items-start items-center space-x-3 p-3 bg-gray-50 rounded-md border border-gray-100">
+                                    <input
+                                        type="checkbox"
+                                        checked={!!permissions[perm.key]}
+                                        onChange={() => togglePermission(perm.key)}
+                                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                                        id={`perm-${perm.key}`}
+                                        name={`perm-${perm.key}`} // dummy name
+                                    />
+                                    <label htmlFor={`perm-${perm.key}`} className="cursor-pointer flex-1">
+                                        <div className="font-medium text-sm text-gray-900">{perm.label}</div>
+                                        <div className="text-xs text-gray-500">{perm.description}</div>
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     <div className={styles.fullWidth}>

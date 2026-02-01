@@ -30,6 +30,13 @@ export const AREAS = [
     'Servicios'
 ] as const;
 
+// Permissions Configuration
+export const PERMISSIONS = [
+    { key: 'approve_area_expenses', label: 'Aprobar Gastos (Solo su Área)', description: 'Permite aprobar/rechazar gastos si coinciden con su área.' },
+    { key: 'view_all_expenses', label: 'Ver Todos los Gastos', description: 'Permite ver el historial completo de comprobantes de la empresa.' },
+    { key: 'receive_approval_emails', label: 'Recibir Alertas de Aprobación', description: 'Recibe correos cuando se carga un gasto en su área.' },
+]
+
 export const BRANCHES = [
     'Bandera',
     'Franck',

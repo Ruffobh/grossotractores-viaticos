@@ -40,6 +40,7 @@ export async function updateUserProfile(formData: FormData) {
         area: formData.get('area'),
         monthly_limit: Number(formData.get('monthly_limit')) || 0,
         cash_limit: Number(formData.get('cash_limit')) || 0,
+        permissions: formData.get('permissions') ? JSON.parse(formData.get('permissions') as string) : {},
         // Sync branch_id
         branch_id: null as string | null
     }

@@ -7,11 +7,19 @@ import { redirect } from 'next/navigation'
 export async function approveExpense(id: string, comment: string | null = null) {
     const supabase = await createClient()
 
-    // Verify admin
+    // Verify admin or permission
     const { data: { user } } = await supabase.auth.getUser()
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
+    const { data: profile } = await supabase.from('profiles').select('role, area, permissions').eq('id', user?.id).single()
 
-    if (profile?.role !== 'admin') {
+    // Fetch invoice to check area match
+    const { data: invoice } = await supabase.from('invoices').select('user_id').eq('id', id).single()
+    const { data: invoiceUser } = await supabase.from('profiles').select('area').eq('id', invoice?.user_id).single()
+
+    const isAdmin = profile?.role === 'admin'
+    const hasPermission = (profile?.permissions as any)?.approve_area_expenses
+    const isSameArea = profile?.area === invoiceUser?.area
+
+    if (!isAdmin && !(hasPermission && isSameArea)) {
         throw new Error('Unauthorized')
     }
 
@@ -27,11 +35,19 @@ export async function approveExpense(id: string, comment: string | null = null) 
 export async function rejectExpense(id: string, comment: string | null = null) {
     const supabase = await createClient()
 
-    // Verify admin
+    // Verify admin or permission
     const { data: { user } } = await supabase.auth.getUser()
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
+    const { data: profile } = await supabase.from('profiles').select('role, area, permissions').eq('id', user?.id).single()
 
-    if (profile?.role !== 'admin') {
+    // Fetch invoice to check area match
+    const { data: invoice } = await supabase.from('invoices').select('user_id').eq('id', id).single()
+    const { data: invoiceUser } = await supabase.from('profiles').select('area').eq('id', invoice?.user_id).single()
+
+    const isAdmin = profile?.role === 'admin'
+    const hasPermission = (profile?.permissions as any)?.approve_area_expenses
+    const isSameArea = profile?.area === invoiceUser?.area
+
+    if (!isAdmin && !(hasPermission && isSameArea)) {
         throw new Error('Unauthorized')
     }
 
