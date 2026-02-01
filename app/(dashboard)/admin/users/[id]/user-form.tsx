@@ -95,20 +95,21 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                         <p className="text-sm text-gray-500 mb-4">
                             Otorga capacidades especiales a usuarios que no son administradores.
                         </p>
-                        <div className="space-y-3">
+                        <div className={styles.permissionsList}>
                             {PERMISSIONS.map((perm) => (
-                                <div key={perm.key} className="flex items-start items-center space-x-3 p-3 bg-gray-50 rounded-md border border-gray-100">
-                                    <input
-                                        type="checkbox"
-                                        checked={!!permissions[perm.key]}
-                                        onChange={() => togglePermission(perm.key)}
-                                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
-                                        id={`perm-${perm.key}`}
-                                        name={`perm-${perm.key}`} // dummy name
-                                    />
-                                    <label htmlFor={`perm-${perm.key}`} className="cursor-pointer flex-1">
-                                        <div className="font-medium text-sm text-gray-900">{perm.label}</div>
-                                        <div className="text-xs text-gray-500">{perm.description}</div>
+                                <div key={perm.key} className={styles.permissionItem}>
+                                    <div className={styles.permissionText}>
+                                        <span className={styles.permissionTitle}>{perm.label}</span>
+                                        <span className={styles.permissionDesc}>{perm.description}</span>
+                                    </div>
+                                    <label className={styles.switch}>
+                                        <input
+                                            type="checkbox"
+                                            checked={!!permissions[perm.key]}
+                                            onChange={() => togglePermission(perm.key)}
+                                            name={`perm-${perm.key}`}
+                                        />
+                                        <span className={styles.slider}></span>
                                     </label>
                                 </div>
                             ))}

@@ -90,3 +90,103 @@
 .saveButton:hover {
     background-color: #003366;
 }
+
+/* Permissions Section */
+.sectionTitle,
+.sectionSubTitle {
+    display: block;
+}
+
+.permissionsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.permissionItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background-color: #f8fafc;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    transition: all 0.2s;
+}
+
+.permissionItem:hover {
+    border-color: var(--nh-blue);
+    background-color: #f0f7ff;
+}
+
+.permissionText {
+    flex: 1;
+    margin-right: 1.5rem;
+}
+
+.permissionTitle {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--nh-black);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.permissionDesc {
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    line-height: 1.4;
+    display: block;
+}
+
+/* Custom Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--gray-300);
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+input:checked+.slider {
+    background-color: var(--nh-blue);
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px var(--nh-blue);
+}
+
+input:checked+.slider:before {
+    transform: translateX(20px);
+}
