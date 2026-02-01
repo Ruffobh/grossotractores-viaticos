@@ -76,7 +76,8 @@
 
 @media (max-width: 1024px) {
     .container {
-        padding: 1rem;
+        padding: 0.5rem;
+        /* Maximize screen real estate */
         width: 100%;
         max-width: 100vw;
         /* Hard limit */
