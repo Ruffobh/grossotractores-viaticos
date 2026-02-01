@@ -12,50 +12,75 @@
     width: 100%;
 }
 
-/* ... controls ... */
+/* Controls Bar */
+.controlsBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    flex-wrap: nowrap;
+    /* Force single line if possible, or handle wrap better */
+}
 
-.table {
+.searchWrapper {
+    position: relative;
+    flex: 0 1 400px;
+    /* Don't grow indefinitely, but allow shrinking */
+    min-width: 250px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-500);
+}
+
+.searchInput {
     width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    /* Crucial for "Never Scroll" */
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    transition: all 0.2s;
 }
 
-.table th {
-    text-align: left;
-    padding: 0.75rem 1rem;
-    background-color: #f9fafb;
-    font-weight: 700;
-    color: #6b7280;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--gray-200);
+.searchInput:focus {
+    outline: none;
+    border-color: var(--nh-blue);
+    box-shadow: 0 0 0 3px rgba(0, 69, 137, 0.1);
+}
+
+/* Container for actions (Export button) to push it to the right */
+.actionsContainer {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.exportButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--gray-300);
+    background-color: white;
+    color: var(--nh-green);
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* Prevent button text wrapping */
 }
 
-.table td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #f3f4f6;
-    color: #374151;
-    vertical-align: middle;
-    font-size: 0.875rem;
-    transition: background-color 0.2s;
-    /* Cleaned up properties handled by cellContent */
-}
-
-.cellContent {
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-}
-
-.table tbody tr:last-child td {
-    border-bottom: none;
+.exportButton:hover {
+    background-color: var(--nh-green);
+    color: white;
+    border-color: var(--nh-green);
 }
 
 .table tbody tr:hover td {

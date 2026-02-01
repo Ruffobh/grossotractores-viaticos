@@ -170,9 +170,16 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button onClick={exportToExcel} className={styles.exportButton}>
-                        <Download size={18} /> Exportar Excel
-                    </button>
+
+                    {/* Actions Container to enforce right alignment */}
+                    <div className={styles.actionsContainer}>
+                        {(isManagerOrAdmin) && (
+                            <button onClick={exportToExcel} className={styles.exportButton}>
+                                <Download size={18} />
+                                Exportar Excel
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -180,7 +187,7 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                 <table className={styles.table}>
                     <thead>
                         <tr>
-                            <th onClick={() => isManagerOrAdmin && handleSort('date')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '110px' }}>
+                            <th onClick={() => isManagerOrAdmin && handleSort('date')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '100px' }}>
                                 Fecha {isManagerOrAdmin && sortConfig?.key === 'date' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
                             </th>
                             {isManagerOrAdmin && (
@@ -188,17 +195,17 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                     Usuario {sortConfig?.key === 'user' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.activeSort} /> : <ArrowDown size={14} className={styles.activeSort} />)}
                                 </th>
                             )}
-                            <th onClick={() => isManagerOrAdmin && handleSort('vendor_name')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: isManagerOrAdmin ? '25%' : '35%' }}>
+                            <th onClick={() => isManagerOrAdmin && handleSort('vendor_name')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: isManagerOrAdmin ? '25%' : '30%' }}>
                                 Proveedor {isManagerOrAdmin && sortConfig?.key === 'vendor_name' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
                             </th>
                             <th style={{ width: '130px' }}>N° Comp.</th>
                             <th onClick={() => isManagerOrAdmin && handleSort('invoice_type')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '100px' }}>
                                 Tipo {isManagerOrAdmin && sortConfig?.key === 'invoice_type' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
                             </th>
-                            <th onClick={() => isManagerOrAdmin && handleSort('total_amount')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '150px' }}>
+                            <th onClick={() => isManagerOrAdmin && handleSort('total_amount')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '160px' }}>
                                 Monto {isManagerOrAdmin && sortConfig?.key === 'total_amount' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
                             </th>
-                            <th style={{ width: '140px' }}>Estado</th>
+                            <th style={{ width: '150px' }}>Estado</th>
                             <th style={{ width: '100px' }}>Acciones</th>
                         </tr>
                     </thead>
