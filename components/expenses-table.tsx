@@ -195,7 +195,7 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                     Usuario {sortConfig?.key === 'user' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.activeSort} /> : <ArrowDown size={14} className={styles.activeSort} />)}
                                 </th>
                             )}
-                            <th onClick={() => isManagerOrAdmin && handleSort('vendor_name')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: isManagerOrAdmin ? '25%' : '30%' }}>
+                            <th onClick={() => isManagerOrAdmin && handleSort('vendor_name')} className={isManagerOrAdmin ? styles.sortableHeader : ''}>
                                 Proveedor {isManagerOrAdmin && sortConfig?.key === 'vendor_name' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
                             </th>
                             <th style={{ width: '130px' }}>N° Comp.</th>
