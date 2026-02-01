@@ -95,39 +95,68 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
     };
 
     const exportToExcel = async () => {
-        // Dynamic import to avoid SSR issues with some libs, though xlsx is usually fine.
-        // Better to be safe or just standard import if "use client"
-        const XLSX = await import('xlsx');
+        // Dynamic import for exceljs
+        const ExcelJS = (await import('exceljs')).default;
 
-        const dataToExport = getSortedExpenses().map(exp => ({
-            Fecha: new Date(exp.date).toLocaleDateString('es-AR'),
-            Usuario: exp.profiles?.full_name || 'Desconocido',
-            Proveedor: exp.vendor_name || '',
-            'N° Comprobante': exp.invoice_number || '',
-            Tipo: exp.invoice_type || '',
-            Monto: exp.total_amount || 0,
-            Moneda: exp.currency || 'ARS',
-            Estado: formatStatus(exp.status)
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Comprobantes');
+
+        // Define columns
+        worksheet.columns = [
+            { header: 'Fecha', key: 'date', width: 12 },
+            { header: 'Usuario', key: 'user', width: 25 },
+            { header: 'Proveedor', key: 'vendor', width: 25 },
+            { header: 'N° Comprobante', key: 'invoice_number', width: 20 },
+            { header: 'Tipo', key: 'type', width: 15 },
+            { header: 'Monto', key: 'amount', width: 15 },
+            { header: 'Moneda', key: 'currency', width: 10 },
+            { header: 'Estado', key: 'status', width: 15 },
+        ];
+
+        // Format data rows
+        const rows = getSortedExpenses().map(exp => ({
+            date: new Date(exp.date).toLocaleDateString('es-AR'),
+            user: exp.profiles?.full_name || 'Desconocido',
+            vendor: exp.vendor_name || '',
+            invoice_number: exp.invoice_number || '',
+            type: exp.invoice_type || '',
+            amount: exp.total_amount || 0,
+            currency: exp.currency || 'ARS',
+            status: formatStatus(exp.status)
         }));
 
-        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Comprobantes");
+        // Add the table to the worksheet
+        worksheet.addTable({
+            name: 'ComprobantesTable',
+            ref: 'A1',
+            headerRow: true,
+            totalsRow: false,
+            style: {
+                theme: 'TableStyleMedium2', // Standard Blue Table Theme
+                showRowStripes: true,
+            },
+            columns: [
+                { name: 'Fecha', filterButton: true },
+                { name: 'Usuario', filterButton: true },
+                { name: 'Proveedor', filterButton: true },
+                { name: 'N° Comprobante', filterButton: true },
+                { name: 'Tipo', filterButton: true },
+                { name: 'Monto', filterButton: true },
+                { name: 'Moneda', filterButton: true },
+                { name: 'Estado', filterButton: true },
+            ],
+            rows: rows.map(r => Object.values(r)),
+        });
 
-        // Column width adjustments (optional but nice)
-        const wscols = [
-            { wch: 12 }, // Fecha
-            { wch: 20 }, // Usuario
-            { wch: 25 }, // Proveedor
-            { wch: 20 }, // N° Comp
-            { wch: 15 }, // Tipo
-            { wch: 15 }, // Monto
-            { wch: 10 }, // Moneda
-            { wch: 15 }  // Estado
-        ];
-        worksheet['!cols'] = wscols;
-
-        XLSX.writeFile(workbook, `comprobantes_${new Date().toISOString().split('T')[0]}.xlsx`);
+        // Write to buffer and download
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', `comprobantes_${new Date().toISOString().split('T')[0]}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const displayedExpenses = getSortedExpenses();
