@@ -223,8 +223,8 @@
         border-radius: var(--radius);
         box-shadow: var(--shadow-lg);
         border: 1px solid var(--gray-200);
-        padding: 1rem 0.75rem;
-        /* Symmetrical and compact */
+        padding: 10px 15px 10px 5px !important;
+        /* Visual fix: Minimal left, decent right */
         overflow: hidden !important;
         /* Contain internal overflow */
     }
@@ -235,7 +235,8 @@
         align-items: center;
         width: 100% !important;
         box-sizing: border-box !important;
-        padding: 0.75rem 0;
+        padding: 0.75rem 0 !important;
+        /* Zero side padding */
         border-bottom: 1px solid var(--gray-100);
         text-align: right;
         color: var(--nh-black);
@@ -254,7 +255,8 @@
         text-transform: uppercase;
         font-size: 0.7rem;
         text-align: left;
-        padding-right: 0.5rem;
+        padding-right: 0.25rem;
+        /* Minimal spacing */
         /* Reduce padding to save space */
         flex-shrink: 0;
         width: 40%;
