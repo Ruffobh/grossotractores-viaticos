@@ -25,7 +25,7 @@ export async function updateInvoice(formData: FormData) {
     const { data: user } = await supabase.auth.getUser()
     const { data: profile } = await supabase
         .from('profiles')
-        .select('monthly_limit, cash_limit, full_name, branch') // Fetch Limits based on type
+        .select('monthly_limit, cash_limit, full_name, branch, area') // Fetch Limits based on type
         .eq('id', user.user?.id)
         .single()
 
@@ -100,7 +100,8 @@ export async function updateInvoice(formData: FormData) {
         total_amount: data.total_amount as number,
         currency: data.currency as string,
         user_name: userName,
-        user_id: user.user?.id!
+        user_id: user.user?.id!,
+        area: profile?.area
     }
 
     if (newStatus === 'pending_approval') {

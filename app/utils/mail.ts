@@ -41,12 +41,46 @@ export async function sendAdminAlert(expense: ExpenseData) {
             .eq('role', 'admin')
             .not('email', 'is', null)
 
-        if (!admins || admins.length === 0) {
-            console.warn('No admins found to notify.')
-            return { error: 'No admins found' }
+        // 2. Fetch users with "receive_approval_emails" permission
+        // AND matching area if available in expense data
+        const { data: permissionUsers } = await supabase
+            .from('profiles')
+            .select('email, area, permissions')
+            .not('email', 'is', null)
+
+        // Filter manually since JSONB filtering can be tricky in simple queries depending on structure
+        // We look for permissions -> receive_approval_emails === true
+        // AND (if expense has area) area matches
+
+        const expenseArea = expense.area // Ensure expense data includes area if possible
+
+        const validPermissionUsers = permissionUsers?.filter(u => {
+            const hasPerm = (u.permissions as any)?.receive_approval_emails
+            if (!hasPerm) return false
+
+            // If user is admin, already covered. Skip to avoid duplicates (set below handles unique)
+            // But role check might be needed if they are not labelled admin but have permission
+
+            // If global viewer/receiver or matches area
+            // simplified: if has perm, check area match. If expense has no area, maybe send to all?
+            // User asked: "le lleguen correos tambien pero solo de sus areas"
+
+            if (expenseArea && u.area !== expenseArea) return false
+
+            return true
+        }) || []
+
+        const allRecipients = new Set([
+            ...(admins?.map(a => a.email!) || []),
+            ...validPermissionUsers.map(u => u.email!)
+        ])
+
+        if (allRecipients.size === 0) {
+            console.warn('No recipients found to notify.')
+            return { error: 'No recipients found' }
         }
 
-        const adminEmails = admins.map(a => a.email!)
+        const adminEmails = Array.from(allRecipients)
 
         // 2. Send Email
         const info = await transporter.sendMail({
