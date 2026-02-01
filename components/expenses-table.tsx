@@ -195,10 +195,10 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                             <th onClick={() => isManagerOrAdmin && handleSort('invoice_type')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '100px' }}>
                                 Tipo {isManagerOrAdmin && sortConfig?.key === 'invoice_type' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
                             </th>
-                            <th onClick={() => isManagerOrAdmin && handleSort('total_amount')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '140px' }}>
+                            <th onClick={() => isManagerOrAdmin && handleSort('total_amount')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '150px' }}>
                                 Monto {isManagerOrAdmin && sortConfig?.key === 'total_amount' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
                             </th>
-                            <th style={{ width: '120px' }}>Estado</th>
+                            <th style={{ width: '140px' }}>Estado</th>
                             <th style={{ width: '100px' }}>Acciones</th>
                         </tr>
                     </thead>
