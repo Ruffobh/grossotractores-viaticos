@@ -1,6 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import Image from 'next/image'
 import styles from './style.module.css'
 import { approveExpense, rejectExpense } from './actions'
 import { CheckCircle, XCircle } from 'lucide-react'
@@ -8,6 +7,7 @@ import { BCExportButton } from '@/components/bc-export-button'
 import { EditableDetailRow } from '@/components/editable-detail-row'
 import { AdminActions } from '@/components/admin-actions'
 import { EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS } from '@/app/constants'
+import { ReceiptViewer } from '@/components/receipt-viewer'
 
 export default async function ExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -37,18 +37,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
         <div className={styles.container}>
             {/* Left: Image Viewer */}
             <div className={styles.imageSection}>
-                {invoice.file_url?.toLowerCase().endsWith('.pdf') ? (
-                    <iframe src={invoice.file_url} className={styles.iframe} />
-                ) : (
-                    <div className={styles.imageWrapper}>
-                        <Image
-                            src={invoice.file_url || ''}
-                            alt="Receipt"
-                            fill
-                            className="object-contain"
-                        />
-                    </div>
-                )}
+                <ReceiptViewer fileUrl={invoice.file_url} />
             </div>
 
             {/* Right: Details & Actions */}
