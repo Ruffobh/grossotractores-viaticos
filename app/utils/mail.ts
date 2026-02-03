@@ -31,42 +31,37 @@ interface ExpenseData {
  * Sends an alert to all Admins when an expense exceeds the limit.
  */
 export async function sendAdminAlert(expense: ExpenseData) {
+    console.log(`[sendAdminAlert] Triggered for expense: ${expense.id} (User: ${expense.user_name})`)
     try {
-        const supabase = await createClient()
+        const { createAdminClient } = await import('@/utils/supabase/admin')
+        const adminClient = createAdminClient()
 
-        // 1. Fetch all admins with emails
-        const { data: admins } = await supabase
+        // 1. Fetch all admins with emails (Using Admin Client to bypass RLS)
+        const { data: admins, error: adminError } = await adminClient
             .from('profiles')
             .select('email')
             .eq('role', 'admin')
             .not('email', 'is', null)
 
+        if (adminError) {
+            console.error('[sendAdminAlert] Error fetching admins:', adminError)
+        }
+
         // 2. Fetch users with "receive_approval_emails" permission
-        // AND matching area if available in expense data
-        const { data: permissionUsers } = await supabase
+        const { data: permissionUsers, error: permError } = await adminClient
             .from('profiles')
             .select('email, area, permissions')
             .not('email', 'is', null)
 
-        // Filter manually since JSONB filtering can be tricky in simple queries depending on structure
-        // We look for permissions -> receive_approval_emails === true
-        // AND (if expense has area) area matches
+        if (permError) {
+            console.error('[sendAdminAlert] Error fetching permission users:', permError)
+        }
 
-        const expenseArea = expense.area // Ensure expense data includes area if possible
-
+        const expenseArea = expense.area
         const validPermissionUsers = permissionUsers?.filter(u => {
             const hasPerm = (u.permissions as any)?.receive_approval_emails
             if (!hasPerm) return false
-
-            // If user is admin, already covered. Skip to avoid duplicates (set below handles unique)
-            // But role check might be needed if they are not labelled admin but have permission
-
-            // If global viewer/receiver or matches area
-            // simplified: if has perm, check area match. If expense has no area, maybe send to all?
-            // User asked: "le lleguen correos tambien pero solo de sus areas"
-
             if (expenseArea && u.area !== expenseArea) return false
-
             return true
         }) || []
 
@@ -75,17 +70,19 @@ export async function sendAdminAlert(expense: ExpenseData) {
             ...validPermissionUsers.map(u => u.email!)
         ])
 
+        console.log(`[sendAdminAlert] Recipients calculated: [${Array.from(allRecipients).join(', ')}]`)
+
         if (allRecipients.size === 0) {
-            console.warn('No recipients found to notify.')
+            console.warn('[sendAdminAlert] No recipients found to notify.')
             return { error: 'No recipients found' }
         }
 
         const adminEmails = Array.from(allRecipients)
 
-        // 2. Send Email
+        // 3. Send Email
         const info = await transporter.sendMail({
             from: `"Viáticos Grosso" <${SENDER_EMAIL}>`,
-            to: adminEmails.join(', '), // Nodemailer accepts comma separated string or array
+            to: adminEmails.join(', '),
             subject: `⚠️ Alerta de Gasto: ${expense.user_name} excedió el límite`,
             html: `
                 <h2>Atención: Gasto Excedido</h2>
@@ -99,11 +96,11 @@ export async function sendAdminAlert(expense: ExpenseData) {
             `
         })
 
-        console.log('Admin Alert sent: %s', info.messageId)
+        console.log('[sendAdminAlert] Email sent successfully: %s', info.messageId)
         return { success: true, data: info }
 
     } catch (err) {
-        console.error('Unexpected error sending admin email:', err)
+        console.error('[sendAdminAlert] Unexpected fatal error:', err)
         return { error: err }
     }
 }
@@ -112,46 +109,60 @@ export async function sendAdminAlert(expense: ExpenseData) {
  * Sends a notification to the Branch Manager when an expense is Approved (Ready for BC).
  */
 export async function sendManagerNotification(expense: ExpenseData, overrideEmail?: string) {
+    console.log(`[sendManagerNotification] Triggered for expense: ${expense.id} (User ID: ${expense.user_id})`)
     try {
-        const supabase = await createClient()
+        const { createAdminClient } = await import('@/utils/supabase/admin')
+        const adminClient = createAdminClient()
         let recipients: string[] = [];
 
         if (overrideEmail) {
-            console.log('📧 TEST MODE: Sending email to current user:', overrideEmail)
+            console.log('[sendManagerNotification] TEST MODE: Sending email to current user:', overrideEmail)
             recipients = [overrideEmail]
         } else {
-            // 1. Find the Branch Manager for this expense
-            const { data: userProfile } = await supabase
+            // 1. Find the Branch Manager for this expense (Using Admin Client for RLS bypass)
+            const { data: userProfile, error: profileError } = await adminClient
                 .from('profiles')
                 .select(`
-                branch_id,
-                branches (
-                    name
-                )
-            `)
+                    branch_id,
+                    branches (
+                        name
+                    )
+                `)
                 .eq('id', expense.user_id)
                 .single()
 
+            if (profileError) {
+                console.error('[sendManagerNotification] Error fetching user profile:', profileError)
+                return { error: profileError.message }
+            }
+
             if (!userProfile?.branch_id) {
-                console.warn('User has no branch assigned.')
+                console.warn('[sendManagerNotification] User has no branch assigned.')
                 return { error: 'User has no branch' }
             }
 
             // 2. Find the Manager of that branch
-            const { data: managers } = await supabase
+            const { data: managers, error: managerError } = await adminClient
                 .from('profiles')
                 .select('email')
                 .eq('branch_id', userProfile.branch_id)
                 .eq('role', 'branch_manager')
                 .not('email', 'is', null)
 
+            if (managerError) {
+                console.error('[sendManagerNotification] Error fetching branch managers:', managerError)
+            }
+
             if (!managers || managers.length === 0) {
-                console.warn('No manager found for branch:', userProfile.branch_id)
+                console.warn('[sendManagerNotification] No manager found for branch:', userProfile.branch_id)
+                // Fallback: Notify Admins if no branch manager is found? Or just return error.
                 return { error: 'No manager found' }
             }
 
             recipients = managers.map(m => m.email!)
         }
+
+        console.log(`[sendManagerNotification] Recipients calculated: [${recipients.join(', ')}]`)
 
         // 3. Send Email
         const info = await transporter.sendMail({
@@ -171,11 +182,11 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
             `
         })
 
-        console.log('Manager Notification sent: %s', info.messageId)
+        console.log('[sendManagerNotification] Email sent successfully: %s', info.messageId)
         return { success: true, data: info }
 
     } catch (err) {
-        console.error('Unexpected error sending manager email:', err)
+        console.error('[sendManagerNotification] Unexpected fatal error:', err)
         return { error: err }
     }
 }
