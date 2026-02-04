@@ -1,162 +1,89 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { getGeminiModel } from '@/utils/gemini/client'
-import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { getGeminiModel, generateWithFallback } from '@/utils/gemini/client'
+// ...
 
-export async function processReceipt(imageUrl: string) {
+// 2. Prompt Gemini with Structured Output
+const mimeType = imageResp.headers.get('content-type') || 'image/jpeg'
+// ... (Keep existing prompt definition) ...
+
+let text = "";
+let aiFailed = false;
+
+try {
+    // New Multi-Model Logic
+    const inlineData = { data: base64Image, mimeType: mimeType };
+    text = await generateWithFallback(prompt, inlineData);
+} catch (error) {
+    console.error("⚠️ All AI Models failed. Proceeding to Manual Mode.", error);
+    aiFailed = true;
+}
+
+let parsedData: any = {}
+if (!aiFailed && text) {
+    // Clean markdown if present
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim()
     try {
-        const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        parsedData = JSON.parse(text)
+    } catch (e) {
+        console.error("JSON Parse Error:", e)
+        // If JSON fails, treating as AI fail is safer than partial garbage
+        aiFailed = true;
+    }
+}
 
-        if (!user) return { error: 'Unauthorized' }
+// 2b. Fetch User Profile for Branch
+const { data: profile } = await supabase
+    .from('profiles')
+    .select('branch')
+    .eq('id', user.id)
+    .single()
 
-        // 1. Fetch image data
-        const imageResp = await fetch(imageUrl)
-        const imageBuffer = await imageResp.arrayBuffer()
-        const base64Image = Buffer.from(imageBuffer).toString('base64')
+const userBranch = profile?.branch || null
 
-        // 2. Prompt Gemini with Structured Output
-        const mimeType = imageResp.headers.get('content-type') || 'image/jpeg'
+// Map new schema to database fields
+// Note: DB expects vendor_name, vendor_cuit (snake_case)
+// parsedData is camelCase. We map it.
 
-        const prompt = `
-        Analiza esta factura. Extrae cabecera, CUIT del proveedor, moneda, y un desglose detallado de impuestos.
-        IMPORTANTE: 
-        1. El proveedor NO es "GROSSO TRACTORES SA". Ese es el cliente. Busca el emisor (logotipo arriba a la izquierda).
-        2. Debes separar el IVA (21%, 10.5%) de otros impuestos (Percepciones IIBB, Impuestos Internos, Percepción IVA).
-        Si la factura tiene ítems, extrae el detalle. Si es manuscrita o borrosa, haz tu mejor esfuerzo.
+const mappedData = {
+    vendor_name: parsedData.vendorName || (aiFailed ? '' : 'Desconocido'),
+    vendor_cuit: parsedData.vendorCuit,
+    invoice_number: parsedData.invoiceNumber,
+    invoice_type: parsedData.invoiceType,
+    date: parsedData.date || new Date().toISOString().split('T')[0],
+    total_amount: parsedData.totalAmount || 0,
+    currency: parsedData.currency || 'ARS',
+    // Store the FULL rich objects in parsed_data jsonb column
+    parsed_data: parsedData,
+    branch: userBranch,
+    user_id: user.id,
+    file_url: imageUrl,
+    status: 'draft' // Always draft initially
+}
 
-        CRITICAL OUTPUT FORMAT:
-        You MUST return a JSON object strictly adhering to this schema:
-        {
-          "vendorName": string, 
-          "vendorCuit": string (format XX-XXXXXXXX-X),
-          "invoiceNumber": string,
-          "invoiceType": string (One of: "FA", "FC", "CF", "ND", "NC"),
-          "date": string (YYYY-MM-DD),
-          "totalAmount": number,
-          "netAmount": number,
-          "taxAmount": number, 
-          "perceptionsAmount": number,
-          "currency": string ("ARS" or "USD"),
-          "exchangeRate": number,
-          "taxes": [
-            { "name": string, "amount": number }
-          ],
-          "items": [
-            { "description": string, "quantity": number, "unitPrice": number, "total": number }
-          ]
-        }
-        
-        Example of taxes array:
-        [
-            { "name": "IVA 21%", "amount": 210.00 },
-            { "name": "Percepción IIBB Santa Fe", "amount": 45.50 }
-        ]
-        `
+// 3. Create generic Invoice record
+const { data: invoice, error } = await supabase
+    .from('invoices')
+    .insert(mappedData)
+    .select()
+    .single()
 
-        let result;
-        let retryCount = 0;
-        const maxRetries = 3;
+if (error) {
+    console.error('Supabase Insert Error:', error)
+    return { error: 'Failed to save invoice (DB Error): ' + error.message }
+}
 
-        while (retryCount <= maxRetries) {
-            try {
-                const model = getGeminiModel();
-                result = await model.generateContent([
-                    prompt,
-                    {
-                        inlineData: {
-                            data: base64Image,
-                            mimeType: mimeType,
-                        },
-                    },
-                ]);
-                break;
-            } catch (error: any) {
-                const isRetryable =
-                    error.message.includes('429') ||
-                    error.message.includes('Too Many Requests') ||
-                    error.message.includes('503') ||
-                    error.message.includes('Overloaded') ||
-                    error.message.includes('fetch failed');
+if (aiFailed) {
+    return { success: true, invoiceId: invoice.id, warning: 'AI_FAILED' };
+}
 
-                if (isRetryable) {
-                    retryCount++;
-                    if (retryCount > maxRetries) throw error;
-                    const waitTime = 2000 * Math.pow(2, retryCount - 1);
-                    console.log(`Rate limited (429). Retrying in ${waitTime}ms... (Attempt ${retryCount}/${maxRetries})`);
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                } else {
-                    throw error;
-                }
-            }
-        }
-
-        if (!result) throw new Error('Failed to get response from Gemini')
-        const response = await result.response
-        let text = response.text()
-
-        console.log("Gemini Raw Response:", text)
-
-        // Clean markdown if present
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim()
-
-        let parsedData: any = {}
-        try {
-            parsedData = JSON.parse(text)
-        } catch (e) {
-            console.error("JSON Parse Error:", e)
-        }
-
-        // 2b. Fetch User Profile for Branch
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('branch')
-            .eq('id', user.id)
-            .single()
-
-        const userBranch = profile?.branch || null
-
-        // Map new schema to database fields
-        // Note: DB expects vendor_name, vendor_cuit (snake_case)
-        // parsedData is camelCase. We map it.
-
-        const mappedData = {
-            vendor_name: parsedData.vendorName || 'Desconocido',
-            vendor_cuit: parsedData.vendorCuit,
-            invoice_number: parsedData.invoiceNumber,
-            invoice_type: parsedData.invoiceType, // "FA", "FC" etc.
-            date: parsedData.date || new Date().toISOString().split('T')[0],
-            total_amount: parsedData.totalAmount || 0,
-            currency: parsedData.currency || 'ARS',
-            // Store the FULL rich objects in parsed_data jsonb column
-            parsed_data: parsedData,
-            branch: userBranch,
-            user_id: user.id,
-            file_url: imageUrl,
-            status: 'draft'
-        }
-
-        // 3. Create generic Invoice record
-        const { data: invoice, error } = await supabase
-            .from('invoices')
-            .insert(mappedData)
-            .select()
-            .single()
-
-        if (error) {
-            console.error('Supabase Insert Error:', error)
-            return { error: 'Failed to save invoice (DB Error): ' + error.message }
-        }
-
-        return { success: true, invoiceId: invoice.id }
+return { success: true, invoiceId: invoice.id }
 
     } catch (err: any) {
-        console.error('AI Processing Error:', err)
-
-        return { error: 'Failed to process receipt with AI: ' + (err.message || err) }
-    }
+    console.error('Critical Processing Error:', err)
+    return { error: 'Failed to process receipt: ' + (err.message || err) }
+}
 }
 
 export async function deleteExpense(id: string) {
