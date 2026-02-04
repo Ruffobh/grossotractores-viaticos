@@ -1,7 +1,7 @@
-'use server'
-
 import { createClient } from '@/utils/supabase/server'
 import { getGeminiModel, generateWithFallback } from '@/utils/gemini/client'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 export async function processReceipt(imageUrl: string) {
     try {
         const supabase = await createClient()
