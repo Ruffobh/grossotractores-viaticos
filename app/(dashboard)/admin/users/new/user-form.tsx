@@ -5,14 +5,14 @@ import Link from 'next/link'
 import styles from './style.module.css'
 import { ArrowLeft } from 'lucide-react'
 // import { createUser } from './actions'
-// import { MultiSelect } from '@/components/multi-select'
+import { MultiSelect } from '@/components/multi-select'
 
 interface NewUserFormProps {
     branchesOptions: { label: string, value: string }[]
 }
 
 export default function NewUserForm({ branchesOptions }: NewUserFormProps) {
-    // const [selectedBranches, setSelectedBranches] = useState<string[]>([])
+    const [selectedBranches, setSelectedBranches] = useState<string[]>([])
 
     return (
         <div className={styles.container}>
@@ -21,8 +21,14 @@ export default function NewUserForm({ branchesOptions }: NewUserFormProps) {
             </Link>
             <div className="p-4 border rounded bg-white">
                 <h2 className="text-xl font-bold">Formulario Simplificado de Prueba</h2>
-                <p>Si ves esto, el componente carga bien. El error está en uno de los hijos o en la Server Action.</p>
-                <p>Opciones recibidas: {branchesOptions.length}</p>
+                <p>Si ves esto, el componente MultiSelect funciona bien.</p>
+                <div style={{ maxWidth: '400px', marginTop: '20px' }}>
+                    <MultiSelect
+                        options={branchesOptions}
+                        selected={selectedBranches}
+                        onChange={setSelectedBranches}
+                    />
+                </div>
             </div>
         </div>
     )
