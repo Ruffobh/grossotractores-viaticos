@@ -1,46 +1,65 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export function getGeminiModel() {
+const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+
+export async function generateWithFallback(prompt: string, inlineData: any) {
     // --- SOLUCIÓN DE EMERGENCIA ---
     // Si Hostinger no lee la variable, pega tu clave aquí abajo entre las comillas.
     // Ejemplo: const HARDCODED_KEY = "AIzaSyd....";
     const HARDCODED_KEY = "AIzaSyD4KNM4dI7XZi-nlg2wcP5n7Sa8ZIN7rkM";
     // -----------------------------
 
-    // 1. Get and Trim Key
+    // 1. Get and Trim Key (Env Var Limit First!)
     let apiKey = process.env.GOOGLE_API_KEY || HARDCODED_KEY;
 
-    // Sanitize: Remove quotes if user added them in Hostinger (common mistake)
+    // Sanitize
     if (apiKey) {
         apiKey = apiKey.trim();
         if (apiKey.startsWith('"') && apiKey.endsWith('"')) apiKey = apiKey.slice(1, -1);
         if (apiKey.startsWith("'") && apiKey.endsWith("'")) apiKey = apiKey.slice(1, -1);
     }
 
-    console.log(`[Gemini Init] Key Available? ${!!apiKey ? 'YES' : 'NO'}`);
-    if (apiKey) {
-        console.log(`[Gemini Init] Key Length: ${apiKey.length}`);
-        console.log(`[Gemini Init] Key First 4: ${apiKey.substring(0, 4)}...`);
-    }
-
-    // Fallback: Check for Split keys (Anti-Leak Method 2 - The "Saw" Strategy)
-    if (!apiKey && process.env.GOOGLE_API_KEY_PART1 && process.env.GOOGLE_API_KEY_PART2) {
-        apiKey = process.env.GOOGLE_API_KEY_PART1 + process.env.GOOGLE_API_KEY_PART2;
-        console.log("🧩 Reassembled Google API Key from parts");
-    }
-
-    // Fallback: Check for Base64 encoded key
-    if (!apiKey && process.env.GOOGLE_API_KEY_B64) {
-        try {
-            apiKey = Buffer.from(process.env.GOOGLE_API_KEY_B64, 'base64').toString('utf-8');
-        } catch (e) { console.error("Base64 Decode Error", e); }
-    }
-
     if (!apiKey) {
         console.error("❌ GOOGLE_API_KEY is missing. Gemini calls will fail.");
+        throw new Error("Missing API Key");
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey || "dummy_key_to_prevent_crash");
-    // Use Explicit Version to avoid 404
-    return genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    let lastError = null;
+
+    for (const modelName of MODELS_TO_TRY) {
+        try {
+            console.log(`🤖 Trying AI Model: ${modelName}...`);
+            const model = genAI.getGenerativeModel({ model: modelName });
+
+            const result = await model.generateContent([
+                prompt,
+                { inlineData: inlineData },
+            ]);
+
+            const response = await result.response;
+            const text = response.text();
+
+            if (text) {
+                console.log(`✅ Success with ${modelName}`);
+                return text;
+            }
+        } catch (error: any) {
+            console.warn(`⚠️ Failed with ${modelName}:`, error.message);
+            lastError = error;
+            // Continue to next model...
+        }
+    }
+
+    // If we get here, all models failed
+    console.error("❌ All Gemini Models failed.");
+    throw lastError || new Error("All AI models failed");
+}
+
+// Keep legacy for backward compatibility if needed, but prefer generateWithFallback
+export function getGeminiModel() {
+    // ... legacy implementation if strictly needed, or just return primary ...
+    let apiKey = process.env.GOOGLE_API_KEY || "dummy";
+    return new GoogleGenerativeAI(apiKey).getGenerativeModel({ model: "gemini-2.0-flash" });
 }
