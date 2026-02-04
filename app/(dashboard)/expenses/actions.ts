@@ -155,11 +155,7 @@ export async function processReceipt(imageUrl: string) {
     } catch (err: any) {
         console.error('AI Processing Error:', err)
 
-        // Debug info about key availability (Safe to show admin)
-        const key = process.env.GOOGLE_API_KEY ? process.env.GOOGLE_API_KEY.trim() : '';
-        const debugInfo = `[Debug: KeyLen=${key.length}, Start=${key.substring(0, 4)}...]`;
-
-        return { error: 'Failed to process receipt with AI: ' + (err.message || err) + ' ' + debugInfo }
+        return { error: 'Failed to process receipt with AI: ' + (err.message || err) }
     }
 }
 

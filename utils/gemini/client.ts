@@ -41,6 +41,6 @@ export function getGeminiModel() {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey || "dummy_key_to_prevent_crash");
-    // Use Stable 1.5 Flash instead of Experimental 2.0
-    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Use Explicit Version to avoid 404
+    return genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
 }
