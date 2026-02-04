@@ -1,3 +1,5 @@
+'use server'
+
 import { createClient } from '@/utils/supabase/server'
 import { getGeminiModel, generateWithFallback } from '@/utils/gemini/client'
 import { revalidatePath } from 'next/cache'
