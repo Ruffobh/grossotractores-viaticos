@@ -1,6 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+// Verified models from user's API key list
+const MODELS_TO_TRY = [
+    "gemini-2.0-flash",           // Primary: Standard, fast
+    "gemini-2.0-flash-001",       // Backup: Versioned alias
+    "gemini-2.5-flash",           // Upgrade: Newer model (verified in list)
+    "gemini-2.0-flash-lite-001"   // Fallback: Lightweight/Fast
+];
 
 export async function generateWithFallback(prompt: string, inlineData: any) {
     // --- SOLUCIÓN DE EMERGENCIA ---
