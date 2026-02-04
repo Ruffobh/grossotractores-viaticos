@@ -31,6 +31,9 @@ export default function DownloadTemplateButton() {
         ];
         ws['!cols'] = wscols;
 
+        // Add AutoFilter (Visual "Table" features)
+        ws['!autofilter'] = { ref: "A1:H2" };
+
         // Create workbook
         const wb = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(wb, ws, "Plantilla")
