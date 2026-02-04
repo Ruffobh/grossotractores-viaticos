@@ -40,6 +40,7 @@ export default async function ExpensesPage({
         .from('invoices')
         .select('*, profiles(full_name, branch)')
         .order('date', { ascending: false })
+        .neq('status', 'draft') // Exclude incomplete uploads
 
     // RLS usually handles this, but we force it here for safety and UI consistency
     if (role === 'user') {

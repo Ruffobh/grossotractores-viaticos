@@ -135,7 +135,7 @@ export async function processReceipt(imageUrl: string) {
             branch: userBranch,
             user_id: user.id,
             file_url: imageUrl,
-            status: 'pending_approval'
+            status: 'draft'
         }
 
         // 3. Create generic Invoice record

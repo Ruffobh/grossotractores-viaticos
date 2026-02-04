@@ -57,6 +57,8 @@ export default async function DashboardPage({
         .select('*, profiles(branch, area, full_name), expense_category')
         .gte('date', startDate)
         .lte('date', endDate)
+        .lte('date', endDate)
+        .neq('status', 'draft')
         .order('date', { ascending: false })
 
     if (role === 'user') {
@@ -84,6 +86,7 @@ export default async function DashboardPage({
         .select('total_amount, payment_method')
         .eq('user_id', user.id)
         .neq('status', 'rejected') // Exclude rejected
+        .neq('status', 'draft') // Exclude drafts
         .gte('date', startOfCurrentMonth)
         .lte('date', endOfCurrentMonth)
 
