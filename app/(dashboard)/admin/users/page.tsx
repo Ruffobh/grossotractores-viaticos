@@ -59,6 +59,10 @@ export default async function UsersListPage() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h1 className={styles.title}>Gestión de Usuarios</h1>
+                <Link href="/admin/users/batch" className={styles.newButton} style={{ backgroundColor: '#10b981', marginRight: '10px' }}>
+                    <FileUp size={20} />
+                    Importar
+                </Link>
                 <Link href="/admin/users/new" className={styles.newButton}>
                     <UserPlus size={20} />
                     Nuevo Usuario
