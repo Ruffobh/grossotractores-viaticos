@@ -49,7 +49,14 @@ export default async function NewUserPage() {
             branchesOptions = BRANCHES.map(b => ({ label: b, value: b }))
         }
 
-        return <NewUserForm branchesOptions={branchesOptions} />
+        // return <NewUserForm branchesOptions={branchesOptions} />
+        return (
+            <div className="p-8">
+                <h1>Prueba de Aislamiento</h1>
+                <p>Si ves esto, el servidor funciona bien. El problema está en el formulario.</p>
+                <pre>{JSON.stringify(branchesOptions, null, 2)}</pre>
+            </div>
+        )
 
     } catch (e: any) {
         console.error("Critical Error in NewUserPage:", e)
