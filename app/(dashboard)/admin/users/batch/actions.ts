@@ -38,12 +38,26 @@ export async function processBatchUsers(users: any[]) {
         }
 
         try {
+            // Resolve Branch ID if branch name is provided
+            let branchId = null
+            if (branch) {
+                const { data: branchRecord } = await supabase
+                    .from('branches')
+                    .select('id')
+                    .ilike('name', branch) // Use ilike for case-insensitivity
+                    .single()
+
+                if (branchRecord) {
+                    branchId = branchRecord.id
+                }
+            }
+
             // 1. Create Auth User
             const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
                 email,
                 password, // Should be random or default
                 email_confirm: true,
-                user_metadata: { full_name, role, branch, area }
+                user_metadata: { full_name, role, branch, area, branch_id: branchId }
             })
 
             if (authError) throw authError

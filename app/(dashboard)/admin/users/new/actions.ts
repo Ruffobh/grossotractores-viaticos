@@ -61,6 +61,21 @@ export async function createUser(formData: FormData) {
             }
         )
 
+        // Resolve Branch ID from the first branch in the list
+        let branchId = null
+        if (branches.length > 0) {
+            const branchName = branches[0]
+            const { data: branchRecord } = await adminAuthClient
+                .from('branches')
+                .select('id')
+                .ilike('name', branchName)
+                .single()
+
+            if (branchRecord) {
+                branchId = branchRecord.id
+            }
+        }
+
         // 1. Create Auth User
         const { data: newUser, error: authError } = await adminAuthClient.auth.admin.createUser({
             email,
@@ -87,6 +102,7 @@ export async function createUser(formData: FormData) {
                 full_name,
                 role,
                 branch: branches.length > 0 ? branches[0] : null,
+                branch_id: branchId,
                 branches: branches,
                 area,
                 monthly_limit: monthlyLimit,
