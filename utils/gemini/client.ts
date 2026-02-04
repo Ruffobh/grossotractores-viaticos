@@ -2,12 +2,19 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export function getGeminiModel() {
     // 1. Get and Trim Key
-    let apiKey = process.env.GOOGLE_API_KEY ? process.env.GOOGLE_API_KEY.trim() : undefined;
+    let apiKey = process.env.GOOGLE_API_KEY;
+
+    // Sanitize: Remove quotes if user added them in Hostinger (common mistake)
+    if (apiKey) {
+        apiKey = apiKey.trim();
+        if (apiKey.startsWith('"') && apiKey.endsWith('"')) apiKey = apiKey.slice(1, -1);
+        if (apiKey.startsWith("'") && apiKey.endsWith("'")) apiKey = apiKey.slice(1, -1);
+    }
 
     console.log(`[Gemini Init] Key Available? ${!!apiKey ? 'YES' : 'NO'}`);
     if (apiKey) {
         console.log(`[Gemini Init] Key Length: ${apiKey.length}`);
-        console.log(`[Gemini Init] Key Start: ${apiKey.substring(0, 4)}...`);
+        console.log(`[Gemini Init] Key First 4: ${apiKey.substring(0, 4)}...`);
     }
 
     // Fallback: Check for Split keys (Anti-Leak Method 2 - The "Saw" Strategy)
@@ -28,5 +35,6 @@ export function getGeminiModel() {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey || "dummy_key_to_prevent_crash");
-    return genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Use Stable 1.5 Flash instead of Experimental 2.0
+    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 }
