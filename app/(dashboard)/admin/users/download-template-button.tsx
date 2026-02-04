@@ -1,22 +1,42 @@
 'use client'
 
 import { Download } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import styles from './style.module.css'
 
 export default function DownloadTemplateButton() {
 
     function handleDownload() {
+        // Headers aligned with action expectations
         const headers = ['email', 'full_name', 'role', 'branch', 'area', 'password', 'monthly_limit', 'cash_limit']
-        const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" +
-            "ejemplo@email.com,Juan Perez,user,Rafaela,Repuestos,pass123,500000,200000"
 
-        const encodedUri = encodeURI(csvContent)
-        const link = document.createElement("a")
-        link.setAttribute("href", encodedUri)
-        link.setAttribute("download", "plantilla_usuarios.csv")
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+        // Sample data row
+        const data = [
+            ['ejemplo@email.com', 'Juan Perez', 'user', 'Rafaela', 'Repuestos', 'pass123', 500000, 200000]
+        ]
+
+        // Create worksheet
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...data])
+
+        // Set column widths for better visibility
+        const wscols = [
+            { wch: 25 }, // email
+            { wch: 20 }, // full_name
+            { wch: 10 }, // role
+            { wch: 15 }, // branch
+            { wch: 15 }, // area
+            { wch: 15 }, // password
+            { wch: 15 }, // monthly
+            { wch: 15 }, // cash
+        ];
+        ws['!cols'] = wscols;
+
+        // Create workbook
+        const wb = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(wb, ws, "Plantilla")
+
+        // Download
+        XLSX.writeFile(wb, "plantilla_usuarios.xlsx")
     }
 
     return (

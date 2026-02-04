@@ -3,20 +3,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 
-export async function processBatchUsers(formData: FormData) {
-    const file = formData.get('file') as File
-    if (!file) return { errors: ['No se seleccionó ningún archivo.'] }
-
-    const text = await file.text()
-    const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0)
-
-    // Remove header if present (heuristic: checks for "email" in first row)
-    const header = rows[0].toLowerCase()
-    if (header.includes('email') && header.includes('role')) {
-        rows.shift()
-    }
-
-    if (rows.length === 0) return { errors: ['El archivo está vacío.'] }
+export async function processBatchUsers(users: any[]) {
+    if (!users || users.length === 0) return { errors: ['No se enviaron datos para procesar.'] }
 
     // Init Admin Client
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -32,27 +20,18 @@ export async function processBatchUsers(formData: FormData) {
     let failureCount = 0
     let errors: string[] = []
 
-    for (const [index, row] of rows.entries()) {
-        const cols = row.split(',').map(c => c.trim().replace(/^"|"$/g, '')) // Simple CSV parse handling quotes
+    for (const [index, row] of users.entries()) {
+        const email = row.email || row.Email
+        const full_name = row.full_name || row.Nombre
+        const role = row.role || row.Rol || 'user'
+        const branch = row.branch || row.Sucursal || ''
+        const area = row.area || row.Area || ''
+        const password = String(row.password || row.Contraseña || 'pass123')
+        const monthly_limit = Number(row.monthly_limit || 0)
+        const cash_limit = Number(row.cash_limit || 0)
 
-        // Expected columns: email, full_name, role, branch, area, password, monthly_limit, cash_limit
-        // Allow comma or semicolon separator
-        const values = row.includes(';') ? row.split(';').map(c => c.trim()) : cols
-
-        if (values.length < 2) continue // Skip invalid lines
-
-        const [
-            email,
-            full_name,
-            role = 'user',
-            branch = '',
-            area = '',
-            password = 'password123', // Default if missing
-            monthly_limit = '0',
-            cash_limit = '0'
-        ] = values
-
-        if (!email || !email.includes('@')) {
+        // Basic Validation
+        if (!email || !String(email).includes('@')) {
             failureCount++
             errors.push(`Fila ${index + 1}: Email inválido (${email})`)
             continue
@@ -62,7 +41,7 @@ export async function processBatchUsers(formData: FormData) {
             // 1. Create Auth User
             const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
                 email,
-                password,
+                password, // Should be random or default
                 email_confirm: true,
                 user_metadata: { full_name, role, branch, area }
             })
@@ -77,12 +56,12 @@ export async function processBatchUsers(formData: FormData) {
                     id: newUser.user.id,
                     email,
                     full_name,
-                    role,
+                    role: role.toLowerCase(),
                     branch: branch || null,
-                    branches: [branch].filter(Boolean), // Default single branch to array
+                    branches: [branch].filter(Boolean),
                     area,
-                    monthly_limit: Number(monthly_limit) || 0,
-                    cash_limit: Number(cash_limit) || 0
+                    monthly_limit,
+                    cash_limit
                 })
 
             if (profileError) throw profileError
@@ -91,7 +70,6 @@ export async function processBatchUsers(formData: FormData) {
 
         } catch (e: any) {
             failureCount++
-            // Don't log "User already registered" as a critical error, just skip
             if (e.message?.includes('already registered')) {
                 errors.push(`Fila ${index + 1}: El usuario ${email} ya existe.`)
             } else {
