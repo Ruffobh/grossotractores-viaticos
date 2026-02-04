@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import styles from './style.module.css'
-import { UserPlus, Edit, Trash2 } from 'lucide-react'
+import { UserPlus, Edit, Trash2, FileUp } from 'lucide-react'
 
 export default async function UsersListPage() {
     const supabase = await createClient()
