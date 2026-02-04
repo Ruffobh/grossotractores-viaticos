@@ -1,7 +1,14 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export function getGeminiModel() {
-    let apiKey = process.env.GOOGLE_API_KEY;
+    // 1. Get and Trim Key
+    let apiKey = process.env.GOOGLE_API_KEY ? process.env.GOOGLE_API_KEY.trim() : undefined;
+
+    console.log(`[Gemini Init] Key Available? ${!!apiKey ? 'YES' : 'NO'}`);
+    if (apiKey) {
+        console.log(`[Gemini Init] Key Length: ${apiKey.length}`);
+        console.log(`[Gemini Init] Key Start: ${apiKey.substring(0, 4)}...`);
+    }
 
     // Fallback: Check for Split keys (Anti-Leak Method 2 - The "Saw" Strategy)
     if (!apiKey && process.env.GOOGLE_API_KEY_PART1 && process.env.GOOGLE_API_KEY_PART2) {
