@@ -1,8 +1,14 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export function getGeminiModel() {
+    // --- SOLUCIÓN DE EMERGENCIA ---
+    // Si Hostinger no lee la variable, pega tu clave aquí abajo entre las comillas.
+    // Ejemplo: const HARDCODED_KEY = "AIzaSyd....";
+    const HARDCODED_KEY = "";
+    // -----------------------------
+
     // 1. Get and Trim Key
-    let apiKey = process.env.GOOGLE_API_KEY;
+    let apiKey = process.env.GOOGLE_API_KEY || HARDCODED_KEY;
 
     // Sanitize: Remove quotes if user added them in Hostinger (common mistake)
     if (apiKey) {
