@@ -4,7 +4,7 @@ export function getGeminiModel() {
     // --- SOLUCIÓN DE EMERGENCIA ---
     // Si Hostinger no lee la variable, pega tu clave aquí abajo entre las comillas.
     // Ejemplo: const HARDCODED_KEY = "AIzaSyd....";
-    const HARDCODED_KEY = "";
+    const HARDCODED_KEY = "AIzaSyD4KNM4dI7XZi-nlg2wcP5n7Sa8ZIN7rkM";
     // -----------------------------
 
     // 1. Get and Trim Key
