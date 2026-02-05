@@ -191,7 +191,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                         name="expense_category"
                         value={expenseCategory}
                         onChange={(e) => setExpenseCategory(e.target.value)}
-                        className={`${styles.input} ${!expenseCategory ? 'border-red-500 bg-red-50 text-red-700 font-medium animate-pulse' : ''}`}
+                        className={`${styles.input} ${!expenseCategory ? styles.inputInvalid : ''}`}
                         required
                     >
                         <option value="" disabled>Seleccione...</option>
@@ -209,7 +209,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                         name="payment_method"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className={`${styles.input} ${!paymentMethod ? 'border-red-500 bg-red-50 text-red-700 font-medium animate-pulse' : ''}`}
+                        className={`${styles.input} ${!paymentMethod ? styles.inputInvalid : ''}`}
                         required
                     >
                         <option value="" disabled>Seleccione...</option>
