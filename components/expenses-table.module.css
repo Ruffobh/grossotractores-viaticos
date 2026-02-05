@@ -76,6 +76,28 @@
     box-sizing: border-box;
 }
 
+@media (max-width: 640px) {
+    .controlsBar {
+        flex-direction: column;
+        /* Force vertical stack */
+        align-items: stretch;
+        /* Full width items */
+        gap: 0.75rem;
+    }
+
+    .actionsContainer {
+        width: 100%;
+        justify-content: space-between;
+        /* Space out search/export if needed, or stack them too */
+    }
+
+    .exportButton {
+        width: 100%;
+        /* Full width button on mobile */
+        justify-content: center;
+    }
+}
+
 .searchWrapper {
     position: relative;
     flex: 1 1 300px;
