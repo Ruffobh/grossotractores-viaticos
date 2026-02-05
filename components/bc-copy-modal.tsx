@@ -130,17 +130,17 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>Tipo</th>
-                                <th>Nº</th>
-                                <th>Descripción</th>
-                                <th>Grupo IVA</th>
-                                <th style={{ textAlign: 'right' }}>Cant.</th>
-                                <th style={{ textAlign: 'right' }}>Coste</th>
-                                <th>Cód. Área</th>
+                                <th style={{ minWidth: '80px' }}>Tipo</th>
+                                <th style={{ minWidth: '90px' }}>Nº</th>
+                                <th style={{ minWidth: '250px' }}>Descripción</th>
+                                <th style={{ minWidth: '100px' }}>Grupo IVA</th>
+                                <th style={{ textAlign: 'right', minWidth: '60px' }}>Cant.</th>
+                                <th style={{ textAlign: 'right', minWidth: '100px' }}>Coste</th>
+                                <th style={{ minWidth: '90px' }}>Cód. Área</th>
                                 <th>% Desc</th>
-                                <th style={{ textAlign: 'right' }}>Importe</th>
-                                <th>Sucursal</th>
-                                <th>Área</th>
+                                <th style={{ textAlign: 'right', minWidth: '120px' }}>Importe</th>
+                                <th style={{ minWidth: '80px' }}>Sucursal</th>
+                                <th style={{ minWidth: '80px' }}>Área</th>
                                 <th>OP</th>
                                 <th>Prov</th>
                                 <th>UDN</th>
