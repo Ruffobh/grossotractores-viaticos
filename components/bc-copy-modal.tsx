@@ -140,7 +140,7 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
                                 <th style={{ minWidth: '70px' }}>% Desc</th>
                                 <th style={{ textAlign: 'right', minWidth: '140px' }}>Importe</th>
                                 <th style={{ minWidth: '100px' }}>Sucursal</th>
-                                <th style={{ minWidth: '100px' }}>Área</th>
+                                <th style={{ minWidth: '150px' }}>Área</th>
                                 <th style={{ minWidth: '60px' }}>OP</th>
                                 <th style={{ minWidth: '60px' }}>Prov</th>
                                 <th style={{ minWidth: '60px' }}>UDN</th>
