@@ -131,19 +131,19 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
                         <thead>
                             <tr>
                                 <th style={{ minWidth: '80px' }}>Tipo</th>
-                                <th style={{ minWidth: '90px' }}>Nº</th>
-                                <th style={{ minWidth: '250px' }}>Descripción</th>
-                                <th style={{ minWidth: '100px' }}>Grupo IVA</th>
-                                <th style={{ textAlign: 'right', minWidth: '60px' }}>Cant.</th>
-                                <th style={{ textAlign: 'right', minWidth: '100px' }}>Coste</th>
-                                <th style={{ minWidth: '90px' }}>Cód. Área</th>
-                                <th>% Desc</th>
-                                <th style={{ textAlign: 'right', minWidth: '120px' }}>Importe</th>
-                                <th style={{ minWidth: '80px' }}>Sucursal</th>
-                                <th style={{ minWidth: '80px' }}>Área</th>
-                                <th>OP</th>
-                                <th>Prov</th>
-                                <th>UDN</th>
+                                <th style={{ minWidth: '100px' }}>Nº</th>
+                                <th style={{ minWidth: '300px' }}>Descripción</th>
+                                <th style={{ minWidth: '110px' }}>Grupo IVA</th>
+                                <th style={{ textAlign: 'right', minWidth: '70px' }}>Cant.</th>
+                                <th style={{ textAlign: 'right', minWidth: '120px' }}>Coste</th>
+                                <th style={{ minWidth: '110px' }}>Cód. Área</th>
+                                <th style={{ minWidth: '70px' }}>% Desc</th>
+                                <th style={{ textAlign: 'right', minWidth: '140px' }}>Importe</th>
+                                <th style={{ minWidth: '100px' }}>Sucursal</th>
+                                <th style={{ minWidth: '100px' }}>Área</th>
+                                <th style={{ minWidth: '60px' }}>OP</th>
+                                <th style={{ minWidth: '60px' }}>Prov</th>
+                                <th style={{ minWidth: '60px' }}>UDN</th>
                             </tr>
                         </thead>
                         <tbody>
