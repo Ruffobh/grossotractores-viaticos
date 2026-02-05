@@ -184,73 +184,118 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
             )}
 
             <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th onClick={() => isManagerOrAdmin && handleSort('date')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '100px' }}>
-                                Fecha {isManagerOrAdmin && sortConfig?.key === 'date' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
-                            </th>
-                            {isManagerOrAdmin && (
-                                <th onClick={() => handleSort('user')} className={styles.sortableHeader} style={{ width: '15%' }}>
-                                    Usuario {sortConfig?.key === 'user' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.activeSort} /> : <ArrowDown size={14} className={styles.activeSort} />)}
+                {/* Desktop View - Hidden on Mobile */}
+                <div className={styles.desktopView}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th onClick={() => isManagerOrAdmin && handleSort('date')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '100px' }}>
+                                    Fecha {isManagerOrAdmin && sortConfig?.key === 'date' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
                                 </th>
+                                {isManagerOrAdmin && (
+                                    <th onClick={() => handleSort('user')} className={styles.sortableHeader} style={{ width: '15%' }}>
+                                        Usuario {sortConfig?.key === 'user' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.activeSort} /> : <ArrowDown size={14} className={styles.activeSort} />)}
+                                    </th>
+                                )}
+                                <th onClick={() => isManagerOrAdmin && handleSort('vendor_name')} className={isManagerOrAdmin ? styles.sortableHeader : ''}>
+                                    Proveedor {isManagerOrAdmin && sortConfig?.key === 'vendor_name' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
+                                </th>
+                                <th style={{ width: '160px' }}>N° Comp.</th>
+                                <th onClick={() => isManagerOrAdmin && handleSort('invoice_type')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '100px' }}>
+                                    Tipo {isManagerOrAdmin && sortConfig?.key === 'invoice_type' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
+                                </th>
+                                <th onClick={() => isManagerOrAdmin && handleSort('total_amount')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '160px' }}>
+                                    Monto {isManagerOrAdmin && sortConfig?.key === 'total_amount' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
+                                </th>
+                                <th style={{ width: '150px' }}>Estado</th>
+                                <th style={{ width: '100px' }}>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {displayedExpenses.map((expense) => (
+                                <tr key={expense.id}>
+                                    <td><span className={styles.tableValue}>{new Date(expense.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</span></td>
+                                    {isManagerOrAdmin && <td><span className={styles.cellContent}>{expense.profiles?.full_name || 'Desconocido'}</span></td>}
+                                    <td><span className={styles.cellContent}>{expense.vendor_name}</span></td>
+                                    <td><span className={styles.cellContent}>{expense.invoice_number || '-'}</span></td>
+                                    <td><span className={styles.cellContent}>{formatInvoiceType(expense.invoice_type)}</span></td>
+                                    <td className={styles.amount}>
+                                        <span className={styles.tableValue}>
+                                            {expense.currency} {expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`${styles.badge} ${styles[expense.status || 'pending']}`}>
+                                            {formatStatus(expense.status)}
+                                        </span>
+                                    </td>
+                                    <td className={styles.actionsWrapper}>
+                                        <Link href={`/expenses/${expense.id}`} className={styles.link}>Ver</Link>
+                                        <button onClick={() => handleDeleteClick(expense.id)} className={styles.deleteButton} title="Eliminar">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {displayedExpenses.length === 0 && (
+                                <tr>
+                                    <td colSpan={8} className="text-center p-4 text-gray-500">No se encontraron comprobantes.</td>
+                                </tr>
                             )}
-                            <th onClick={() => isManagerOrAdmin && handleSort('vendor_name')} className={isManagerOrAdmin ? styles.sortableHeader : ''}>
-                                Proveedor {isManagerOrAdmin && sortConfig?.key === 'vendor_name' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
-                            </th>
-                            <th style={{ width: '160px' }}>N° Comp.</th>
-                            <th onClick={() => isManagerOrAdmin && handleSort('invoice_type')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '100px' }}>
-                                Tipo {isManagerOrAdmin && sortConfig?.key === 'invoice_type' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
-                            </th>
-                            <th onClick={() => isManagerOrAdmin && handleSort('total_amount')} className={isManagerOrAdmin ? styles.sortableHeader : ''} style={{ width: '160px' }}>
-                                Monto {isManagerOrAdmin && sortConfig?.key === 'total_amount' && (sortConfig.direction === 'asc' ? <ArrowUp size={14} className={styles.sortIcon} /> : <ArrowDown size={14} className={styles.sortIcon} />)}
-                            </th>
-                            <th style={{ width: '150px' }}>Estado</th>
-                            <th style={{ width: '100px' }}>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {displayedExpenses.map((expense) => (
-                            <tr key={expense.id}>
-                                <td data-label="Fecha"><span className={styles.tableValue}>{new Date(expense.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</span></td>
-                                {isManagerOrAdmin && <td data-label="Usuario"><span className={styles.cellContent}>{expense.profiles?.full_name || 'Desconocido'}</span></td>}
-                                <td data-label="Proveedor"><span className={styles.cellContent}>{expense.vendor_name}</span></td>
-                                <td data-label="N° Comp."><span className={styles.cellContent}>{expense.invoice_number || '-'}</span></td>
-                                <td data-label="Tipo"><span className={styles.cellContent}>{formatInvoiceType(expense.invoice_type)}</span></td>
-                                <td className={styles.amount} data-label="Monto">
-                                    <span className={styles.tableValue}>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Mobile View - Hidden on Desktop */}
+                <div className={styles.mobileView}>
+                    {displayedExpenses.map((expense) => (
+                        <div key={expense.id} className={styles.mobileCard}>
+                            <div className={styles.cardHeader}>
+                                <span className={styles.cardDate}>{new Date(expense.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</span>
+                                <span className={`${styles.badge} ${styles[expense.status || 'pending']}`}>
+                                    {formatStatus(expense.status)}
+                                </span>
+                            </div>
+
+                            <div className={styles.cardBody}>
+                                {isManagerOrAdmin && (
+                                    <div className={styles.cardRow}>
+                                        <span className={styles.cardLabel}>Usuario:</span>
+                                        <span className={styles.cardValue}>{expense.profiles?.full_name || 'Desconocido'}</span>
+                                    </div>
+                                )}
+                                <div className={styles.cardRow}>
+                                    <span className={styles.cardLabel}>Proveedor:</span>
+                                    <span className={styles.cardValue}><strong>{expense.vendor_name}</strong></span>
+                                </div>
+                                <div className={styles.cardRow}>
+                                    <span className={styles.cardLabel}>N° Comp:</span>
+                                    <span className={styles.cardValue}>{expense.invoice_number || '-'}</span>
+                                </div>
+                                <div className={styles.cardRow}>
+                                    <span className={styles.cardLabel}>Tipo:</span>
+                                    <span className={styles.cardValue}>{formatInvoiceType(expense.invoice_type)}</span>
+                                </div>
+                                <div className={styles.cardRow}>
+                                    <span className={styles.cardLabel}>Monto:</span>
+                                    <span className={styles.cardAmount}>
                                         {expense.currency} {expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                     </span>
-                                </td>
-                                <td data-label="Estado">
-                                    <span className={`${styles.badge} ${styles[expense.status || 'pending']}`}>
-                                        {formatStatus(expense.status)}
-                                    </span>
-                                </td>
-                                <td className={styles.actionsWrapper}>
-                                    <Link href={`/expenses/${expense.id}`} className={styles.link}>
-                                        Ver
-                                    </Link>
+                                </div>
+                            </div>
 
-                                    <button
-                                        onClick={() => handleDeleteClick(expense.id)}
-                                        className={styles.deleteButton}
-                                        title="Eliminar"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-
-
-                                </td>
-                            </tr>
-                        ))}
-                        {displayedExpenses.length === 0 && (
-                            <tr>
-                                <td colSpan={7} className="text-center p-4 text-gray-500">No se encontraron comprobantes.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                            <div className={styles.cardActions}>
+                                <Link href={`/expenses/${expense.id}`} className={styles.cardLink}>Ver Detalle</Link>
+                                <button onClick={() => handleDeleteClick(expense.id)} className={styles.cardDeleteButton}>
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                    {displayedExpenses.length === 0 && (
+                        <div className="text-center p-4 text-gray-500">No se encontraron comprobantes.</div>
+                    )}
+                </div>
             </div>
             {deleteId && (
                 <div className={styles.modalOverlay}>

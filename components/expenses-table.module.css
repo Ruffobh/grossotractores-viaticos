@@ -281,173 +281,113 @@
 }
 
 /* Empty State */
-/* Mobile Card View Adaptation */
-@media (max-width: 1024px) {
+/* Default: Hide Mobile View */
+.mobileView {
+    display: none;
+}
 
-    .tableWrapper,
-    .table,
-    .table tbody,
-    .table tr {
+/* Mobile Card Styles */
+.mobileCard {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    /* Softer shadow */
+    border: 1px solid var(--gray-200);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--gray-100);
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.cardDate {
+    font-weight: 600;
+    color: var(--gray-700);
+    font-size: 0.9rem;
+}
+
+.cardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cardRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.cardLabel {
+    color: var(--gray-500);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    flex: 0 0 auto;
+    /* Don't shrink */
+}
+
+.cardValue {
+    text-align: right;
+    font-size: 0.9rem;
+    color: var(--nh-black);
+    word-break: break-word;
+    /* Ensure wrapping */
+}
+
+.cardAmount {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--nh-blue);
+}
+
+.cardActions {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--gray-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cardLink {
+    color: var(--nh-blue);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.cardDeleteButton {
+    background-color: #fef2f2;
+    color: var(--danger);
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+}
+
+/* Mobile Media Query Switcher */
+@media (max-width: 1024px) {
+    .desktopView {
+        display: none !important;
+    }
+
+    .mobileView {
         display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        /* Prevent flex items from refusing to shrink */
-        box-sizing: border-box !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+        padding-top: 1rem;
     }
 
     .tableWrapper {
         background: transparent !important;
-        box-shadow: none !important;
+        /* Hide wrapper bg on mobile */
         border: none !important;
+        box-shadow: none !important;
         padding: 0 !important;
-    }
-
-    .table thead {
-        display: none !important;
-    }
-
-    .table tbody tr {
-        display: flex !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        background: white;
-        margin-bottom: 1rem;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--gray-200);
-        padding: 0.75rem !important;
-        box-sizing: border-box !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-    }
-
-    .table td {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: flex-start;
-        /* Let flex-grow handle spacing */
-        align-items: flex-start;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 0.5rem 0 !important;
-        border-bottom: 1px solid var(--gray-100);
-        text-align: right;
-        gap: 1rem;
-        /* Space between label and value */
-    }
-
-    .table td:last-child {
-        border-bottom: none;
-    }
-
-    .table td::before {
-        content: attr(data-label);
-        font-weight: 700;
-        color: var(--gray-500);
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        text-align: left;
-
-        /* Flex properties for Label */
-        flex: 0 0 35%;
-        /* Fixed 35% width, no grow/shrink */
-        max-width: 35%;
-    }
-
-    /* Center the actions button on mobile */
-    .table td:last-child {
-        justify-content: flex-end;
-        padding-top: 0.75rem !important;
-        margin-top: 0;
-        border-top: 1px solid var(--gray-100);
-        border-bottom: none;
-        gap: 0.75rem;
-    }
-
-    .table td:last-child::before {
-        display: none;
-    }
-
-    /* Prevent horizontal overflow on small screens */
-    .tableWrapper {
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow-x: hidden;
-    }
-
-    .table tbody tr {
-        max-width: 100%;
-        box-sizing: border-box;
-    }
-
-    .cellContent {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: 150px;
-        width: 100%;
-        text-align: right;
-    }
-
-    /* Wrap content if it's too long, don't just push it out */
-    .tableValue {
-        white-space: normal !important;
-        /* Allow wrapping */
-        word-break: break-word;
-        /* Break long words if needed */
-        text-align: right;
-        display: block;
-        color: var(--nh-black) !important;
-        flex: 1;
-        max-width: 60%;
-        /* Ensure it doesn't take over the label space too much */
-    }
-
-
-
-    /* Assign max-width to the value part (right side) */
-    .table td>span,
-    .tableValue,
-    .cellContent {
-        text-align: right;
-        width: 60%;
-        /* Safer width */
-        max-width: 60%;
-        white-space: normal !important;
-        word-wrap: break-word !important;
-        word-break: break-word !important;
-        overflow-wrap: anywhere !important;
-        /* Force break if needed */
-        min-width: 0;
-        /* Allow shrinking */
-    }
-
-    .amount {
-        font-size: 1rem;
-        /* Slightly smaller to fit */
-    }
-
-    /* Force the TR to never exceed screen */
-    .table tbody tr {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding: 0.75rem 0.5rem !important;
-        /* Slightly reduced side padding */
-    }
-
-    .deleteButton {
-        padding: 0.5rem;
-        color: var(--danger);
-        /* Make delete more visible */
-        background-color: #fef2f2;
-        border-radius: 6px;
     }
 }
 
