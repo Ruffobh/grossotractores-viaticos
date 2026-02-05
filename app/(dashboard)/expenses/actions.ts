@@ -57,6 +57,7 @@ export async function processReceipt(imageUrl: string) {
 
         let text = "";
         let aiFailed = false;
+        let aiErrorDetail = "";
 
         try {
             // New Multi-Model Logic
@@ -64,9 +65,10 @@ export async function processReceipt(imageUrl: string) {
             // Switch to 1.5-flash as primary for stability with receipts
             text = await generateWithFallback(prompt, inlineData);
             console.log("🤖 AI Response:", text); // Debug log
-        } catch (error) {
+        } catch (error: any) {
             console.error("⚠️ All AI Models failed. Proceeding to Manual Mode.", error);
             aiFailed = true;
+            aiErrorDetail = error.message || "Unknown AI Error";
         }
 
         let parsedData: any = {}
@@ -79,6 +81,7 @@ export async function processReceipt(imageUrl: string) {
                 console.error("JSON Parse Error:", e)
                 // If JSON fails, treating as AI fail is safer than partial garbage
                 aiFailed = true;
+                aiErrorDetail = "JSON Parse Error";
             }
         }
 
@@ -126,7 +129,7 @@ export async function processReceipt(imageUrl: string) {
         }
 
         if (aiFailed) {
-            return { success: true, invoiceId: invoice.id, warning: 'AI_FAILED' };
+            return { success: true, invoiceId: invoice.id, warning: 'AI_FAILED', debugInfo: aiErrorDetail };
         }
 
         return { success: true, invoiceId: invoice.id }

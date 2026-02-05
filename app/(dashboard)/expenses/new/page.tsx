@@ -73,7 +73,8 @@ export default function NewExpensePage() {
 
             if (result && result.success && result.invoiceId) {
                 if (result.warning === 'AI_FAILED') {
-                    alert('⚠️ La IA no pudo leer el comprobante (posible saturación). Se ha activado el MODO MANUAL. Por favor complete los datos.')
+                    // Show actual error for debugging production (temporary)
+                    alert(`⚠️ La IA falló. MODO MANUAL activado.\n\nError Técnico: ${result.debugInfo || 'Desconocido'}`)
                 }
                 setUploadStatus('¡Completado! Redirigiendo...')
                 router.push(`/expenses/${result.invoiceId}/validate`)
