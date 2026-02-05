@@ -96,6 +96,13 @@
         /* Full width button on mobile */
         justify-content: center;
     }
+
+    .searchWrapper {
+        flex: 0 0 auto;
+        /* Reset flex basis so it doesn't become height */
+        width: 100%;
+        min-height: auto;
+    }
 }
 
 .searchWrapper {
