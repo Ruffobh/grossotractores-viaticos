@@ -17,7 +17,8 @@ export const metadata: Metadata = {
     title: "Viáticos Grosso",
   },
   icons: {
-    icon: '/icon.png',
+    icon: '/icon-192x192.png',
+    apple: '/icon-192x192.png',
   },
 };
 
