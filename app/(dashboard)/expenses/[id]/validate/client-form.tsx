@@ -184,33 +184,37 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 </div>
 
                 <div>
-                    <label className={styles.label}>Tipo de Gasto <span className="text-red-500">*</span></label>
+                    <label className={styles.label}>
+                        Tipo de Gasto <span className="text-red-500">*</span>
+                    </label>
                     <select
                         name="expense_category"
                         value={expenseCategory}
                         onChange={(e) => setExpenseCategory(e.target.value)}
-                        className={styles.input}
+                        className={`${styles.input} ${!expenseCategory ? 'border-red-500 bg-red-50 text-red-700 font-medium animate-pulse' : ''}`}
                         required
                     >
                         <option value="" disabled>Seleccione...</option>
                         {EXPENSE_TYPES.map(t => (
-                            <option key={t} value={t}>{t}</option>
+                            <option key={t} value={t} className="text-gray-900 bg-white">{t}</option>
                         ))}
                     </select>
                 </div>
 
                 <div>
-                    <label className={styles.label}>Forma de Pago <span className="text-red-500">*</span></label>
+                    <label className={styles.label}>
+                        Forma de Pago <span className="text-red-500">*</span>
+                    </label>
                     <select
                         name="payment_method"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className={styles.input}
+                        className={`${styles.input} ${!paymentMethod ? 'border-red-500 bg-red-50 text-red-700 font-medium animate-pulse' : ''}`}
                         required
                     >
                         <option value="" disabled>Seleccione...</option>
                         {PAYMENT_METHODS.map(m => (
-                            <option key={m.value} value={m.value}>{m.label}</option>
+                            <option key={m.value} value={m.value} className="text-gray-900 bg-white">{m.label}</option>
                         ))}
                     </select>
                 </div>
