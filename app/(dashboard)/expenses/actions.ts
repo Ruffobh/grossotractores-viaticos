@@ -61,7 +61,9 @@ export async function processReceipt(imageUrl: string) {
         try {
             // New Multi-Model Logic
             const inlineData = { data: base64Image, mimeType: mimeType };
+            // Switch to 1.5-flash as primary for stability with receipts
             text = await generateWithFallback(prompt, inlineData);
+            console.log("🤖 AI Response:", text); // Debug log
         } catch (error) {
             console.error("⚠️ All AI Models failed. Proceeding to Manual Mode.", error);
             aiFailed = true;
@@ -106,6 +108,8 @@ export async function processReceipt(imageUrl: string) {
             branch: userBranch,
             user_id: user.id,
             file_url: imageUrl,
+            payment_method: null,
+            expense_category: null,
             status: 'draft' // Always draft initially
         }
 

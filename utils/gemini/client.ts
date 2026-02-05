@@ -1,8 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Verified models from user's API key list
+// Verified models available to this API key
 const MODELS_TO_TRY = [
-    "gemini-2.0-flash",           // Primary: Standard, fast
+    "gemini-1.5-flash",           // New primary: Fast, cost-effective
+    "gemini-2.0-flash",           // Original primary: Standard, fast
+    "gemini-1.5-pro",             // New option: More capable, higher cost
     "gemini-2.0-flash-001",       // Backup: Versioned alias
     "gemini-2.5-flash",           // Upgrade: Newer model (verified in list)
     "gemini-2.0-flash-lite-001"   // Fallback: Lightweight/Fast

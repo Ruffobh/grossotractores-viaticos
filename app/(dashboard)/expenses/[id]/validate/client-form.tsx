@@ -5,7 +5,7 @@ import { AlertTriangle } from 'lucide-react'
 import { updateInvoice } from './actions'
 import { deleteExpense } from '../../actions'
 import { useRouter } from 'next/navigation'
-import { EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS } from '@/app/constants'
+import { EXPENSE_TYPES, PAYMENT_METHODS, INVOICE_TYPES } from '@/app/constants'
 
 interface ValidationFormProps {
     invoice: any
@@ -17,8 +17,11 @@ interface ValidationFormProps {
 }
 
 export function ValidationForm({ invoice, cardConsumption, cashConsumption, cardLimit, cashLimit, styles }: ValidationFormProps) {
+    // 1. Initialize with empty strings if data is missing, forcing user selection
+    const [paymentMethod, setPaymentMethod] = useState<string>(invoice.payment_method || '')
+    const [expenseCategory, setExpenseCategory] = useState<string>(invoice.expense_category || '')
+
     const [amount, setAmount] = useState<number>(invoice.total_amount || 0)
-    const [paymentMethod, setPaymentMethod] = useState<string>(invoice.payment_method || 'Cash')
     const [isExceeded, setIsExceeded] = useState(false)
     const [showModal, setShowModal] = useState(false)
     const formRef = useRef<HTMLFormElement>(null)
@@ -36,6 +39,18 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
     }, [amount, paymentMethod, cardConsumption, cashConsumption, cardLimit, cashLimit])
 
     const handleSubmit = (e: React.FormEvent) => {
+        // 2. Validate Mandatory Fields
+        if (!paymentMethod || paymentMethod === '') {
+            e.preventDefault()
+            alert('Por favor seleccione una Forma de Pago')
+            return
+        }
+        if (!expenseCategory || expenseCategory === '') {
+            e.preventDefault()
+            alert('Por favor seleccione un Tipo de Gasto')
+            return
+        }
+
         if (isExceeded && !isConfirmedRef.current) {
             e.preventDefault()
             setShowModal(true)
@@ -108,8 +123,6 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
             )}
 
             <div className={styles.formGrid}>
-                {/* ... existing fields ... */}
-
                 <div className={styles.fullWidth}>
                     <label className={styles.label}>Proveedor (Razón Social)</label>
                     <input
@@ -139,8 +152,6 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                         required
                     />
                 </div>
-
-
 
                 <div>
                     <label className={styles.label}>Tipo Factura</label>
@@ -173,8 +184,15 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 </div>
 
                 <div>
-                    <label className={styles.label}>Tipo de Gasto</label>
-                    <select name="expense_category" defaultValue={invoice.expense_category || 'Varios'} className={styles.input}>
+                    <label className={styles.label}>Tipo de Gasto <span className="text-red-500">*</span></label>
+                    <select
+                        name="expense_category"
+                        value={expenseCategory}
+                        onChange={(e) => setExpenseCategory(e.target.value)}
+                        className={styles.input}
+                        required
+                    >
+                        <option value="" disabled>Seleccione...</option>
                         {EXPENSE_TYPES.map(t => (
                             <option key={t} value={t}>{t}</option>
                         ))}
@@ -182,13 +200,15 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 </div>
 
                 <div>
-                    <label className={styles.label}>Forma de Pago</label>
+                    <label className={styles.label}>Forma de Pago <span className="text-red-500">*</span></label>
                     <select
                         name="payment_method"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className={styles.input}
+                        required
                     >
+                        <option value="" disabled>Seleccione...</option>
                         {PAYMENT_METHODS.map(m => (
                             <option key={m.value} value={m.value}>{m.label}</option>
                         ))}
