@@ -147,7 +147,9 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
             // We need to find managers who have the user's branch name in their list.
 
             // First, get the branch NAME of the user (we have branch_id, let's get the name)
-            const branchName = userProfile.branches?.name || null
+            // Note: Supabase types the relation as an array
+            const branchData = userProfile.branches as any
+            const branchName = Array.isArray(branchData) ? branchData[0]?.name : branchData?.name || null
 
             if (!branchName) {
                 console.warn('[sendManagerNotification] Could not resolve branch name for id:', userProfile.branch_id)
