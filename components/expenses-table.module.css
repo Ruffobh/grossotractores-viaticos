@@ -299,30 +299,31 @@
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
-        min-width: 100% !important;
+        max-width: 100% !important;
         background: white;
         margin-bottom: 1rem;
         border-radius: var(--radius);
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--gray-200);
         padding: 0.75rem !important;
-        /* Visual fix: Symmetric padding */
         box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
 
     .table td {
         display: flex !important;
-        justify-content: space-between;
+        flex-direction: row !important;
+        justify-content: flex-start;
+        /* Let flex-grow handle spacing */
         align-items: flex-start;
-        /* Align top for multi-line text */
         width: 100% !important;
         box-sizing: border-box !important;
         padding: 0.5rem 0 !important;
         border-bottom: 1px solid var(--gray-100);
         text-align: right;
-        color: var(--nh-black);
-        font-weight: 500;
-        gap: 0.5rem;
+        gap: 1rem;
+        /* Space between label and value */
     }
 
     .table td:last-child {
@@ -336,11 +337,11 @@
         text-transform: uppercase;
         font-size: 0.75rem;
         text-align: left;
-        flex-shrink: 0;
-        width: 35%;
-        /* Fixed width for labels */
+
+        /* Flex properties for Label */
+        flex: 0 0 35%;
+        /* Fixed 35% width, no grow/shrink */
         max-width: 35%;
-        padding-right: 0.5rem;
     }
 
     /* Center the actions button on mobile */
