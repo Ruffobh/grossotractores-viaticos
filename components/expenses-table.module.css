@@ -71,21 +71,27 @@
     gap: 1rem;
     flex-wrap: wrap;
     /* Allow wrapping for mobile */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .searchWrapper {
     position: relative;
     flex: 1 1 300px;
     /* Allow growing, start at 300px */
-    min-width: 100%;
+    width: 100%;
     /* Default full width on mobile if wrapped */
+    max-width: 100%;
+    min-width: 0;
+    /* Allow shrinking */
 }
 
 @media (min-width: 640px) {
     .searchWrapper {
+        width: auto;
         min-width: 250px;
         /* Reset for desktop */
-        width: auto;
     }
 
     .controlsBar {

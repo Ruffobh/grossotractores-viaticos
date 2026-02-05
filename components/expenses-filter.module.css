@@ -39,9 +39,23 @@
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     align-items: end;
+    width: 100%;
+    /* Ensure grid doesn't overflow */
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+        /* Stack vertically on mobile */
+    }
+
+    .container {
+        padding: 1rem;
+        /* Reduce padding on mobile */
+    }
 }
 
 .fieldGroup {
