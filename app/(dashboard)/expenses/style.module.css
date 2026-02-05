@@ -82,6 +82,7 @@
         max-width: 100vw;
         /* Hard limit */
         overflow-x: hidden;
+        box-sizing: border-box;
     }
 
     .header {

@@ -400,15 +400,31 @@
     .tableValue,
     .cellContent {
         text-align: right;
-        width: 65%;
-        /* Remaining width */
-        max-width: 65%;
-        word-wrap: break-word;
-        /* Ensure wrapping */
+        width: 60%;
+        /* Safer width */
+        max-width: 60%;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        /* Force break if needed */
+        min-width: 0;
+        /* Allow shrinking */
     }
 
     .amount {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        /* Slightly smaller to fit */
+    }
+
+    /* Force the TR to never exceed screen */
+    .table tbody tr {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding: 0.75rem 0.5rem !important;
+        /* Slightly reduced side padding */
     }
 
     .deleteButton {
