@@ -11,14 +11,8 @@ const MODELS_TO_TRY = [
 ];
 
 export async function generateWithFallback(prompt: string, inlineData: any) {
-    // --- SOLUCIÓN DE EMERGENCIA ---
-    // Si Hostinger no lee la variable, pega tu clave aquí abajo entre las comillas.
-    // Ejemplo: const HARDCODED_KEY = "AIzaSyd....";
-    const HARDCODED_KEY = "AIzaSyD4KNM4dI7XZi-nlg2wcP5n7Sa8ZIN7rkM";
-    // -----------------------------
-
-    // 1. Get and Trim Key (Env Var Limit First!)
-    let apiKey = process.env.GOOGLE_API_KEY || HARDCODED_KEY;
+    // 1. Get Key from Env Var
+    let apiKey = process.env.GOOGLE_API_KEY;
 
     // Sanitize
     if (apiKey) {
