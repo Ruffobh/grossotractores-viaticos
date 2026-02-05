@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Copy, Check, X, Sheet, UploadCloud } from 'lucide-react'
 import { InvoiceData, generateBCRowsForInvoice, rowsToTSV } from '@/utils/excel'
 import styles from './BCCopyModal.module.css'
@@ -19,8 +19,10 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
     const [isSubmitting, setIsSubmitting] = useState(false)
     const router = useRouter()
 
-    const rows = useMemo(() => {
-        if (!invoice) return []
+    const [rows, setRows] = useState<any[]>([])
+
+    useEffect(() => {
+        if (!invoice) return
 
         // Extract the rich data from the JSONB column 'parsed_data'
         // Fallback to top-level columns if parsed_data is missing or old format
@@ -64,9 +66,15 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
             invoiceData.taxes.push({ name: "Percepciones Estimadas", amount: parsed.perceptions_amount });
         }
 
-        return generateBCRowsForInvoice(invoiceData)
+        setRows(generateBCRowsForInvoice(invoiceData))
 
     }, [invoice, profile])
+
+    const handleRowChange = (index: number, field: string, value: string) => {
+        const newRows = [...rows]
+        newRows[index] = { ...newRows[index], [field]: value }
+        setRows(newRows)
+    }
 
     const handleCopy = async () => {
         const text = rowsToTSV(rows)
@@ -141,24 +149,101 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
                         <tbody>
                             {rows.map((row, idx) => (
                                 <tr key={idx}>
-                                    <td style={{ fontWeight: 500 }}>{row.tipo}</td>
-                                    <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>{row.n}</td>
-                                    <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={row.descripcion}>{row.descripcion}</td>
+                                    <td>
+                                        <input
+                                            value={row.tipo}
+                                            onChange={(e) => handleRowChange(idx, 'tipo', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ fontWeight: 500 }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            value={row.n}
+                                            onChange={(e) => handleRowChange(idx, 'n', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            value={row.descripcion}
+                                            onChange={(e) => handleRowChange(idx, 'descripcion', e.target.value)}
+                                            className={styles.tableInput}
+                                            title={row.descripcion}
+                                        />
+                                    </td>
                                     <td>
                                         <span className={`${styles.badge} ${row.grupo_iva.includes('21') ? styles.badgePurple : styles.badgeGray}`}>
                                             {row.grupo_iva}
                                         </span>
                                     </td>
-                                    <td style={{ textAlign: 'right' }}>{row.cantidad}</td>
-                                    <td style={{ textAlign: 'right', fontFamily: 'monospace' }}>{row.coste_unit}</td>
-                                    <td style={{ color: '#9ca3af' }}>{row.cod_area_impuesto}</td>
+                                    <td>
+                                        <input
+                                            value={row.cantidad}
+                                            onChange={(e) => handleRowChange(idx, 'cantidad', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ textAlign: 'right' }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            value={row.coste_unit}
+                                            onChange={(e) => handleRowChange(idx, 'coste_unit', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ textAlign: 'right', fontFamily: 'monospace' }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            value={row.cod_area_impuesto}
+                                            onChange={(e) => handleRowChange(idx, 'cod_area_impuesto', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ color: '#9ca3af' }}
+                                        />
+                                    </td>
                                     <td></td>
-                                    <td style={{ textAlign: 'right', fontWeight: 'bold', color: '#111827' }}>{row.importe}</td>
-                                    <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#6b7280' }}>{row.sucursal}</td>
-                                    <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#6b7280' }}>{row.area}</td>
+                                    <td>
+                                        <input
+                                            value={row.importe}
+                                            onChange={(e) => handleRowChange(idx, 'importe', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ textAlign: 'right', fontWeight: 'bold', color: '#111827' }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            value={row.sucursal}
+                                            onChange={(e) => handleRowChange(idx, 'sucursal', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#6b7280' }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            value={row.area}
+                                            onChange={(e) => handleRowChange(idx, 'area', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#6b7280' }}
+                                        />
+                                    </td>
                                     <td></td>
-                                    <td style={{ fontSize: '0.75rem' }}>{row.provincia}</td>
-                                    <td style={{ fontSize: '0.75rem' }}>{row.udn}</td>
+                                    <td>
+                                        <input
+                                            value={row.provincia}
+                                            onChange={(e) => handleRowChange(idx, 'provincia', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ fontSize: '0.75rem' }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            value={row.udn}
+                                            onChange={(e) => handleRowChange(idx, 'udn', e.target.value)}
+                                            className={styles.tableInput}
+                                            style={{ fontSize: '0.75rem' }}
+                                        />
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
