@@ -76,34 +76,7 @@
     box-sizing: border-box;
 }
 
-@media (max-width: 640px) {
-    .controlsBar {
-        flex-direction: column;
-        /* Force vertical stack */
-        align-items: stretch;
-        /* Full width items */
-        gap: 0.75rem;
-    }
 
-    .actionsContainer {
-        width: 100%;
-        justify-content: space-between;
-        /* Space out search/export if needed, or stack them too */
-    }
-
-    .exportButton {
-        width: 100%;
-        /* Full width button on mobile */
-        justify-content: center;
-    }
-
-    .searchWrapper {
-        flex: 0 0 auto;
-        /* Reset flex basis so it doesn't become height */
-        width: 100%;
-        min-height: auto;
-    }
-}
 
 .searchWrapper {
     position: relative;
@@ -441,6 +414,33 @@
         border: none !important;
         box-shadow: none !important;
         padding: 0 !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .controlsBar {
+        flex-direction: column;
+        /* Force vertical stack */
+        align-items: stretch;
+        /* Full width items */
+        gap: 0.75rem;
+    }
+
+    .actionsContainer {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .exportButton {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .searchWrapper {
+        flex: 0 0 auto !important;
+        /* Force reset of flex basis */
+        width: 100%;
+        min-height: auto;
     }
 }
 
