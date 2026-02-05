@@ -242,3 +242,44 @@
         opacity: 1;
     }
 }
+
+.tableInput {
+    color: inherit;
+    width: 100%;
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 0;
+    /* Remove padding to match text alignment */
+    margin: 0;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    text-align: inherit;
+    transition: all 0.2s;
+    outline: none;
+    box-shadow: none;
+    height: auto;
+    display: block;
+}
+
+.tableInput:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    /* Very subtle hover */
+    border-color: transparent;
+    cursor: text;
+}
+
+.tableInput:focus {
+    outline: none;
+    background-color: white;
+    border-color: var(--nh-blue);
+    box-shadow: 0 0 0 2px rgba(0, 69, 137, 0.1);
+    padding: 2px 4px;
+    /* Add padding only on focus */
+    margin: -2px -4px;
+    /* Negative margin to counteract padding */
+    width: calc(100% + 8px);
+    position: relative;
+    z-index: 20;
+}
