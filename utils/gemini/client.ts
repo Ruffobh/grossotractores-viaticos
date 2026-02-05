@@ -35,11 +35,16 @@ export async function generateWithFallback(prompt: string, inlineData: any) {
     }
 
     if (!apiKey) {
-        console.error("❌ GOOGLE_API_KEY (and B64 variant) is missing. Gemini calls will fail.");
-        throw new Error("Missing API Key");
+        const status = {
+            standard: !!process.env.GOOGLE_API_KEY,
+            b64: !!process.env.GOOGLE_API_KEY_B64,
+            b64Value: process.env.GOOGLE_API_KEY_B64 ? 'PRESENT' : 'MISSING'
+        };
+        console.error("❌ API Key Missing. Status:", status);
+        throw new Error(`Missing API Key. (Standard: ${status.standard}, B64: ${status.b64})`);
     } else {
         // Obfuscated log check
-        console.log(`🔑 API Key loaded (Length: ${apiKey.length}, Ends with: ...${apiKey.slice(-4)})`);
+        console.log(`🔑 API Key loaded (Source: ${process.env.GOOGLE_API_KEY_B64 ? 'B64' : 'Standard'}, Length: ${apiKey.length}, Ends: ...${apiKey.slice(-4)})`);
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
