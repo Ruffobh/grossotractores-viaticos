@@ -142,10 +142,23 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
             }
 
             // 2. Find the Manager of that branch
+            // Logic updated to support Multi-Branch Managers:
+            // Managers store their branches in a 'branches' JSONB column (array of strings).
+            // We need to find managers who have the user's branch name in their list.
+
+            // First, get the branch NAME of the user (we have branch_id, let's get the name)
+            const branchName = userProfile.branches?.name || null
+
+            if (!branchName) {
+                console.warn('[sendManagerNotification] Could not resolve branch name for id:', userProfile.branch_id)
+                return { error: 'Branch name not found' }
+            }
+
+            // Fetch all branch managers. 
+            // Ideally we would filter by JSON containment (branches @> '["Name"]'), but simple array check in JS is robust for now.
             const { data: managers, error: managerError } = await adminClient
                 .from('profiles')
-                .select('email')
-                .eq('branch_id', userProfile.branch_id)
+                .select('email, branch, branches')
                 .eq('role', 'branch_manager')
                 .not('email', 'is', null)
 
@@ -154,12 +167,36 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
             }
 
             if (!managers || managers.length === 0) {
-                console.warn('[sendManagerNotification] No manager found for branch:', userProfile.branch_id)
-                // Fallback: Notify Admins if no branch manager is found? Or just return error.
-                return { error: 'No manager found' }
+                console.warn('[sendManagerNotification] No managers found in system.')
+                return { error: 'No managers found' }
             }
 
-            recipients = managers.map(m => m.email!)
+            // Filter managers who cover this branch
+            const relevantManagers = managers.filter(m => {
+                // Check legacy single branch
+                if (m.branch === branchName) return true
+                // Check multi-branch array
+                // branches is stored as JSONB, usually string[] or string
+                let managerBranches: string[] = []
+                if (Array.isArray(m.branches)) {
+                    managerBranches = m.branches
+                } else if (typeof m.branches === 'string') {
+                    try {
+                        managerBranches = JSON.parse(m.branches)
+                    } catch {
+                        managerBranches = [m.branches]
+                    }
+                }
+
+                return managerBranches.includes(branchName)
+            })
+
+            if (relevantManagers.length === 0) {
+                console.warn('[sendManagerNotification] No manager found for branch:', branchName)
+                return { error: 'No manager found for this branch' }
+            }
+
+            recipients = relevantManagers.map(m => m.email!)
         }
 
         console.log(`[sendManagerNotification] Recipients calculated: [${recipients.join(', ')}]`)
