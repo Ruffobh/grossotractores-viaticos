@@ -46,27 +46,45 @@ export async function generateWithFallback(prompt: string, inlineData: any) {
 
     let lastError = null;
 
+    // Delay helper
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
     for (const modelName of MODELS_TO_TRY) {
-        try {
-            console.log(`🤖 Trying AI Model: ${modelName}...`);
-            const model = genAI.getGenerativeModel({ model: modelName });
+        let attempts = 0;
+        const maxAttempts = 3;
 
-            const result = await model.generateContent([
-                prompt,
-                { inlineData: inlineData },
-            ]);
+        while (attempts < maxAttempts) {
+            attempts++;
+            try {
+                console.log(`🤖 Trying AI Model: ${modelName} (Attempt ${attempts}/${maxAttempts})...`);
+                const model = genAI.getGenerativeModel({ model: modelName });
 
-            const response = await result.response;
-            const text = response.text();
+                const result = await model.generateContent([
+                    prompt,
+                    { inlineData: inlineData },
+                ]);
 
-            if (text) {
-                console.log(`✅ Success with ${modelName}`);
-                return text;
+                const response = await result.response;
+                const text = response.text();
+
+                if (text) {
+                    console.log(`✅ Success with ${modelName}`);
+                    return text;
+                }
+            } catch (error: any) {
+                const isRetryable = error.message?.includes('429') || error.message?.includes('503') || error.message?.includes('Overloaded');
+
+                if (isRetryable && attempts < maxAttempts) {
+                    const waitTime = 2000 * attempts; // 2s, 4s, 6s...
+                    console.warn(`⏳ Rate Limited/Overloaded (${modelName}). Waiting ${waitTime}ms...`);
+                    await delay(waitTime);
+                    continue; // Retry same model
+                }
+
+                console.warn(`⚠️ Failed with ${modelName}:`, error.message);
+                lastError = error;
+                break; // Move to next model if not retryable or max attempts reached
             }
-        } catch (error: any) {
-            console.warn(`⚠️ Failed with ${modelName}:`, error.message);
-            lastError = error;
-            // Continue to next model...
         }
     }
 
