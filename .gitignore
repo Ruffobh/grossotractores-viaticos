@@ -29,6 +29,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+debug_*.js
+scripts/debug_*.js
+scripts/fetch-*.ts
+scripts/verify-*.js
 
 # env files
 .env
