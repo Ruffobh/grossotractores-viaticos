@@ -2,12 +2,23 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Grosso Viaticos",
-  description: "Expense management for Grosso Tractores",
+  title: "Viáticos - Grosso Tractores",
+  description: "Sistema de gestión de viáticos y comprobantes",
+  manifest: "/manifest.json",
+  themeColor: "#004589",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Viáticos Grosso",
+  },
   icons: {
     icon: '/icon.png',
   },
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0',
 };
 
 export default function RootLayout({
