@@ -384,6 +384,8 @@
     /* Allow taking remaining space */
     min-width: 0;
     /* Allow shrinking below content size */
+    white-space: normal;
+    /* Explicitly allow wrapping */
 }
 
 .cardAmount {

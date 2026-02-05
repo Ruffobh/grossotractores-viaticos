@@ -148,8 +148,13 @@
     .main {
         margin-left: 0;
         padding-top: 80px;
-        /* Space for fixed mobile header */
-        padding-left: 1rem;
-        padding-right: 1rem;
+        /* Keep header space */
+        padding-left: 0.5rem;
+        /* Reduced padding */
+        padding-right: 0.5rem;
+        /* Reduced padding */
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 }
