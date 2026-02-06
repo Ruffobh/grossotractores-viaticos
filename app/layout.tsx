@@ -1,16 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { PwaRegister } from "@/components/pwa-register";
 
 export const metadata: Metadata = {
   title: "Viáticos - Grosso Tractores",
   description: "Sistema de gestión de viáticos y comprobantes",
   manifest: "/manifest.json",
   themeColor: "#004589",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -20,6 +16,12 @@ export const metadata: Metadata = {
     icon: '/icon-192x192.png',
     apple: '/icon-192x192.png',
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -58,6 +60,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
+        <PwaRegister />
       </body>
     </html>
   );
