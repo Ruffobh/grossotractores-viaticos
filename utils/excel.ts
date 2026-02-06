@@ -107,36 +107,48 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
 
     if (isA) {
         let netAmount = invoice.netAmount || 0;
-        let perceptions = invoice.perceptionsAmount || 0;
-        let ivaRate = 'IVA 21%';
+        let otherTaxesAmount = 0; // Was 'perceptions'
 
-        // 1. Try explicit amounts
-        if (netAmount > 0) {
-            const has105 = invoice.taxes.some(t => t.name.includes('10.5') || t.name.includes('10,5'));
-            if (has105) ivaRate = 'IVA 10,5%';
+        // Helper to check for standard VAT
+        const isStandardVat = (name: string) => {
+            const n = name.toUpperCase();
+            return n.includes('IVA 21') || n.includes('IVA 10') || n.includes('IVA 10.5') || n.includes('IVA 10,5');
+        };
 
-            if (!perceptions && invoice.taxes.length > 0) {
-                perceptions = invoice.taxes
-                    .filter(t => !t.name.toUpperCase().includes('IVA 21') && !t.name.toUpperCase().includes('IVA 10'))
-                    .reduce((sum, t) => sum + t.amount, 0);
-            }
+        // Helper to check for Perceptions (TO EXCLUDE)
+        const isPerception = (name: string) => {
+            const n = name.toUpperCase();
+            return n.includes('PERCEP') || n.includes('PERCEPCION');
+        };
+
+        // 1. Calculate from Taxes Array (Most reliable)
+        if (invoice.taxes && invoice.taxes.length > 0) {
+            // Calculate components
+            const totalVat = invoice.taxes.filter(t => isStandardVat(t.name)).reduce((sum, t) => sum + t.amount, 0);
+            const totalPerceptions = invoice.taxes.filter(t => isPerception(t.name)).reduce((sum, t) => sum + t.amount, 0); // Ignored for export
+            const totalOtherTaxes = invoice.taxes.filter(t => !isStandardVat(t.name) && !isPerception(t.name)).reduce((sum, t) => sum + t.amount, 0);
+
+            // Net Amount = Total - (VAT + Perceptions + OtherTaxes)
+            netAmount = invoice.totalAmount - totalVat - totalPerceptions - totalOtherTaxes;
+            otherTaxesAmount = totalOtherTaxes;
+
         }
-        // 2. Fallback to taxes array calculation
-        else if (invoice.taxes.length > 0) {
-            const totalTaxes = invoice.taxes.reduce((sum, t) => sum + t.amount, 0);
-            netAmount = invoice.totalAmount - totalTaxes;
-
-            const has105 = invoice.taxes.some(t => t.name.includes('10.5'));
-            if (has105) ivaRate = 'IVA 10,5%';
-
-            perceptions = invoice.taxes
-                .filter(t => !t.name.toUpperCase().includes('IVA 21') && !t.name.toUpperCase().includes('IVA 10'))
-                .reduce((sum, t) => sum + t.amount, 0);
-        }
-        // 3. Last Resort: Estimate
+        // 2. Fallback if no taxes array but explicit amounts provided (Old format)
         else {
-            netAmount = invoice.totalAmount / 1.21;
+            // Basic fallback: Estimate Net from Total (Assuming 21% if nothing else known)
+            if (!netAmount) netAmount = invoice.totalAmount / 1.21;
+
+            // If we have explicit 'perceptionsAmount' field from parsed JSON, we traditionally added it.
+            // But user says IGNORE perceptions. So we ignore it.
+            // If we have 'taxAmount', we assume it might be Internal Taxes? 
+            // Without array details, hard to distinguish. We'll leave 0 to be safe or strictly follow new rule.
+            otherTaxesAmount = 0;
         }
+
+        // Determine IVA Rate for Line 1
+        let ivaRate = 'IVA 21%';
+        const has105 = invoice.taxes?.some(t => t.name.includes('10.5') || t.name.includes('10,5'));
+        if (has105) ivaRate = 'IVA 10,5%';
 
         if (netAmount < 0) netAmount = 0;
 
@@ -151,14 +163,15 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
             area: areaCode
         });
 
-        if (perceptions > 0.01) {
+        // Line 2: Other Taxes (Impuestos Internos, etc.) - EXCLUDING Perceptions
+        if (otherTaxesAmount > 0.01) {
             rows.push({
                 ...defaults,
-                descripcion: 'Percepciones / Impuestos',
+                descripcion: 'Impuestos / Otros Tributos', // Renamed from "Percepciones / Impuestos"
                 grupo_iva: 'IVA NO GRAV',
                 cantidad: 1,
-                coste_unit: formatNumber(perceptions),
-                importe: formatNumber(perceptions),
+                coste_unit: formatNumber(otherTaxesAmount),
+                importe: formatNumber(otherTaxesAmount),
                 sucursal: branchCode,
                 area: areaCode
             });
