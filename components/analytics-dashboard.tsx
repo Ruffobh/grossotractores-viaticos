@@ -149,8 +149,8 @@ export function AnalyticsDashboard({ invoices, role }: AnalyticsDashboardProps) 
                                         data={typeData}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={100}
+                                        innerRadius="60%"
+                                        outerRadius="80%"
                                         paddingAngle={5}
                                         fill="#8884d8"
                                         dataKey="value"
