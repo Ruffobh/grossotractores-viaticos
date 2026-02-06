@@ -76,7 +76,7 @@ export async function processReceipt(imageUrl: string) {
         let parsedData: any = {}
         if (!aiFailed && text) {
             // Clean markdown if present
-            text = text.replace(/```json / g, '').replace(/```/g, '').trim()
+            text = text.replace(/```json/g, '').replace(/```/g, '').trim()
             try {
                 parsedData = JSON.parse(text)
             } catch (e) {
