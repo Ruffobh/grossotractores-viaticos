@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { PwaRegister } from "@/components/pwa-register";
 
 export const metadata: Metadata = {
   title: "Viáticos - Grosso Tractores",
@@ -60,7 +59,6 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
-        <PwaRegister />
       </body>
     </html>
   );
