@@ -45,6 +45,7 @@ export default async function ValidateExpensePage({ params }: { params: Promise<
         .lte('date', lastDay)
         .neq('id', id) // Exclude current
         .neq('status', 'rejected')
+        .neq('status', 'draft') // Exclude incomplete uploads
 
     const cardLimit = profile?.monthly_limit || 0
     const cashLimit = profile?.cash_limit || 0

@@ -53,6 +53,7 @@ export async function updateInvoice(formData: FormData) {
         .lte('date', lastDay)
         .neq('id', id)
         .neq('status', 'rejected')
+        .neq('status', 'draft')
 
     // Filter consumption by Type
     const currentPaymentMethod = data.payment_method as string
