@@ -20,6 +20,8 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
     // 1. Initialize with empty strings if data is missing, forcing user selection
     const [paymentMethod, setPaymentMethod] = useState<string>(invoice.payment_method || '')
     const [expenseCategory, setExpenseCategory] = useState<string>(invoice.expense_category || '')
+    const [date, setDate] = useState<string>(invoice.date ? invoice.date.split('T')[0] : '')
+    const [isDateInvalid, setIsDateInvalid] = useState(false)
 
     const [amount, setAmount] = useState<number>(invoice.total_amount || 0)
     const [isExceeded, setIsExceeded] = useState(false)
@@ -38,6 +40,33 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
         setIsExceeded(projectedTotal > limit)
     }, [amount, paymentMethod, cardConsumption, cashConsumption, cardLimit, cashLimit])
 
+    useEffect(() => {
+        if (!date) {
+            setIsDateInvalid(false)
+            return
+        }
+
+        // Force YYYY-MM-DD parsing to avoid locale issues
+        // If date comes from type="date" input, it should be YYYY-MM-DD
+        const [year, month, day] = date.split('-').map(Number)
+        const selectedDate = new Date(year, month - 1, day) // Month is 0-indexed in JS Date
+
+        const today = new Date()
+        const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        const selectedZero = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
+
+        // Compare dates only by resetting time or just simple diff
+        const diffTime = todayZero.getTime() - selectedZero.getTime()
+        const diffDays = diffTime / (1000 * 3600 * 24)
+
+        // Strict check: if date is invalid or diff > 7
+        if (isNaN(diffDays) || diffDays > 7) {
+            setIsDateInvalid(true)
+        } else {
+            setIsDateInvalid(false)
+        }
+    }, [date])
+
     const handleSubmit = (e: React.FormEvent) => {
         // 2. Validate Mandatory Fields
         if (!paymentMethod || paymentMethod === '') {
@@ -48,6 +77,35 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
         if (!expenseCategory || expenseCategory === '') {
             e.preventDefault()
             alert('Por favor seleccione un Tipo de Gasto')
+            return
+        }
+
+        // REDUNDANT CHECK: Re-calculate to be 100% sure before submitting
+        if (date) {
+            const [year, month, day] = date.split('-').map(Number)
+            const selectedDate = new Date(year, month - 1, day)
+            const today = new Date()
+            const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+            const selectedZero = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
+            const diffTime = todayZero.getTime() - selectedZero.getTime()
+            const diffDays = diffTime / (1000 * 3600 * 24)
+
+            if (isNaN(diffDays) || diffDays > 7) {
+                e.preventDefault()
+                alert(`La factura tiene ${diffDays.toFixed(0)} días de antigüedad. El límite es 7 días.`)
+                setIsDateInvalid(true)
+                return
+            }
+        } else {
+            // Date is required
+            e.preventDefault()
+            alert('La fecha es obligatoria')
+            return
+        }
+
+        if (isDateInvalid) {
+            e.preventDefault()
+            // Alert is shown visually below the input
             return
         }
 
@@ -143,14 +201,22 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 </div>
 
                 <div>
-                    <label className={styles.label}>Fecha</label>
+                    <label className={styles.label}>
+                        Fecha <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="date"
                         name="date"
-                        defaultValue={invoice.date ? invoice.date.split('T')[0] : ''}
-                        className={styles.input}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className={`${styles.input} ${isDateInvalid ? 'border-red-500' : ''}`}
                         required
                     />
+                    {isDateInvalid && (
+                        <p className="text-red-500 text-sm mt-1">
+                            La factura no puede tener más de 7 días de antigüedad.
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -238,7 +304,9 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 >
                     Cancelar
                 </button>
-                <button type="submit" className={styles.saveButton}>Confirmar y Guardar</button>
+                <button type="submit" className={styles.saveButton} disabled={isDateInvalid}>
+                    Confirmar y Guardar
+                </button>
             </div>
         </form>
     )

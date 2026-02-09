@@ -36,7 +36,34 @@ export async function updateInvoice(formData: FormData) {
     const userName = profile?.full_name || 'Usuario'
     const userBranch = profile?.branch || null
 
-    const invoiceDate = new Date(data.date as string)
+    console.log('--- UPDATE INVOICE ACTION START ---')
+    console.log('Incoming Date (Raw):', data.date)
+
+    // Manual parsing to avoid timezone/format ambiguity: YYYY-MM-DD
+    const [yearPart, monthPart, dayPart] = (data.date as string).split('-').map(Number)
+    const invoiceDate = new Date(yearPart, monthPart - 1, dayPart) // Local time construction
+    console.log('Parsed Invoice Date (Manual):', invoiceDate)
+
+    // 7-Day Restriction Check
+    const today = new Date()
+    console.log('Server Today:', today)
+
+    const diffTime = today.getTime() - invoiceDate.getTime()
+    const diffDays = diffTime / (1000 * 3600 * 24)
+    console.log('Diff Days:', diffDays)
+
+    // Check for Invalid Date
+    if (isNaN(diffDays)) {
+        console.error('Invalid Date Calculation. Blocking update.')
+        throw new Error('Fecha inválida. No se puede procesar.')
+    }
+
+    if (diffDays > 7) {
+        console.error('Date restriction triggered. Blocking update.')
+        throw new Error('La factura tiene más de 7 días de antigüedad. No se puede cargar.')
+    }
+
+
     // Adjust to local timezone logic if needed, but ISO string split is safer for bounds
     const year = invoiceDate.getFullYear()
     const month = invoiceDate.getMonth()
