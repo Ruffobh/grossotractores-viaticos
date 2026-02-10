@@ -180,6 +180,21 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 </div>
             )}
 
+            {/* Error Alert relocated to top to avoid breaking grid layout */}
+            {isDateInvalid && (
+                <div className={styles.errorAlert} style={{ marginBottom: '1.5rem' }}>
+                    <div className={styles.errorIconWrapper}>
+                        <AlertTriangle className={styles.errorIcon} />
+                    </div>
+                    <div className={styles.errorContent}>
+                        <div className={styles.errorTitle}>Fecha Inválida</div>
+                        <div className={styles.errorText}>
+                            La factura no puede tener más de 7 días de antigüedad.
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className={styles.formGrid}>
                 <div className={styles.fullWidth}>
                     <label className={styles.label}>Proveedor (Razón Social)</label>
@@ -212,19 +227,6 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                         className={`${styles.input} ${isDateInvalid ? 'border-red-500' : ''}`}
                         required
                     />
-                    {isDateInvalid && (
-                        <div className={styles.errorAlert}>
-                            <div className={styles.errorIconWrapper}>
-                                <AlertTriangle className={styles.errorIcon} />
-                            </div>
-                            <div className={styles.errorContent}>
-                                <div className={styles.errorTitle}>Fecha Inválida</div>
-                                <div className={styles.errorText}>
-                                    La factura no puede tener más de 7 días de antigüedad.
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 <div>
