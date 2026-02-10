@@ -62,22 +62,46 @@ export async function processBatchUsers(users: any[]) {
                 }
             }
 
-            // 1. Create Auth User
-            const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
-                email,
-                password, // Should be random or default
-                email_confirm: true,
-                user_metadata: { full_name, role, branch, area, branch_id: branchId }
-            })
+            // 1. Create or Find Auth User
+            let userId = null
 
-            if (authError) throw authError
-            if (!newUser.user) throw new Error("No user returned")
+            try {
+                const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
+                    email,
+                    password, // Should be random or default
+                    email_confirm: true,
+                    user_metadata: { full_name, role, branch, area, branch_id: branchId }
+                })
 
-            // 2. Create Profile
+                if (authError) throw authError
+                if (newUser.user) userId = newUser.user.id
+
+            } catch (e: any) {
+                // If user exists, find their ID from profiles to allow update
+                if (e.message?.includes('already registered')) {
+                    const { data: existingProfile } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('email', email)
+                        .single()
+
+                    if (existingProfile) {
+                        userId = existingProfile.id
+                    } else {
+                        throw new Error("Usuario existe en Auth pero no tiene perfil en base de datos.")
+                    }
+                } else {
+                    throw e
+                }
+            }
+
+            if (!userId) throw new Error("No se pudo obtener el ID del usuario")
+
+            // 2. Create/Update Profile
             const { error: profileError } = await supabase
                 .from('profiles')
                 .upsert({
-                    id: newUser.user.id,
+                    id: userId,
                     email,
                     full_name,
                     role: role.toLowerCase(),
