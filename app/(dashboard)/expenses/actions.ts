@@ -34,7 +34,7 @@ export async function processReceipt(imageUrl: string) {
           "vendorCuit": string (format XX-XXXXXXXX-X),
           "invoiceNumber": string,
           "invoiceType": string (Return EXACTLY what you see: e.g., "A", "B", "C", "Ticket A", "Ticket B", "Ticket C", "M", "Recibo C"),
-          "date": string (YYYY-MM-DD),
+          "date": string (YYYY-MM-DD, convert from DD/MM/YYYY if needed),
           "totalAmount": number,
           "netAmount": number,
           "taxAmount": number, 

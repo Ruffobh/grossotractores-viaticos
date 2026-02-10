@@ -46,9 +46,11 @@ export async function updateInvoice(formData: FormData) {
 
     // 7-Day Restriction Check
     const today = new Date()
-    console.log('Server Today:', today)
+    const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    console.log('Server Today (Zeroed):', todayZero)
 
-    const diffTime = today.getTime() - invoiceDate.getTime()
+    // Diff calculation using zeroed dates
+    const diffTime = todayZero.getTime() - invoiceDate.getTime()
     const diffDays = diffTime / (1000 * 3600 * 24)
     console.log('Diff Days:', diffDays)
 
