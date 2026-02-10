@@ -105,15 +105,19 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
     const typeUpper = (invoice.invoiceType || '').toUpperCase();
     const isA = typeUpper === 'A' || typeUpper === 'M' || typeUpper === 'FACTURA A' || typeUpper === 'FA' || typeUpper === 'TIQUE FACTURA A';
 
-    if (isA) {
+    // Helper to check for standard VAT
+    const isStandardVat = (name: string) => {
+        const n = name.toUpperCase();
+        return n.includes('IVA 21') || n.includes('IVA 10') || n.includes('IVA 10.5') || n.includes('IVA 10,5');
+    };
+
+    // Robustness: If we have explicit VAT taxes, treat as "A" (Discriminates VAT) even if type is ambiguous
+    const hasStandardVat = invoice.taxes?.some(t => isStandardVat(t.name) && t.amount > 0);
+    const treatAsA = isA || hasStandardVat;
+
+    if (treatAsA) {
         let netAmount = invoice.netAmount || 0;
         let otherTaxesAmount = 0; // Was 'perceptions'
-
-        // Helper to check for standard VAT
-        const isStandardVat = (name: string) => {
-            const n = name.toUpperCase();
-            return n.includes('IVA 21') || n.includes('IVA 10') || n.includes('IVA 10.5') || n.includes('IVA 10,5');
-        };
 
         // Helper to check for Perceptions (TO EXCLUDE)
         const isPerception = (name: string) => {
