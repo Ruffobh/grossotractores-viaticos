@@ -20,20 +20,20 @@ export async function processReceipt(imageUrl: string) {
         const mimeType = imageResp.headers.get('content-type') || 'image/jpeg'
 
         const prompt = `
-        Analiza esta factura. Extrae cabecera, CUIT del proveedor, moneda, y un desglose detallado de impuestos.
+        Analiza esta factura o ticket. Extrae cabecera, CUIT del proveedor, moneda, y un desglose detallado de impuestos.
         IMPORTANTE: 
         1. El proveedor NO es "GROSSO TRACTORES SA". Ese es el cliente. Busca el emisor (logotipo arriba a la izquierda).
         2. Debes separar el IVA (21%, 10.5%) de otros impuestos (Percepciones IIBB, Impuestos Internos, Percepción IVA).
         3. Si hay "Conceptos No Gravados" o "Importe Exento", INCLÚYELOS en el array de "taxes" con el nombre "Conceptos No Gravados".
-        Si la factura tiene ítems, extrae el detalle. Si es manuscrita o borrosa, haz tu mejor esfuerzo.
-
+        4. IDENTIFICA LA LETRA O TIPO DE COMPROBANTE: Busca la letra grande en el recuadro (A, B, C, M) o si dice "Ticket", "Tique Factura A", etc.
+        
         CRITICAL OUTPUT FORMAT:
         You MUST return a JSON object strictly adhering to this schema:
         {
           "vendorName": string, 
           "vendorCuit": string (format XX-XXXXXXXX-X),
           "invoiceNumber": string,
-          "invoiceType": string (One of: "FA", "FC", "CF", "ND", "NC"),
+          "invoiceType": string (Return EXACTLY what you see: e.g., "A", "B", "C", "Ticket A", "Ticket B", "Ticket C", "M", "Recibo C"),
           "date": string (YYYY-MM-DD),
           "totalAmount": number,
           "netAmount": number,
@@ -48,13 +48,6 @@ export async function processReceipt(imageUrl: string) {
             { "description": string, "quantity": number, "unitPrice": number, "total": number }
           ]
         }
-        
-        Example of taxes array:
-        [
-            { "name": "IVA 21%", "amount": 210.00 },
-            { "name": "Percepción IIBB Santa Fe", "amount": 45.50 },
-            { "name": "Conceptos No Gravados", "amount": 150.00 }
-        ]
         `
 
         let text = "";
@@ -96,15 +89,38 @@ export async function processReceipt(imageUrl: string) {
 
         const userBranch = profile?.branch || null
 
-        // Map new schema to database fields
-        // Note: DB expects vendor_name, vendor_cuit (snake_case)
-        // parsedData is camelCase. We map it.
+        // --- NORMALIZATION LOGIC ---
+        // Map any OCR result to the STRICT 3 options: 'FACTURA A', 'FACTURA C', 'CONSUMIDOR FINAL'
+        let normalizedInvoiceType = 'FACTURA A'; // Default fallback
+
+        if (parsedData.invoiceType) {
+            const rawType = parsedData.invoiceType.toUpperCase();
+
+            // LOGIC FOR "A"
+            if (rawType.includes('A') && !rawType.includes('B') && !rawType.includes('C')) {
+                // Matches: "A", "FACTURA A", "TICKET A", "TIQUE A", "M" (treat M as A often or specific logic? Let's assume A for now usually standard business)
+                // actually M is different, but for this rigid system, usually businesses take A.
+                normalizedInvoiceType = 'FACTURA A';
+            }
+            // LOGIC FOR "C"
+            else if (rawType.includes('C') && !rawType.includes('A') && !rawType.includes('B')) {
+                normalizedInvoiceType = 'FACTURA C';
+            }
+            // LOGIC FOR "B" OR "CONSUMIDOR FINAL"
+            else if (rawType.includes('B') || rawType.includes('FINAL') || rawType.includes('CONSUMIDOR')) {
+                normalizedInvoiceType = 'CONSUMIDOR FINAL';
+            }
+
+            // Specific overrides if needed
+            if (rawType === 'M') normalizedInvoiceType = 'FACTURA A'; // Map M to A for system compatibility or treat as A equivalent for tax logic usually
+        }
+        // ---------------------------
 
         const mappedData = {
             vendor_name: parsedData.vendorName || (aiFailed ? '' : 'Desconocido'),
             vendor_cuit: parsedData.vendorCuit,
             invoice_number: parsedData.invoiceNumber,
-            invoice_type: parsedData.invoiceType,
+            invoice_type: normalizedInvoiceType, // Use the normalized value
             date: parsedData.date || new Date().toISOString().split('T')[0],
             total_amount: parsedData.totalAmount || 0,
             currency: parsedData.currency || 'ARS',
