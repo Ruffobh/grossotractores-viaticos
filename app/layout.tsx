@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import InstallPrompt from "@/components/pwa-install-prompt";
 
 export const metadata: Metadata = {
   title: "Viáticos - Grosso Tractores",
@@ -59,6 +60,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
+        <InstallPrompt />
       </body>
     </html>
   );
