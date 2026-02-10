@@ -36,6 +36,7 @@ export default async function UsersListPage() {
         .select('user_id, total_amount, payment_method, status')
         .gte('date', startDate)
         .lte('date', endDate)
+        .neq('status', 'draft') // Exclude drafts
 
     // Aggregate consumption by user and type
     const consumptionMap = new Map<string, { card: number, cash: number }>()
