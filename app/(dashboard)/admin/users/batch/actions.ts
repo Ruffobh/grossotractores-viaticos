@@ -62,36 +62,42 @@ export async function processBatchUsers(users: any[]) {
                 }
             }
 
-            // 1. Create or Find Auth User
+            // 1. Check if Profile exists (to allow update)
             let userId = null
 
-            try {
-                const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
-                    email,
-                    password, // Should be random or default
-                    email_confirm: true,
-                    user_metadata: { full_name, role, branch, area, branch_id: branchId }
-                })
+            const { data: existingProfile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', email)
+                .single()
 
-                if (authError) throw authError
-                if (newUser.user) userId = newUser.user.id
+            if (existingProfile) {
+                // User exists in DB -> Update mode
+                userId = existingProfile.id
+            } else {
+                // User not in DB -> Create mode
+                try {
+                    const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
+                        email,
+                        password,
+                        email_confirm: true,
+                        user_metadata: { full_name, role, branch, area, branch_id: branchId }
+                    })
 
-            } catch (e: any) {
-                // If user exists, find their ID from profiles to allow update
-                if (e.message?.includes('already registered')) {
-                    const { data: existingProfile } = await supabase
-                        .from('profiles')
-                        .select('id')
-                        .eq('email', email)
-                        .single()
+                    if (authError) throw authError
+                    if (newUser.user) userId = newUser.user.id
 
-                    if (existingProfile) {
-                        userId = existingProfile.id
+                } catch (e: any) {
+                    // Handle case where user exists in Auth but not in Profiles (Inconsistent state)
+                    if (e.message?.includes('already registered')) {
+                        // We can't easily get the ID here without listUsers permission or a function
+                        // But we can try to "Recover" if we assume the email is the key.
+                        // For now, let's report this specific error clearly.
+                        // actually, if we are here, it means Profile was NOT found, but Auth says Exists.
+                        throw new Error(`El usuario existe en Auth pero no tiene perfil. Contacte soporte.`)
                     } else {
-                        throw new Error("Usuario existe en Auth pero no tiene perfil en base de datos.")
+                        throw e
                     }
-                } else {
-                    throw e
                 }
             }
 
