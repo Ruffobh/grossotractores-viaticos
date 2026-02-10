@@ -30,54 +30,60 @@ interface ExpenseData {
 /**
  * Sends an alert to all Admins when an expense exceeds the limit.
  */
-export async function sendAdminAlert(expense: ExpenseData) {
+export async function sendAdminAlert(expense: ExpenseData, overrideEmail?: string) {
     console.log(`[sendAdminAlert] Triggered for expense: ${expense.id} (User: ${expense.user_name})`)
     try {
         const { createAdminClient } = await import('@/utils/supabase/admin')
         const adminClient = createAdminClient()
+        let adminEmails: string[] = []
 
-        // 1. Fetch all admins with emails (Using Admin Client to bypass RLS)
-        const { data: admins, error: adminError } = await adminClient
-            .from('profiles')
-            .select('email')
-            .eq('role', 'admin')
-            .not('email', 'is', null)
+        if (overrideEmail) {
+            console.log('[sendAdminAlert] TEST MODE: Sending email to:', overrideEmail)
+            adminEmails = [overrideEmail]
+        } else {
+            // 1. Fetch all admins with emails (Using Admin Client to bypass RLS)
+            const { data: admins, error: adminError } = await adminClient
+                .from('profiles')
+                .select('email')
+                .eq('role', 'admin')
+                .not('email', 'is', null)
 
-        if (adminError) {
-            console.error('[sendAdminAlert] Error fetching admins:', adminError)
+            if (adminError) {
+                console.error('[sendAdminAlert] Error fetching admins:', adminError)
+            }
+
+            // 2. Fetch users with "receive_approval_emails" permission
+            const { data: permissionUsers, error: permError } = await adminClient
+                .from('profiles')
+                .select('email, area, permissions')
+                .not('email', 'is', null)
+
+            if (permError) {
+                console.error('[sendAdminAlert] Error fetching permission users:', permError)
+            }
+
+            const expenseArea = expense.area
+            const validPermissionUsers = permissionUsers?.filter(u => {
+                const hasPerm = (u.permissions as any)?.receive_approval_emails
+                if (!hasPerm) return false
+                if (expenseArea && u.area !== expenseArea) return false
+                return true
+            }) || []
+
+            const allRecipients = new Set([
+                ...(admins?.map(a => a.email!) || []),
+                ...validPermissionUsers.map(u => u.email!)
+            ])
+
+            if (allRecipients.size === 0) {
+                console.warn('[sendAdminAlert] No recipients found to notify.')
+                return { error: 'No recipients found' }
+            }
+
+            adminEmails = Array.from(allRecipients)
         }
 
-        // 2. Fetch users with "receive_approval_emails" permission
-        const { data: permissionUsers, error: permError } = await adminClient
-            .from('profiles')
-            .select('email, area, permissions')
-            .not('email', 'is', null)
-
-        if (permError) {
-            console.error('[sendAdminAlert] Error fetching permission users:', permError)
-        }
-
-        const expenseArea = expense.area
-        const validPermissionUsers = permissionUsers?.filter(u => {
-            const hasPerm = (u.permissions as any)?.receive_approval_emails
-            if (!hasPerm) return false
-            if (expenseArea && u.area !== expenseArea) return false
-            return true
-        }) || []
-
-        const allRecipients = new Set([
-            ...(admins?.map(a => a.email!) || []),
-            ...validPermissionUsers.map(u => u.email!)
-        ])
-
-        console.log(`[sendAdminAlert] Recipients calculated: [${Array.from(allRecipients).join(', ')}]`)
-
-        if (allRecipients.size === 0) {
-            console.warn('[sendAdminAlert] No recipients found to notify.')
-            return { error: 'No recipients found' }
-        }
-
-        const adminEmails = Array.from(allRecipients)
+        console.log(`[sendAdminAlert] Recipients calculated: [${adminEmails.join(', ')}]`)
 
         // 3. Send Email
         const info = await transporter.sendMail({
@@ -93,6 +99,7 @@ export async function sendAdminAlert(expense: ExpenseData) {
                     <li><strong>Monto:</strong> ${expense.currency} ${expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</li>
                 </ul>
                 <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/expenses/${expense.id}">Ver Comprobante</a></p>
+                ${overrideEmail ? '<p style="color:red; font-size:12px;">* Email de prueba redirigido</p>' : ''}
             `
         })
 
