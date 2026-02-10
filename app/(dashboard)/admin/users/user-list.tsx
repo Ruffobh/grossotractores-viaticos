@@ -132,9 +132,9 @@ export default function UserList({ profiles, consumptionData }: UserListProps) {
                             <th onClick={() => handleSort('full_name')} className={styles.sortableHeader}>
                                 <div className={styles.headerContent}>Nombre <SortIcon columnKey="full_name" /></div>
                             </th>
-                            <th onClick={() => handleSort('email')} className={styles.sortableHeader}>
+                            {/* <th onClick={() => handleSort('email')} className={styles.sortableHeader}>
                                 <div className={styles.headerContent}>Email <SortIcon columnKey="email" /></div>
-                            </th>
+                            </th> */}
                             <th onClick={() => handleSort('role')} className={styles.sortableHeader}>
                                 <div className={styles.headerContent}>Rol <SortIcon columnKey="role" /></div>
                             </th>
@@ -170,7 +170,7 @@ export default function UserList({ profiles, consumptionData }: UserListProps) {
                             return (
                                 <tr key={profile.id}>
                                     <td data-label="Nombre" className="font-bold">{profile.full_name || 'Sin Nombre'}</td>
-                                    <td data-label="Email" className={styles.emailCell} title={profile.email || ''}>{profile.email}</td>
+                                    {/* <td data-label="Email" className={styles.emailCell} title={profile.email || ''}>{profile.email}</td> */}
                                     <td data-label="Rol">
                                         <span className={`${styles.badge} ${profile.role === 'branch_manager' ? styles.manager : styles[profile.role || 'user']}`}>
                                             {profile.role === 'branch_manager' ? 'MANAGER' : (profile.role || 'user')}
