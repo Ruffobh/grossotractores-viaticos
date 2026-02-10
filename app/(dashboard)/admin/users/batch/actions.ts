@@ -27,8 +27,18 @@ export async function processBatchUsers(users: any[]) {
         const branch = row.branch || row.Sucursal || ''
         const area = row.area || row.Area || ''
         const password = String(row.password || row.Contraseña || 'pass123')
-        const monthly_limit = Number(row.monthly_limit || 0)
-        const cash_limit = Number(row.cash_limit || 0)
+        // Helper to parse formatted numbers (e.g. "500.000,00" -> 500000.00)
+        const parseLimit = (val: any) => {
+            if (typeof val === 'number') return val
+            if (!val) return 0
+            const str = String(val).trim()
+            // Remove thousands separator (.) and replace decimal separator (,) with (.)
+            const cleanStr = str.replace(/\./g, '').replace(',', '.')
+            return Number(cleanStr) || 0
+        }
+
+        const monthly_limit = parseLimit(row.monthly_limit || row.Monthly_Limit || row.Limite_TC)
+        const cash_limit = parseLimit(row.cash_limit || row.Cash_Limit || row.Limite_EF)
 
         // Basic Validation
         if (!email || !String(email).includes('@')) {
