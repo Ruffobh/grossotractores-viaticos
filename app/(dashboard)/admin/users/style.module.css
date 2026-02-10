@@ -398,3 +398,83 @@
         word-break: break-all;
     }
 }
+
+/* --- Search Bar Styles --- */
+.searchContainer {
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.searchWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    color: var(--gray-400);
+    pointer-events: none;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    /* space for icon */
+    border: 1px solid var(--gray-300);
+    border-radius: 50px;
+    font-size: 0.9rem;
+    background-color: white;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--nh-blue);
+    box-shadow: 0 0 0 3px rgba(0, 69, 137, 0.1);
+}
+
+/* --- Sortable Header Styles --- */
+.sortableHeader {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.sortableHeader:hover {
+    background-color: var(--gray-200) !important;
+    /* Override default th bg */
+}
+
+.headerContent {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    justify-content: center;
+    /* keep centered per original th style */
+    transition: transform 0.2s ease;
+}
+
+.sortableHeader:hover .headerContent {
+    transform: translateY(-2px);
+    /* Lift animation */
+}
+
+.sortIconActive {
+    color: var(--nh-blue);
+    opacity: 1;
+}
+
+.sortIconInactive {
+    color: var(--gray-400);
+    opacity: 0.5;
+}
+
+/* Adjust th alignment overrides if needed to flex with icon */
+.table th {
+    /* Ensure flex content works inside */
+    vertical-align: middle;
+}
