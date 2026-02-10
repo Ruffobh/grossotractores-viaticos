@@ -213,9 +213,17 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                         required
                     />
                     {isDateInvalid && (
-                        <p className="text-red-500 text-sm mt-1">
-                            La factura no puede tener más de 7 días de antigüedad.
-                        </p>
+                        <div className={styles.errorAlert}>
+                            <div className={styles.errorIconWrapper}>
+                                <AlertTriangle className={styles.errorIcon} />
+                            </div>
+                            <div className={styles.errorContent}>
+                                <div className={styles.errorTitle}>Fecha Inválida</div>
+                                <div className={styles.errorText}>
+                                    La factura no puede tener más de 7 días de antigüedad.
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
 
