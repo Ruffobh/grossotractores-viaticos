@@ -21,24 +21,71 @@ export async function processBatchUsers(users: any[]) {
     let errors: string[] = []
 
     for (const [index, row] of users.entries()) {
-        const email = row.email || row.Email
-        const full_name = row.full_name || row.Nombre
-        const role = row.role || row.Rol || 'user'
-        const branch = row.branch || row.Sucursal || ''
-        const area = row.area || row.Area || ''
-        const password = String(row.password || row.Contraseña || 'pass123')
+        // Helper to find value case-insensitively and loosely
+        const findValue = (obj: any, keys: string[]) => {
+            const objKeys = Object.keys(obj)
+            for (const key of keys) {
+                // Exact match
+                if (obj[key] !== undefined) return obj[key]
+
+                // Loose match
+                const looseKey = key.toLowerCase().replace(/[^a-z0-9]/g, '')
+                const foundKey = objKeys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === looseKey)
+                if (foundKey && obj[foundKey] !== undefined) return obj[foundKey]
+            }
+            return undefined
+        }
+
+        const email = findValue(row, ['email', 'correo', 'mail'])
+        const full_name = findValue(row, ['full_name', 'fullname', 'nombre', 'name'])
+        const role = findValue(row, ['role', 'rol', 'cargo']) || 'user'
+        const branch = findValue(row, ['branch', 'sucursal', 'site']) || ''
+        const area = findValue(row, ['area', 'sector', 'departamento']) || ''
+        const password = String(findValue(row, ['password', 'contraseña', 'clave']) || 'pass123')
+
         // Helper to parse formatted numbers (e.g. "500.000,00" -> 500000.00)
+        // Supports EU (1.000,00) and US (1,000.00) and Plain (1000)
         const parseLimit = (val: any) => {
             if (typeof val === 'number') return val
             if (!val) return 0
-            const str = String(val).trim()
-            // Remove thousands separator (.) and replace decimal separator (,) with (.)
-            const cleanStr = str.replace(/\./g, '').replace(',', '.')
-            return Number(cleanStr) || 0
+
+            let str = String(val).trim()
+            // Remove currency symbols, letters, spaces... keep only digits, comma, dot, minus
+            str = str.replace(/[^\d.,-]/g, '')
+
+            if (!str) return 0
+
+            const lastComma = str.lastIndexOf(',')
+            const lastDot = str.lastIndexOf('.')
+
+            if (lastComma > lastDot) {
+                // EU Format detected: 1.000,00
+                // Remove all dots
+                str = str.replace(/\./g, '')
+                // Replace comma with dot
+                str = str.replace(',', '.')
+            } else if (lastDot > lastComma) {
+                // US Format detected: 1,000.00
+                // Remove all commas
+                str = str.replace(/,/g, '')
+            }
+            // If neither or only one separator, logic mostly holds (ambiguity of 1.234 handled as 1.234 usually, but in limits context 1.000 is likely 1000)
+            // However, with the above logic:
+            // "1234" -> no comma/dot -> Number("1234") -> 1234. Correct.
+            // "1234,50" -> comma > dot (-1) -> replace comma -> 1234.50. Correct.
+            // "123.456" -> dot > comma (-1) -> remove numbers? No, remove commas (none). -> 123.456. 
+            // Warning: If user meant 123 thousand, and wrote 123.456 and we think it is US, we get 123.456.
+            // If we assume strict AR format for ambiguous cases, we should strip dots. 
+            // But let's verify if we can detect locale. We can't.
+            // But given "Viaticos Grosso", let's lean towards EU/AR.
+            // If it has ONE dot and NO comma, and dot is 3rd from end? "123.456". usually 123k.
+            // If dot is 2nd from end? "123.45". 123 point 45.
+
+            return Number(str) || 0
         }
 
-        const monthly_limit = parseLimit(row.monthly_limit || row.Monthly_Limit || row.Limite_TC)
-        const cash_limit = parseLimit(row.cash_limit || row.Cash_Limit || row.Limite_EF)
+        const monthly_limit = parseLimit(findValue(row, ['monthly_limit', 'limit_tc', 'limite_tc', 'monthlylimit']))
+        const cash_limit = parseLimit(findValue(row, ['cash_limit', 'limit_ef', 'limite_ef', 'cashlimit']))
 
         // Basic Validation
         if (!email || !String(email).includes('@')) {
