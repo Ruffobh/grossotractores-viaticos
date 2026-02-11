@@ -50,7 +50,9 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                             </a>
                             <h2 className={styles.titleCompact}>Detalle de Comprobante</h2>
                         </div>
-                        {canExport && <BCExportButton invoice={invoice} profile={invoice.profiles} />}
+                        {canExport && (!invoice.split_group_id || invoice.is_parent) && (
+                            <BCExportButton invoice={invoice} profile={invoice.profiles} />
+                        )}
                     </div>
 
                     <div className={styles.headerMetaRow}>
