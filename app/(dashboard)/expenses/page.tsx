@@ -81,6 +81,7 @@ export default async function ExpensesPage({
         return <div>Error al cargar comprobantes: {error.message}</div>
     }
 
+    // Forced rebuild trigger
     let expenses = rawExpenses || []
 
     // 5. Client-side Filtering (for the main list/charts)
