@@ -308,11 +308,11 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 p-4 border-t bg-gray-50 mt-6 rounded-xl">
+            <div className={styles.actions}>
                 <button
                     type="button"
                     onClick={handleCancel}
-                    className="flex-1 bg-white border border-gray-300 text-gray-700 font-bold py-3 px-4 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                    className={styles.deleteActionBtn}
                 >
                     Cancelar
                 </button>
@@ -320,16 +320,16 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 <button
                     type="button"
                     onClick={() => setShowSplitModal(true)}
-                    className="flex-1 bg-blue-50 border border-blue-200 text-blue-700 font-bold py-3 px-4 rounded-xl hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-2"
+                    className={styles.splitButton}
                     title="Dividir este gasto entre varios usuarios"
                 >
-                    <Users size={20} />
-                    <span>Dividir Gasto</span>
+                    <Users size={18} />
+                    <span>Dividir</span>
                 </button>
 
                 <button
                     type="submit"
-                    className="flex-[2] bg-red-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-red-500/30"
+                    className={styles.saveButton}
                     disabled={isDateInvalid}
                 >
                     Confirmar y Guardar
