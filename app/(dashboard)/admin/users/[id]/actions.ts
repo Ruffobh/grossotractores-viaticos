@@ -69,24 +69,55 @@ export async function updateUserProfile(formData: FormData) {
         throw new Error('Failed to update profile')
     }
 
-    // Handle Password Reset if provided
     const newPassword = formData.get('new_password') as string
-    if (newPassword && newPassword.trim().length > 0) {
-        // Use Admin API to update user password
-        // Note: This requires the service_role key usually, but createClient uses ANON key.
-        // Standard supabase client with ANON key cannot update OTHER users' passwords.
-        // We need a SUPER CLIENT for this or use a Database Function.
+    const newEmail = formData.get('email') as string
 
-        // OPTION 1: Use a Database RPC (most secure if configured right)
-        // OPTION 2: Use Service Role Key (Not exposed in client-side env, but we are in server action)
-        // We don't have SERVICE_ROLE_KEY in .env.local yet. 
-        // User asked to "change password".
-        // Let's try to update using the supabase-admin client if we can instantiate it, 
-        // OR tell the user we need the SERVICE_KEY.
-        // For now, let's log that we need the service key.
+    // 1. Update Profile (Base Table)
+    // We already updated other fields above, but we didn't include email in profileData.
+    // Let's do it separately or include it. Since we already ran the update above, let's run a second update for email or merge it.
+    // Actually, I should have included it in profileData. Let's fix the whole flow to be cleaner.
+    // BUT since I am editing existing code, I can just append the email update logic here or above.
 
-        console.warn("Password update for other users requires SERVICE_ROLE_KEY. Skipping for now.")
-        // We will notify the user about this limitation or add the key.
+    // Let's do the Auth Update FIRST. If that fails, we shouldn't update the profile email ideally, or warn.
+    if (newEmail && newEmail.trim().length > 0) {
+        try {
+            const { createAdminClient } = await import('@/utils/supabase/admin')
+            const adminClient = createAdminClient()
+
+            // Update Auth User (Email & Password if provided)
+            const param: any = { email: newEmail, email_confirm: true }
+            if (newPassword && newPassword.trim().length > 0) {
+                param.password = newPassword
+            }
+
+            const { error: authError } = await adminClient.auth.admin.updateUserById(id, param)
+
+            if (authError) {
+                console.error('Error updating Auth User:', authError)
+                // If it's "email already registered", we should throw
+                throw new Error(`Error updating Auth: ${authError.message}`)
+            }
+
+            // Sync email to profiles table
+            await supabase.from('profiles').update({ email: newEmail }).eq('id', id)
+
+        } catch (e: any) {
+            console.error("Auth Update Error:", e)
+            throw new Error(e.message || "Failed to update authentication data")
+        }
+    } else if (newPassword && newPassword.trim().length > 0) {
+        // Only Password Update
+        try {
+            const { createAdminClient } = await import('@/utils/supabase/admin')
+            const adminClient = createAdminClient()
+            const { error: authError } = await adminClient.auth.admin.updateUserById(id, { password: newPassword })
+            if (authError) {
+                throw new Error(`Error updating Password: ${authError.message}`)
+            }
+        } catch (e: any) {
+            console.error("Password Update Error:", e)
+            throw new Error(e.message)
+        }
     }
 
     revalidatePath('/admin/users')

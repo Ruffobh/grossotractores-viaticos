@@ -61,6 +61,17 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                         />
                     </div>
 
+                    <div className={styles.fullWidth}>
+                        <label className={styles.label}>Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            defaultValue={profile.email || ''}
+                            className={styles.input}
+                            required
+                        />
+                    </div>
+
                     <div>
                         <label className={styles.label}>Rol</label>
                         <select name="role" defaultValue={profile.role || 'user'} className={styles.input}>
