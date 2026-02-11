@@ -16,7 +16,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
     // Fetch invoice data
     const { data: invoice, error } = await supabase
         .from('invoices')
-        .select('*, profiles!user_id(*), loaded_by_profile:profiles!loaded_by(*)')
+        .select('*, profiles!invoices_user_id_fkey(*), loaded_by_profile:profiles!invoices_loaded_by_fkey(*)')
         .eq('id', id)
         .single()
 

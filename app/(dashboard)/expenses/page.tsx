@@ -41,8 +41,8 @@ export default async function ExpensesPage({
         .from('invoices')
         .select(`
             *,
-            profiles!user_id(full_name, branch),
-            loaded_by_profile:profiles!loaded_by(full_name)
+            profiles!invoices_user_id_fkey(full_name, branch),
+            loaded_by_profile:profiles!invoices_loaded_by_fkey(full_name)
         `)
         .order('date', { ascending: false })
         .neq('status', 'draft') // Exclude incomplete uploads
