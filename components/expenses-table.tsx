@@ -222,10 +222,10 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                     <td><span className={styles.tableValue}>{new Date(expense.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</span></td>
                                     {isManagerOrAdmin && <td><span className={styles.cellContent}>{expense.profiles?.full_name || 'Desconocido'}</span></td>}
                                     <td>
-                                        <div className="flex flex-col">
+                                        <div className={styles.vendorWrapper}>
                                             <span className={styles.cellContent}>{expense.vendor_name}</span>
                                             {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
-                                                <span className="text-xs text-gray-500 block italic">
+                                                <span className={styles.loadedByLabel}>
                                                     Cargado por: {expense.loaded_by_profile.full_name}
                                                 </span>
                                             )}
@@ -280,10 +280,10 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                 )}
                                 <div className={styles.cardRow}>
                                     <span className={styles.cardLabel}>Proveedor:</span>
-                                    <div className="flex flex-col">
+                                    <div className={styles.vendorWrapper}>
                                         <span className={styles.cardValue}><strong>{expense.vendor_name}</strong></span>
                                         {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
-                                            <span className="text-xs text-gray-500 italic mt-1">
+                                            <span className={styles.loadedByLabel}>
                                                 Cargado por: {expense.loaded_by_profile.full_name}
                                             </span>
                                         )}

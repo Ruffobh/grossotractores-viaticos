@@ -250,6 +250,19 @@
     border: 1px solid transparent;
 }
 
+.vendorWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.loadedByLabel {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-style: italic;
+    display: block;
+}
+
 /* Actions */
 .link {
     color: var(--nh-blue);

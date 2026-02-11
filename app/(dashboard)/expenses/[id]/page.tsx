@@ -60,6 +60,11 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                             <p className={styles.metaText}>
                                 <span className={styles.metaLabel}>Por:</span> {invoice.profiles?.full_name}
                             </p>
+                            {invoice.loaded_by_profile && invoice.loaded_by !== invoice.user_id && (
+                                <p className={styles.metaText}>
+                                    <span className={styles.metaLabel}>Cargado por:</span> {invoice.loaded_by_profile.full_name}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
