@@ -4,6 +4,8 @@ import { createClient } from '@/utils/supabase/server'
 import { getGeminiModel, generateWithFallback } from '@/utils/gemini/client'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { sendAdminAlert, sendManagerNotification } from '@/app/utils/mail'
+
 export async function processReceipt(imageUrl: string) {
     try {
         const supabase = await createClient()
@@ -312,13 +314,95 @@ export async function searchProfiles(term: string) {
     return data || []
 }
 
-export async function splitExpense(invoiceId: string, targetUserIds: string[]) {
+// Helper for checking limits and determining status
+async function checkLimitAndGetStatus(
+    supabase: any,
+    userId: string,
+    amount: number,
+    dateStr: string,
+    paymentMethod: string
+) {
+    // 1. Fetch Profile Limits
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('monthly_limit, cash_limit, full_name, branch, area')
+        .eq('id', userId)
+        .single()
+
+    if (!profile) return { status: 'pending_approval', profile: null } // Safety fallback
+
+    const cardLimit = profile.monthly_limit || 0
+    const cashLimit = profile.cash_limit || 0
+
+    // 2. Calculate Date Range (Month of expense)
+    // Date string YYYY-MM-DD
+    const [yearPart, monthPart, dayPart] = dateStr.split('-').map(Number)
+    const invoiceDate = new Date(yearPart, monthPart - 1, dayPart)
+    const year = invoiceDate.getFullYear()
+    const month = invoiceDate.getMonth()
+
+    const firstDay = new Date(year, month, 1).toISOString()
+    const lastDay = new Date(year, month + 1, 0).toISOString()
+
+    // 3. Fetch Monthly Consumption
+    const { data: expenses } = await supabase
+        .from('invoices')
+        .select('total_amount, payment_method')
+        .eq('user_id', userId)
+        .gte('date', firstDay)
+        .lte('date', lastDay)
+        .neq('status', 'rejected')
+        .neq('status', 'draft') // Exclude drafts from calculation
+
+    // 4. Calculate relevant consumption
+    const isCashOrTransfer = paymentMethod === 'Cash' || paymentMethod === 'Transfer'
+
+    const relevantExpenses = expenses?.filter((inv: any) => {
+        const invMethod = inv.payment_method
+        if (isCashOrTransfer) {
+            return invMethod === 'Cash' || invMethod === 'Transfer'
+        } else {
+            return invMethod === 'Card'
+        }
+    }) || []
+
+    const currentTotal = relevantExpenses.reduce((sum: any, item: any) => sum + (item.total_amount || 0), 0)
+    const activeLimit = isCashOrTransfer ? cashLimit : cardLimit
+
+    // 5. Determine Status
+    let status = 'approved'
+    if (currentTotal + amount > activeLimit) {
+        status = 'pending_approval'
+    }
+
+    return { status, profile, currentTotal, activeLimit }
+}
+
+export async function splitExpense(invoiceId: string, targetUserIds: string[], formData: any) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
     try {
-        // 1. Fetch Original Invoice
+        console.log("--- SPLIT EXPENSE ACTION START ---")
+
+        // 0. Validate Date Restriction (7 days)
+        if (formData.date) {
+            const today = new Date()
+            const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+            const [y, m, d] = formData.date.split('-').map(Number)
+            const expenseDate = new Date(y, m - 1, d)
+            const diffTime = todayZero.getTime() - expenseDate.getTime()
+            const diffDays = diffTime / (1000 * 3600 * 24)
+
+            if (isNaN(diffDays) || diffDays > 7) {
+                return { error: 'La fecha del comprobante excede el límite de 7 días.' }
+            }
+        } else {
+            return { error: 'La fecha es obligatoria.' }
+        }
+
+        // 1. Fetch Original Invoice to verify ownership
         const { data: invoice, error: fetchError } = await supabase
             .from('invoices')
             .select('*')
@@ -326,87 +410,123 @@ export async function splitExpense(invoiceId: string, targetUserIds: string[]) {
             .eq('user_id', user.id) // Ensure ownership
             .single()
 
-        if (fetchError || !invoice) return { error: 'Invoice not found or unauthorized' }
-        if (invoice.split_group_id) return { error: 'This invoice is already split' }
+        if (fetchError || !invoice) return { error: 'Comprobante no encontrado o no autorizado.' }
+        if (invoice.split_group_id) return { error: 'Este comprobante ya fue dividido.' }
 
         // 2. Preparation
-        const totalAmount = invoice.total_amount
+        const totalAmount = parseFloat(formData.total_amount) || invoice.total_amount
         const count = targetUserIds.length + 1 // +1 for self
         const splitAmount = Number((totalAmount / count).toFixed(2)) // Round to 2 decimals
         const splitGroupId = crypto.randomUUID()
 
-        // 3. Update Parent (Self)
-        // Check Limit for Parent with new amount (reduced) - usually approved if original was, but good to re-check
-        // For simplicity, we keep original status OR set to 'draft'? 
-        // Plan says: Verify limit. If exceeds -> pending.
-        const { data: parentProfile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-        // We need a helper for checking limit, or just duplicate logic briefly.
-        // Let's assume approved if reduced, unless it was already pending? 
-        // Actually, if it divides, it's LESS money, so if it was approved, it stays approved. 
-        // If it was pending, it MIGHT become approved.
-
-        // Update Parent
-        const { error: updateError } = await supabase
-            .from('invoices')
-            .update({
-                total_amount: splitAmount,
-                original_amount: totalAmount,
-                split_group_id: splitGroupId,
-                is_parent: true,
-                // description: invoice.description ? `${invoice.description} (Dividido)` : '(Dividido)' // Optional
-            })
-            .eq('id', invoiceId)
-
-        if (updateError) throw new Error('Failed to update parent invoice: ' + updateError.message)
-
-        // 4. Create Children (Clones)
-        // We need admin client to insert for OTHER users if RLS prevents it?
-        // Usually users can only insert for themselves.
-        // We DEFINITELY need Admin Client here.
+        // Use separate Admin Client for Cross-User Inserts/Updates logic if needed, 
+        // though Parent Update can be done with standard client usually.
+        // We use Admin Client for consistency and to insert children for other users.
         const { createAdminClient } = await import('@/utils/supabase/admin')
         const adminClient = createAdminClient()
 
+        // 3. Process Parent (Self)
+        // Check Limit for Parent
+        const parentCheck = await checkLimitAndGetStatus(
+            adminClient,
+            user.id,
+            splitAmount,
+            formData.date,
+            formData.payment_method
+        )
+
+        // Prepare Parent Update Data
+        const parentUpdateData = {
+            ...formData, // Update with all form data (category, etc)
+            total_amount: splitAmount,
+            original_amount: totalAmount,
+            split_group_id: splitGroupId,
+            is_parent: true,
+            status: parentCheck.status,
+            user_id: user.id // Ensure ID remains same
+        }
+
+        // Update Parent
+        const { error: updateError } = await adminClient
+            .from('invoices')
+            .update(parentUpdateData)
+            .eq('id', invoiceId)
+
+        if (updateError) throw new Error('Error al actualizar comprobante original: ' + updateError.message)
+
+        // Notification for Parent if needed (Admin Alert / Manager Notification)
+        const parentExpenseData = {
+            id: invoiceId,
+            date: formData.date,
+            vendor_name: formData.vendor_name,
+            total_amount: splitAmount,
+            currency: formData.currency,
+            user_name: parentCheck.profile?.full_name || 'Usuario',
+            user_id: user.id,
+            area: parentCheck.profile?.area
+        }
+
+        if (parentCheck.status === 'pending_approval') {
+            await sendAdminAlert(parentExpenseData)
+        } else if (parentCheck.status === 'approved') {
+            await sendManagerNotification(parentExpenseData)
+        }
+
+        // 4. Create Children (Clones)
         const childrenPromises = targetUserIds.map(async (targetId) => {
-            // Get Target Profile for Branch/Area info? Invoice usually has branch/area snapshot? 
-            // Invoice table has 'branch'.
-            const { data: targetProfile } = await adminClient.from('profiles').select('branch, area').eq('id', targetId).single()
+            // Check Limit for Child
+            const childCheck = await checkLimitAndGetStatus(
+                adminClient,
+                targetId,
+                splitAmount,
+                formData.date,
+                formData.payment_method
+            )
 
             // Clone data
             const childData = {
-                ...invoice,
+                ...invoice, // Start with original base
+                ...formData, // Apply form updates
                 id: undefined, // New ID
                 created_at: undefined,
                 user_id: targetId,
                 total_amount: splitAmount,
-                original_amount: null, // Only parent keeps original? Or both? Plan says Parent.
+                original_amount: null,
                 split_group_id: splitGroupId,
                 is_parent: false,
-                status: 'draft', // Start as draft or approved? Plan says: Check Limit.
-                branch: targetProfile?.branch || invoice.branch, // Update branch to user's branch? Or keep expense branch? usually user's branch.
-                // area: targetProfile?.area // If invoice has area column
+                status: childCheck.status,
+                branch: childCheck.profile?.branch || invoice.branch,
             }
 
-            // Check budget logic (Simplified for now: Set directly to 'approved' if low amount? or 'draft' to force review?)
-            // User request: "el gasto debe imparctar en partes iguales en los limtes... pendiente de aprobacion si se pasa".
-            // We'll insert as 'pending_approval' or 'approved' based on limit check logic.
-            // For MVP, let's insert as 'draft' or 'pending_approval' and letting triggers or manual review handle it?
-            // Existing logic in 'processReceipt' sets 'draft'. 
-            // 'updateInvoice' does the limit check. 
-            // Let's call it 'approved' since it's "confirmed" by the splitter? 
-            // But we need to check limits.
-            // Let's set to 'approved' by default, and if we have a check limit function use it.
-            // For now: 'approved'. If we implement strict limits later, we change this.
-            // Wait, existing check is in `updateInvoice` action. 
-            // I should duplicate the limit check here roughly.
+            // Insert
+            const { data: insertedChild, error: insertError } = await adminClient
+                .from('invoices')
+                .insert(childData)
+                .select()
+                .single()
 
-            // Fetch monthly consumption
-            // ... (Skip complex check for this iteration, set to approved and rely on manual review if needed, or pending).
-            // Safer: Set to 'approved' (since it comes from a trusted source? No, limits matter).
-            // Let's set to 'approved' for now to match "impactar en los limites". 
-            // Only if it exceeds limit it should trigger alert.
-            childData.status = 'approved'
+            if (insertError) {
+                console.error(`Error inserting child invoice for ${targetId}:`, insertError)
+                return
+            }
 
-            return adminClient.from('invoices').insert(childData)
+            // Notification for Child
+            const childExpenseData = {
+                id: insertedChild.id,
+                date: formData.date,
+                vendor_name: formData.vendor_name,
+                total_amount: splitAmount,
+                currency: formData.currency,
+                user_name: childCheck.profile?.full_name || 'Colega',
+                user_id: targetId,
+                area: childCheck.profile?.area
+            }
+
+            if (childCheck.status === 'pending_approval') {
+                await sendAdminAlert(childExpenseData)
+            } else if (childCheck.status === 'approved') {
+                await sendManagerNotification(childExpenseData)
+            }
         })
 
         await Promise.all(childrenPromises)

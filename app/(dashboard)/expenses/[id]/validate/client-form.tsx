@@ -141,11 +141,23 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
         }
     }
 
+    const [currentFormData, setCurrentFormData] = useState<any>(null)
+
+    const handleOpenSplitModal = () => {
+        if (formRef.current) {
+            const fd = new FormData(formRef.current)
+            const data: any = Object.fromEntries(fd.entries())
+            // Ensure numeric values are numbers if needed, but actions.ts parses them (parseFloat)
+            setCurrentFormData(data)
+        }
+        setShowSplitModal(true)
+    }
+
     return (
         <form action={updateInvoice} ref={formRef} onSubmit={handleSubmit}>
             <input type="hidden" name="id" value={invoice.id} />
 
-            {/* Modal Logic handled via state and effectively "intercepting" submit */}
+            {/* ... Modal Logic ... */}
             {showModal && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modalContent}>
@@ -182,7 +194,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 </div>
             )}
 
-            {/* Error Alert relocated to top to avoid breaking grid layout */}
+            {/* ... Error Alert ... */}
             {isDateInvalid && (
                 <div className={styles.errorAlert} style={{ marginBottom: '1.5rem' }}>
                     <div className={styles.errorIconWrapper}>
@@ -319,7 +331,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
 
                 <button
                     type="button"
-                    onClick={() => setShowSplitModal(true)}
+                    onClick={handleOpenSplitModal}
                     className={styles.splitButton}
                     title="Dividir este gasto entre varios usuarios"
                 >
@@ -341,11 +353,12 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 <SplitExpenseModal
                     invoiceId={invoice.id}
                     totalAmount={amount}
+                    currentData={currentFormData}
                     onClose={() => setShowSplitModal(false)}
                     onSuccess={() => {
                         setShowSplitModal(false)
                         router.refresh()
-                        router.push('/expenses')
+                        // Maybe show success toast?
                     }}
                 />
             )}

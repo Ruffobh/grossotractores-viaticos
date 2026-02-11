@@ -12,42 +12,46 @@ interface Profile {
 
 interface SplitExpenseModalProps {
     invoiceId: string
-    totalAmount: number
+    totalAmount: number // Although typically we'd use currentData.total_amount, we keep this for display consistency if needed, or rely on currentData
+    currentData: any // Form data
     onClose: () => void
     onSuccess: () => void
 }
 
-export function SplitExpenseModal({ invoiceId, totalAmount, onClose, onSuccess }: SplitExpenseModalProps) {
-    const [searchTerm, setSearchTerm] = useState('')
-    const [searchResults, setSearchResults] = useState<Profile[]>([])
+export function SplitExpenseModal({ invoiceId, totalAmount, currentData, onClose, onSuccess }: SplitExpenseModalProps) {
+    const [search, setSearch] = useState('')
+    const [profiles, setProfiles] = useState<Profile[]>([])
     const [selectedUsers, setSelectedUsers] = useState<Profile[]>([])
     const [isSearching, setIsSearching] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
 
+    // Calculation based on currentData.total_amount preferably
+    const amountToSplit = currentData?.total_amount ? parseFloat(currentData.total_amount) : totalAmount
+
     // Debounce search
     useEffect(() => {
         const timer = setTimeout(async () => {
-            if (searchTerm.length >= 2) {
+            if (search.length >= 2) {
                 setIsSearching(true)
-                const results = await searchProfiles(searchTerm)
+                const results = await searchProfiles(search)
                 // Filter out already selected users
                 const filtered = results.filter(r => !selectedUsers.find(s => s.id === r.id))
-                setSearchResults(filtered)
+                setProfiles(filtered)
                 setIsSearching(false)
             } else {
-                setSearchResults([])
+                setProfiles([])
             }
         }, 300)
 
         return () => clearTimeout(timer)
-    }, [searchTerm, selectedUsers])
+    }, [search, selectedUsers])
 
     const handleSelectUser = (user: Profile) => {
         if (selectedUsers.find(u => u.id === user.id)) return
         setSelectedUsers([...selectedUsers, user])
-        setSearchTerm('')
-        setSearchResults([])
+        setSearch('')
+        setProfiles([])
     }
 
     const handleRemoveUser = (userId: string) => {
@@ -61,7 +65,7 @@ export function SplitExpenseModal({ invoiceId, totalAmount, onClose, onSuccess }
         setError('')
 
         const targetIds = selectedUsers.map(u => u.id)
-        const res = await splitExpense(invoiceId, targetIds)
+        const res = await splitExpense(invoiceId, targetIds, currentData)
 
         setIsSubmitting(false)
 
@@ -106,14 +110,14 @@ export function SplitExpenseModal({ invoiceId, totalAmount, onClose, onSuccess }
                             type="text"
                             placeholder="Buscar usuario por nombre..."
                             className={styles.searchInput}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                         />
 
                         {/* Results Dropdown */}
-                        {searchResults.length > 0 && (
+                        {profiles.length > 0 && (
                             <div className={styles.searchResults}>
-                                {searchResults.map(user => (
+                                {profiles.map(user => (
                                     <button
                                         key={user.id}
                                         onClick={() => handleSelectUser(user)}
