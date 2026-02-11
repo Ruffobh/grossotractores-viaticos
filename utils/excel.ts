@@ -125,17 +125,25 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
             return n.includes('PERCEP') || n.includes('PERCEPCION');
         };
 
+        // Helper to check for Total/Summary lines (TO EXCLUDE)
+        const isTotal = (name: string) => {
+            const n = name.toUpperCase();
+            return n.includes('TOTAL') || n.includes('IMPORTES');
+        };
+
         // 1. Calculate from Taxes Array (Most reliable)
         if (invoice.taxes && invoice.taxes.length > 0) {
             // Calculate components
             const totalVat = invoice.taxes.filter(t => isStandardVat(t.name)).reduce((sum, t) => sum + t.amount, 0);
             const totalPerceptions = invoice.taxes.filter(t => isPerception(t.name)).reduce((sum, t) => sum + t.amount, 0); // Ignored for export
-            const totalOtherTaxes = invoice.taxes.filter(t => !isStandardVat(t.name) && !isPerception(t.name)).reduce((sum, t) => sum + t.amount, 0);
+            // Exclude VAT, Perceptions, AND Total summaries
+            const totalOtherTaxes = invoice.taxes
+                .filter(t => !isStandardVat(t.name) && !isPerception(t.name) && !isTotal(t.name))
+                .reduce((sum, t) => sum + t.amount, 0);
 
             // Net Amount = Total - (VAT + Perceptions + OtherTaxes)
             netAmount = invoice.totalAmount - totalVat - totalPerceptions - totalOtherTaxes;
             otherTaxesAmount = totalOtherTaxes;
-
         }
         // 2. Fallback if no taxes array but explicit amounts provided (Old format)
         else {

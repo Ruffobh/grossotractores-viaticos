@@ -25,7 +25,8 @@ export async function processReceipt(imageUrl: string) {
         1. El proveedor NO es "GROSSO TRACTORES SA". Ese es el cliente. Busca el emisor (logotipo arriba a la izquierda).
         2. Debes separar el IVA (21%, 10.5%) de otros impuestos (Percepciones IIBB, Impuestos Internos, Percepción IVA).
         3. Si hay "Conceptos No Gravados" o "Importe Exento", INCLÚYELOS en el array de "taxes" con el nombre "Conceptos No Gravados".
-        4. IDENTIFICA LA LETRA O TIPO DE COMPROBANTE: Busca la letra grande en el recuadro (A, B, C, M) o si dice "Ticket", "Tique Factura A", etc.
+        4. EXCLUYE LÍNEAS DE TOTALES O SUB-TOTALES DE IMPUESTOS: Si el ticket tiene un desglose (ej: "Impuesto Interno" + "IDC") y luego una línea "Importe Total Otros Tributos", SOLO extrae los componentes individuales. NO incluyas la línea de suma total en el array "taxes".
+        5. IDENTIFICA LA LETRA O TIPO DE COMPROBANTE: Busca la letra grande en el recuadro (A, B, C, M) o si dice "Ticket", "Tique Factura A", etc.
         
         CRITICAL OUTPUT FORMAT:
         You MUST return a JSON object strictly adhering to this schema:
