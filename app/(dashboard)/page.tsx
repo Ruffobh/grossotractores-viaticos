@@ -54,7 +54,7 @@ export default async function DashboardPage({
 
     let query = supabase
         .from('invoices')
-        .select('*, profiles(branch, area, full_name), expense_category')
+        .select('*, profiles!invoices_user_id_fkey(branch, area, full_name), expense_category')
         .gte('date', startDate)
         .lte('date', endDate)
         .lte('date', endDate)
