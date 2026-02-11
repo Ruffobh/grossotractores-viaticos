@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Users } from 'lucide-react'
 import { updateInvoice } from './actions'
 import { deleteExpense } from '../../actions'
+import { SplitExpenseModal } from '@/components/split-expense-modal'
 import { useRouter } from 'next/navigation'
 import { EXPENSE_TYPES, PAYMENT_METHODS, INVOICE_TYPES } from '@/app/constants'
 
@@ -26,6 +27,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
     const [amount, setAmount] = useState<number>(invoice.total_amount || 0)
     const [isExceeded, setIsExceeded] = useState(false)
     const [showModal, setShowModal] = useState(false)
+    const [showSplitModal, setShowSplitModal] = useState(false)
     const formRef = useRef<HTMLFormElement>(null)
     const isConfirmedRef = useRef(false)
     const router = useRouter()
@@ -306,18 +308,47 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                 </div>
             </div>
 
-            <div className={styles.actions}>
+            <div className="flex flex-col sm:flex-row gap-3 p-4 border-t bg-gray-50 mt-6 rounded-xl">
                 <button
                     type="button"
                     onClick={handleCancel}
-                    className={styles.deleteActionBtn}
+                    className="flex-1 bg-white border border-gray-300 text-gray-700 font-bold py-3 px-4 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
                 >
                     Cancelar
                 </button>
-                <button type="submit" className={styles.saveButton} disabled={isDateInvalid}>
+
+                <button
+                    type="button"
+                    onClick={() => setShowSplitModal(true)}
+                    className="flex-1 bg-blue-50 border border-blue-200 text-blue-700 font-bold py-3 px-4 rounded-xl hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-2"
+                    title="Dividir este gasto entre varios usuarios"
+                >
+                    <Users size={20} />
+                    <span>Dividir Gasto</span>
+                </button>
+
+                <button
+                    type="submit"
+                    className="flex-[2] bg-red-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-red-500/30"
+                    disabled={isDateInvalid}
+                >
                     Confirmar y Guardar
                 </button>
             </div>
+
+            {/* Split Expense Modal */}
+            {showSplitModal && (
+                <SplitExpenseModal
+                    invoiceId={invoice.id}
+                    totalAmount={amount}
+                    onClose={() => setShowSplitModal(false)}
+                    onSuccess={() => {
+                        setShowSplitModal(false)
+                        router.refresh()
+                        router.push('/expenses')
+                    }}
+                />
+            )}
         </form>
     )
 }
