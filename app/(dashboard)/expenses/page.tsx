@@ -77,8 +77,8 @@ export default async function ExpensesPage({
     const { data: rawExpenses, error } = await query
 
     if (error) {
-        console.error(error)
-        return <div>Error al cargar comprobantes.</div>
+        console.error("DASHBOARD QUERY ERROR:", JSON.stringify(error, null, 2))
+        return <div>Error al cargar comprobantes: {error.message}</div>
     }
 
     let expenses = rawExpenses || []
