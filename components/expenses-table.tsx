@@ -16,7 +16,12 @@ interface Expense {
     total_amount: number | null
     currency: string | null
     status: string | null
+    user_id: string
+    loaded_by?: string | null
     profiles?: {
+        full_name: string | null
+    } | null
+    loaded_by_profile?: {
         full_name: string | null
     } | null
     [key: string]: any
@@ -216,7 +221,16 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                 <tr key={expense.id}>
                                     <td><span className={styles.tableValue}>{new Date(expense.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</span></td>
                                     {isManagerOrAdmin && <td><span className={styles.cellContent}>{expense.profiles?.full_name || 'Desconocido'}</span></td>}
-                                    <td><span className={styles.cellContent}>{expense.vendor_name}</span></td>
+                                    <td>
+                                        <div className="flex flex-col">
+                                            <span className={styles.cellContent}>{expense.vendor_name}</span>
+                                            {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
+                                                <span className="text-xs text-gray-500 block italic">
+                                                    Cargado por: {expense.loaded_by_profile.full_name}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td><span className={styles.cellContent}>{expense.invoice_number || '-'}</span></td>
                                     <td><span className={styles.cellContent}>{formatInvoiceType(expense.invoice_type)}</span></td>
                                     <td className={styles.amount}>
@@ -266,7 +280,14 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                 )}
                                 <div className={styles.cardRow}>
                                     <span className={styles.cardLabel}>Proveedor:</span>
-                                    <span className={styles.cardValue}><strong>{expense.vendor_name}</strong></span>
+                                    <div className="flex flex-col">
+                                        <span className={styles.cardValue}><strong>{expense.vendor_name}</strong></span>
+                                        {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
+                                            <span className="text-xs text-gray-500 italic mt-1">
+                                                Cargado por: {expense.loaded_by_profile.full_name}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className={styles.cardRow}>
                                     <span className={styles.cardLabel}>N° Comp:</span>

@@ -36,9 +36,14 @@ export default async function ExpensesPage({
     }
 
     // 2. Build Query
+    // Explicitly specify the FK column for profiles to avoid ambiguity now that we have two FKs (user_id and loaded_by)
     let query = supabase
         .from('invoices')
-        .select('*, profiles(full_name, branch)')
+        .select(`
+            *,
+            profiles!user_id(full_name, branch),
+            loaded_by_profile:profiles!loaded_by(full_name)
+        `)
         .order('date', { ascending: false })
         .neq('status', 'draft') // Exclude incomplete uploads
 

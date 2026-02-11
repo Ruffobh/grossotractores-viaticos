@@ -232,17 +232,17 @@ export async function markInvoiceAsSubmitted(id: string) {
     const role = profile?.role
     console.log(`[markInvoiceAsSubmitted] User: ${user.email}, Role: ${role}, InvoiceId: ${id}`)
 
-
-
-    // Bypass RLS for Admins and Managers using Service Role
-    let updateQuery: any = { status: 'submitted_to_bc' }
-
     // Check if this invoice is part of a split group (Parent)
     // If so, we must update ALL siblings in the group
     const { data: currentInvoice } = await supabase.from('invoices').select('split_group_id, is_parent').eq('id', id).single()
 
-    if (role === 'admin' || role === 'manager' || role === 'branch_manager') {
-        console.log("[markInvoiceAsSubmitted] Using Admin Client")
+    // Bypass RLS for Admins and Managers using Service Role
+    // ALSO bypass for Split Groups to ensure synchronization across users
+    const hasSplitGroup = !!currentInvoice?.split_group_id
+    let updateQuery: any = { status: 'submitted_to_bc' }
+
+    if (role === 'admin' || role === 'manager' || role === 'branch_manager' || hasSplitGroup) {
+        console.log("[markInvoiceAsSubmitted] Using Admin Client (Admin/Manager or Split Group)")
         const { createAdminClient } = await import('@/utils/supabase/admin')
         const adminClient = createAdminClient()
 
@@ -435,6 +435,8 @@ export async function splitExpense(invoiceId: string, targetUserIds: string[], f
             formData.payment_method
         )
 
+        // ... (existing helper function above)
+
         // Prepare Parent Update Data
         const parentUpdateData = {
             ...formData, // Update with all form data (category, etc)
@@ -443,8 +445,11 @@ export async function splitExpense(invoiceId: string, targetUserIds: string[], f
             split_group_id: splitGroupId,
             is_parent: true,
             status: parentCheck.status,
-            user_id: user.id // Ensure ID remains same
+            user_id: user.id, // Ensure ID remains same
+            loaded_by: user.id // Set loaded_by to creator
         }
+
+        console.log(`Updating Parent ${invoiceId} Amount to: ${splitAmount}`)
 
         // Update Parent
         const { error: updateError } = await adminClient
@@ -496,6 +501,7 @@ export async function splitExpense(invoiceId: string, targetUserIds: string[], f
                 is_parent: false,
                 status: childCheck.status,
                 branch: childCheck.profile?.branch || invoice.branch,
+                loaded_by: user.id // Set loaded_by to creator
             }
 
             // Insert
