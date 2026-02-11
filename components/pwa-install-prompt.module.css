@@ -1,0 +1,123 @@
+.overlay {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    /* Let clicks pass through outside the card */
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    .overlay {
+        justify-content: flex-end;
+        left: auto;
+        right: 1.5rem;
+        bottom: 1.5rem;
+    }
+}
+
+.card {
+    background-color: white;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    /* shadow-lg */
+    border: 1px solid var(--gray-200);
+    width: 100%;
+    max-width: 24rem;
+    /* w-96 */
+    pointer-events: auto;
+    /* Re-enable clicks on the card */
+    position: relative;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(1rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.closeButton {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--gray-300);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.closeButton:hover {
+    color: var(--gray-700);
+}
+
+.contentWrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.iconWrapper {
+    background-color: #dbeafe;
+    /* blue-100 */
+    color: #2563eb;
+    /* blue-600 */
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.textContent {
+    flex: 1;
+}
+
+.title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 0 0.25rem 0;
+    color: var(--gray-900);
+}
+
+.description {
+    font-size: 0.875rem;
+    color: var(--gray-700);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.25;
+}
+
+.installButton {
+    width: 100%;
+    background-color: var(--nh-blue);
+    /* blue-600 equivalent-ish */
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.installButton:hover {
+    background-color: var(--primary-hover);
+}
