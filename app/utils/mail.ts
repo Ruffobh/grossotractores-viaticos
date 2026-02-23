@@ -64,7 +64,8 @@ export async function sendAdminAlert(expense: ExpenseData, overrideEmail?: strin
 
             const expenseArea = expense.area
             const validPermissionUsers = permissionUsers?.filter(u => {
-                const hasPerm = (u.permissions as any)?.receive_approval_emails
+                const perms = u.permissions as any || {}
+                const hasPerm = perms.receive_approval_emails || perms.approve_area_expenses
                 if (!hasPerm) return false
                 if (expenseArea && u.area !== expenseArea) return false
                 return true
