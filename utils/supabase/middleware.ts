@@ -50,7 +50,8 @@ export async function updateSession(request: NextRequest) {
         if (
             !user &&
             !request.nextUrl.pathname.startsWith('/login') &&
-            !request.nextUrl.pathname.startsWith('/auth')
+            !request.nextUrl.pathname.startsWith('/auth') &&
+            !request.nextUrl.pathname.startsWith('/api/resend')
         ) {
             console.log(`[Middleware] Redirecting to /login`);
             // no user, potentially respond by redirecting the user to the login page
@@ -67,7 +68,11 @@ export async function updateSession(request: NextRequest) {
         // For now, let's just log and redirect, but the redirect might cause the loop if the cookie isn't cleared.
         // Supabase client usually clears the cookie if it fails.
 
-        if (!request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth')) {
+        if (
+            !request.nextUrl.pathname.startsWith('/login') &&
+            !request.nextUrl.pathname.startsWith('/auth') &&
+            !request.nextUrl.pathname.startsWith('/api/resend')
+        ) {
             const url = request.nextUrl.clone()
             url.pathname = '/login'
             return NextResponse.redirect(url)
