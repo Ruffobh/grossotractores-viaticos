@@ -49,11 +49,10 @@ export function ManagerRejectButton({ invoiceId }: ManagerRejectButtonProps) {
         <>
             <button
                 onClick={handleOpen}
-                className={styles.rejectButton}
+                className={styles.compactRejectButton}
                 disabled={isSubmitting}
-                style={{ flex: 'none', padding: '0.5rem 1rem' }} // override flex to fit header
             >
-                <XCircle size={18} />
+                <XCircle size={16} />
                 Rechazar
             </button>
 

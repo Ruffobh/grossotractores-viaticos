@@ -16,6 +16,8 @@
     box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
     /* Green shadow */
     transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .button:hover {

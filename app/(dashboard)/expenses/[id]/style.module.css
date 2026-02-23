@@ -36,7 +36,7 @@
 }
 
 .formSection {
-    flex: 0 0 500px;
+    flex: 0 0 550px;
     /* Fixed width sidebar / panel */
     background-color: #fff;
     border-left: 1px solid var(--gray-200);
@@ -57,6 +57,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .headerTitleGroup {
@@ -393,6 +395,7 @@
     justify-content: center;
     width: 32px;
     height: 32px;
+    flex-shrink: 0;
     background-color: white;
     border: 1px solid var(--gray-300);
     border-radius: 50%;
