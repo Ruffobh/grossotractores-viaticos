@@ -6,6 +6,7 @@ import { CheckCircle, XCircle } from 'lucide-react'
 import { BCExportButton } from '@/components/bc-export-button'
 import { EditableDetailRow } from '@/components/editable-detail-row'
 import { AdminActions } from '@/components/admin-actions'
+import { ManagerRejectButton } from '@/components/manager-reject-button'
 import { EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS } from '@/app/constants'
 import { ReceiptViewer } from '@/components/receipt-viewer'
 
@@ -50,9 +51,14 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                             </a>
                             <h2 className={styles.titleCompact}>Detalle de Comprobante</h2>
                         </div>
-                        {canExport && (!invoice.split_group_id || invoice.is_parent) && (
-                            <BCExportButton invoice={invoice} profile={invoice.profiles} />
-                        )}
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            {canExport && (!invoice.split_group_id || invoice.is_parent) && (
+                                <BCExportButton invoice={invoice} profile={invoice.profiles} />
+                            )}
+                            {canExport && invoice.status === 'approved' && (
+                                <ManagerRejectButton invoiceId={invoice.id} />
+                            )}
+                        </div>
                     </div>
 
                     <div className={styles.headerMetaRow}>

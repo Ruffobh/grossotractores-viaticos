@@ -227,3 +227,52 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
         return { error: err }
     }
 }
+
+/**
+ * Sends a notification to the user when an expense is Rejected by a Branch Manager.
+ */
+export async function sendRejectionEmail(expense: ExpenseData, userEmail: string, comment: string, overrideEmail?: string) {
+    console.log(`[sendRejectionEmail] Triggered for expense: ${expense.id} (User ID: ${expense.user_id})`)
+    try {
+        const recipient = overrideEmail || userEmail;
+
+        if (!recipient) {
+            console.warn('[sendRejectionEmail] No email provided for user.')
+            return { error: 'No email provided for user' }
+        }
+
+        console.log(`[sendRejectionEmail] Recipient: ${recipient}`)
+
+        // Send Email
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://grossotractores-viaticos.vercel.app'
+        const info = await transporter.sendMail({
+            from: `"Viáticos Grosso" <${SENDER_EMAIL}>`,
+            to: recipient,
+            subject: `❌ Comprobante Rechazado - ${expense.vendor_name}`,
+            html: `
+                <h2>Comprobante Rechazado</h2>
+                <p>Hola ${expense.user_name},</p>
+                <p>Tu comprobante cargado ha sido revisado y <strong>rechazado</strong>.</p>
+                <ul>
+                    <li><strong>Proveedor:</strong> ${expense.vendor_name}</li>
+                    <li><strong>Fecha:</strong> ${new Date(expense.date).toLocaleDateString()}</li>
+                    <li><strong>Monto:</strong> ${expense.currency} ${expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</li>
+                </ul>
+                <div style="background-color: #fce4e4; padding: 15px; border-left: 4px solid #f44336; margin: 20px 0;">
+                    <p style="margin: 0;"><strong>Motivo del rechazo:</strong></p>
+                    <p style="margin: 5px 0 0 0;">${comment}</p>
+                </div>
+                <p>Puedes ingresar al sistema para ver más detalles.</p>
+                <p><a href="${baseUrl}/expenses/${expense.id}">Ver Comprobante</a></p>
+                ${overrideEmail ? '<p style="color:red; font-size:12px;">* Email de prueba redirigido</p>' : ''}
+            `
+        })
+
+        console.log('[sendRejectionEmail] Email sent successfully: %s', info.messageId)
+        return { success: true, data: info }
+
+    } catch (err) {
+        console.error('[sendRejectionEmail] Unexpected fatal error:', err)
+        return { error: err }
+    }
+}

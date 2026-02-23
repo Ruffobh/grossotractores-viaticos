@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { sendRejectionEmail } from '@/app/utils/mail'
 
 export async function approveExpense(id: string, comment: string | null = null) {
     const supabase = await createClient()
@@ -54,6 +55,69 @@ export async function rejectExpense(id: string, comment: string | null = null) {
     const { error } = await supabase.from('invoices').update({ status: 'rejected', admin_comments: comment }).eq('id', id)
 
     if (error) throw error
+
+    revalidatePath('/expenses')
+    revalidatePath(`/expenses/${id}`)
+    redirect('/expenses')
+}
+
+export async function managerRejectApprovedExpense(id: string, comment: string) {
+    const supabase = await createClient()
+
+    // Verify permissions: admin, manager, or branch_manager
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
+
+    const canReject = profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'branch_manager'
+
+    if (!canReject) {
+        throw new Error('No tienes permisos para rechazar este comprobante.')
+    }
+
+    // Fetch invoice to ensure it is approved, and get details for email
+    // Bypass RLS if needed using adminClient (managers might not have update access to all rows based on current RLS settings)
+    const { createAdminClient } = await import('@/utils/supabase/admin')
+    const adminClient = createAdminClient()
+
+    const { data: invoice, error: invoiceError } = await adminClient
+        .from('invoices')
+        .select('*, profiles!invoices_user_id_fkey(full_name, email, area)')
+        .eq('id', id)
+        .single()
+
+    if (invoiceError || !invoice) {
+        throw new Error('Comprobante no encontrado')
+    }
+
+    if (invoice.status !== 'approved' && invoice.status !== 'submitted_to_bc') {
+        throw new Error('El comprobante debe estar aprobado para ser rechazado por este medio.')
+    }
+
+    // Update status using admin client
+    const { error: updateError } = await adminClient
+        .from('invoices')
+        .update({ status: 'rejected', admin_comments: comment })
+        .eq('id', id)
+
+    if (updateError) {
+        console.error('Error rejecting invoice:', updateError)
+        throw new Error('Error al actualizar el estado del comprobante')
+    }
+
+    // Send Rejection Email
+    if (invoice.profiles?.email) {
+        const expenseData = {
+            id: invoice.id,
+            date: invoice.date,
+            vendor_name: invoice.vendor_name,
+            total_amount: invoice.total_amount,
+            currency: invoice.currency,
+            user_name: invoice.profiles.full_name,
+            user_id: invoice.user_id,
+            area: invoice.profiles.area
+        }
+        await sendRejectionEmail(expenseData, invoice.profiles.email, comment)
+    }
 
     revalidatePath('/expenses')
     revalidatePath(`/expenses/${id}`)
