@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import styles from './style.module.css'
 import { approveExpense, rejectExpense } from './actions'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, ChevronLeft } from 'lucide-react'
 import { BCExportButton } from '@/components/bc-export-button'
 import { EditableDetailRow } from '@/components/editable-detail-row'
 import { AdminActions } from '@/components/admin-actions'
@@ -44,14 +44,16 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
             {/* Right: Details & Actions */}
             <div className={styles.formSection}>
                 <div className={styles.header}>
+                    <div className={styles.navRow}>
+                        <a href="/expenses" className={styles.modernBackButton}>
+                            <ChevronLeft size={18} />
+                            Volver a Comprobantes
+                        </a>
+                    </div>
+
                     <div className={styles.headerTopRow}>
-                        <div className={styles.headerTitleGroup}>
-                            <a href="/expenses" className={styles.backButtonCompact}>
-                                &larr;
-                            </a>
-                            <h2 className={styles.titleCompact}>Detalle de Comprobante</h2>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <h2 className={styles.titleCompact}>Detalle de Comprobante</h2>
+                        <div className={styles.actionButtons}>
                             {canExport && (!invoice.split_group_id || invoice.is_parent) && (
                                 <BCExportButton invoice={invoice} profile={invoice.profiles} />
                             )}
