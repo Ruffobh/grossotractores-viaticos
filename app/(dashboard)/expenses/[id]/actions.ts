@@ -24,7 +24,11 @@ export async function approveExpense(id: string, comment: string | null = null) 
         throw new Error('Unauthorized')
     }
 
-    const { error } = await supabase.from('invoices').update({ status: 'approved', admin_comments: comment }).eq('id', id)
+    // Use adminClient to bypass RLS since Area Approvers might not own the row
+    const { createAdminClient } = await import('@/utils/supabase/admin')
+    const adminClient = createAdminClient()
+
+    const { error } = await adminClient.from('invoices').update({ status: 'approved', admin_comments: comment }).eq('id', id)
 
     if (error) throw error
 
@@ -52,7 +56,11 @@ export async function rejectExpense(id: string, comment: string | null = null) {
         throw new Error('Unauthorized')
     }
 
-    const { error } = await supabase.from('invoices').update({ status: 'rejected', admin_comments: comment }).eq('id', id)
+    // Use adminClient to bypass RLS since Area Approvers might not own the row
+    const { createAdminClient } = await import('@/utils/supabase/admin')
+    const adminClient = createAdminClient()
+
+    const { error } = await adminClient.from('invoices').update({ status: 'rejected', admin_comments: comment }).eq('id', id)
 
     if (error) throw error
 
@@ -153,9 +161,11 @@ export async function updateInvoiceField(id: string, field: string, value: any) 
     const updateData: any = {}
     updateData[field] = value
 
-    // If updating amount, we might want to log it or check something, but for now just update
+    // Use adminClient to bypass RLS since Area Approvers might not own the row
+    const { createAdminClient } = await import('@/utils/supabase/admin')
+    const adminClient = createAdminClient()
 
-    const { error } = await supabase
+    const { error } = await adminClient
         .from('invoices')
         .update(updateData)
         .eq('id', id)
