@@ -55,6 +55,7 @@ export async function updateSession(request: NextRequest) {
             console.log(`[Middleware] Redirecting to /login`);
             // no user, potentially respond by redirecting the user to the login page
             const url = request.nextUrl.clone()
+            url.searchParams.set('next', request.nextUrl.pathname)
             url.pathname = '/login'
             return NextResponse.redirect(url)
         }
@@ -72,6 +73,7 @@ export async function updateSession(request: NextRequest) {
             !request.nextUrl.pathname.startsWith('/auth')
         ) {
             const url = request.nextUrl.clone()
+            url.searchParams.set('next', request.nextUrl.pathname)
             url.pathname = '/login'
             return NextResponse.redirect(url)
         }

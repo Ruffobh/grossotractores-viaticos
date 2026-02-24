@@ -48,8 +48,16 @@ export default function LoginPage() {
             return
         }
 
+        // Check if there was a requested URL before redirecting to login
+        const urlParams = new URLSearchParams(window.location.search)
+        const nextPath = urlParams.get('next')
+
         // Force full reload to ensure cookies are sent strictly
-        window.location.href = '/'
+        if (nextPath && nextPath.startsWith('/')) {
+            window.location.href = nextPath
+        } else {
+            window.location.href = '/'
+        }
     }
 
     return (
