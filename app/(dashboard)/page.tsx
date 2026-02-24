@@ -24,6 +24,7 @@ export default async function DashboardPage({
 
     const role = profile?.role || 'user'
     const userBranches = profile?.branches || (profile?.branch ? [profile.branch] : [])
+    const hasApproveArea = (profile?.permissions as any)?.approve_area_expenses === true
 
     // 1. Fetch Filter Options
     const { data: branchesData } = await supabase.from('branches').select('name').order('name')
@@ -61,7 +62,7 @@ export default async function DashboardPage({
         .neq('status', 'draft')
         .order('date', { ascending: false })
 
-    if (role === 'user') {
+    if (role === 'user' && !hasApproveArea) {
         query = query.eq('user_id', user.id)
     }
 

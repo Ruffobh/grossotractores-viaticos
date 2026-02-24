@@ -19,9 +19,10 @@ export default async function ExpensesPage({
     // Handle unauthenticated case (though middleware catches this)
     if (!user) return <div>No autenticado</div>
 
-    const { data: profile } = await supabase.from('profiles').select('role, branch, branches').eq('id', user.id).single()
+    const { data: profile } = await supabase.from('profiles').select('role, branch, branches, permissions').eq('id', user.id).single()
     const isManagerOrAdmin = profile?.role === 'manager' || profile?.role === 'branch_manager' || profile?.role === 'admin'
     const role = profile?.role || 'user'
+    const hasApproveArea = (profile?.permissions as any)?.approve_area_expenses === true
 
     // Fetch data for filters (only needed if manager/admin)
     let usersList: any[] = []
@@ -48,7 +49,7 @@ export default async function ExpensesPage({
         .neq('status', 'draft') // Exclude incomplete uploads
 
     // RLS usually handles this, but we force it here for safety and UI consistency
-    if (role === 'user') {
+    if (role === 'user' && !hasApproveArea) {
         query = query.eq('user_id', user.id)
     }
 
