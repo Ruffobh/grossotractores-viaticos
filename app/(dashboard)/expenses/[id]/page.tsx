@@ -26,13 +26,17 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
     }
 
     const { data: { user } } = await supabase.auth.getUser()
-    const { data: currentUserProfile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
+    const { data: currentUserProfile } = await supabase.from('profiles').select('role, permissions, area').eq('id', user?.id).single()
     const isAdmin = currentUserProfile?.role === 'admin'
     const isManager = currentUserProfile?.role === 'manager' || currentUserProfile?.role === 'branch_manager'
     const canExport = isAdmin || isManager
 
+    const hasApproveAreaAttr = (currentUserProfile?.permissions as any)?.approve_area_expenses === true
+    const isSameArea = invoice.profiles?.area === currentUserProfile?.area
+    const canApprove = isAdmin || (hasApproveAreaAttr && isSameArea)
+
     // Determine if actions are needed
-    const showAdminActions = isAdmin && (invoice.status === 'pending_approval' || invoice.status === 'exceeded_budget')
+    const showAdminActions = canApprove && (invoice.status === 'pending_approval' || invoice.status === 'exceeded_budget')
 
     return (
         <div className={styles.container}>

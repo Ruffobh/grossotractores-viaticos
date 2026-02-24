@@ -64,15 +64,12 @@ export async function rejectExpense(id: string, comment: string | null = null) {
 export async function managerRejectApprovedExpense(id: string, comment: string) {
     const supabase = await createClient()
 
-    // Verify permissions: admin, manager, or branch_manager
+    // Verify permissions: admin, manager, or branch_manager, or area approver
     const { data: { user } } = await supabase.auth.getUser()
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
+    const { data: profile } = await supabase.from('profiles').select('role, permissions, area').eq('id', user?.id).single()
 
-    const canReject = profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'branch_manager'
-
-    if (!canReject) {
-        throw new Error('No tienes permisos para rechazar este comprobante.')
-    }
+    const canRejectByRole = profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'branch_manager'
+    const hasApproveArea = (profile?.permissions as any)?.approve_area_expenses === true
 
     // Fetch invoice to ensure it is approved, and get details for email
     // Bypass RLS if needed using adminClient (managers might not have update access to all rows based on current RLS settings)
@@ -87,6 +84,13 @@ export async function managerRejectApprovedExpense(id: string, comment: string) 
 
     if (invoiceError || !invoice) {
         throw new Error('Comprobante no encontrado')
+    }
+
+    const isSameArea = profile?.area === invoice.profiles?.area
+    const canReject = canRejectByRole || (hasApproveArea && isSameArea)
+
+    if (!canReject) {
+        throw new Error('No tienes permisos para rechazar este comprobante en esta área.')
     }
 
     if (invoice.status !== 'approved' && invoice.status !== 'submitted_to_bc') {
@@ -127,12 +131,19 @@ export async function managerRejectApprovedExpense(id: string, comment: string) 
 export async function updateInvoiceField(id: string, field: string, value: any) {
     const supabase = await createClient()
 
-    // Verify permission (Admin or Manager)
+    // Verify permission (Admin or Manager or Area Approver)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    const canEdit = profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'branch_manager'
+    const { data: profile } = await supabase.from('profiles').select('role, permissions, area').eq('id', user.id).single()
+    const canEditByRole = profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'branch_manager'
+    const hasApproveArea = (profile?.permissions as any)?.approve_area_expenses === true
+
+    // Fetch invoice area
+    const { data: invoice } = await supabase.from('invoices').select('profiles!invoices_user_id_fkey(area)').eq('id', id).single()
+    const invoiceProfiles = Array.isArray(invoice?.profiles) ? invoice?.profiles[0] : invoice?.profiles
+    const isSameArea = profile?.area === invoiceProfiles?.area
+    const canEdit = canEditByRole || (hasApproveArea && isSameArea)
 
     if (!canEdit) {
         return { error: 'No tienes permisos para editar este comprobante.' }
