@@ -13,9 +13,24 @@ import { ReceiptViewer } from '@/components/receipt-viewer'
 export default async function ExpenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     const supabase = await createClient()
+    const { createAdminClient } = await import('@/utils/supabase/admin')
+    const adminClient = createAdminClient()
 
-    // Fetch invoice data
-    const { data: invoice, error } = await supabase
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // 1. Fetch current user profile first to know who is asking
+    const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('role, permissions, area, branch, branches')
+        .eq('id', user?.id)
+        .single()
+
+    const isAdmin = currentUserProfile?.role === 'admin'
+    const isManager = currentUserProfile?.role === 'manager' || currentUserProfile?.role === 'branch_manager'
+    const hasApproveAreaAttr = (currentUserProfile?.permissions as any)?.approve_area_expenses === true
+
+    // 2. Fetch invoice data using admin client to bypass RLS
+    const { data: invoice, error } = await adminClient
         .from('invoices')
         .select('*, profiles!invoices_user_id_fkey(*), loaded_by_profile:profiles!invoices_loaded_by_fkey(*)')
         .eq('id', id)
@@ -25,13 +40,35 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
         redirect('/expenses')
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data: currentUserProfile } = await supabase.from('profiles').select('role, permissions, area').eq('id', user?.id).single()
-    const isAdmin = currentUserProfile?.role === 'admin'
-    const isManager = currentUserProfile?.role === 'manager' || currentUserProfile?.role === 'branch_manager'
-    const canExport = isAdmin || isManager
+    // 3. Manually enforce visibility rules (similar to RLS but fully controlled here)
+    let canView = false
 
-    const hasApproveAreaAttr = (currentUserProfile?.permissions as any)?.approve_area_expenses === true
+    if (isAdmin || invoice.user_id === user?.id) {
+        canView = true
+    } else if (isManager) {
+        // Manager can view if invoice is from their branch
+        const invoiceBranch = invoice.profiles?.branch
+        let managerBranches: string[] = []
+        if (Array.isArray(currentUserProfile?.branches)) {
+            managerBranches = currentUserProfile?.branches
+        } else if (typeof currentUserProfile?.branches === 'string') {
+            try { managerBranches = JSON.parse(currentUserProfile?.branches) } catch { }
+        }
+        if (currentUserProfile?.branch === invoiceBranch || managerBranches.includes(invoiceBranch)) {
+            canView = true
+        }
+    } else if (hasApproveAreaAttr) {
+        // Area Approver can view if invoice is from their area
+        if (invoice.profiles?.area === currentUserProfile?.area) {
+            canView = true
+        }
+    }
+
+    if (!canView) {
+        redirect('/expenses')
+    }
+
+    const canExport = isAdmin || isManager
     const isSameArea = invoice.profiles?.area === currentUserProfile?.area
     const canApprove = isAdmin || (hasApproveAreaAttr && isSameArea)
 
