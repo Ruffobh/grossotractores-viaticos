@@ -28,7 +28,7 @@ export async function approveExpense(id: string, comment: string | null = null) 
     const { createAdminClient } = await import('@/utils/supabase/admin')
     const adminClient = createAdminClient()
 
-    const { error } = await adminClient.from('invoices').update({ status: 'approved', admin_comments: comment }).eq('id', id)
+    const { error } = await adminClient.from('invoices').update({ status: 'approved', admin_comments: comment, approved_by: user?.id }).eq('id', id)
 
     if (error) throw error
 
@@ -60,9 +60,33 @@ export async function rejectExpense(id: string, comment: string | null = null) {
     const { createAdminClient } = await import('@/utils/supabase/admin')
     const adminClient = createAdminClient()
 
-    const { error } = await adminClient.from('invoices').update({ status: 'rejected', admin_comments: comment }).eq('id', id)
+    // We need more details for the email, so let's fetch the full invoice + user profile
+    const { data: fullInvoice, error: invoiceError } = await adminClient
+        .from('invoices')
+        .select('*, profiles!invoices_user_id_fkey(full_name, email, area)')
+        .eq('id', id)
+        .single()
+
+    if (invoiceError || !fullInvoice) throw new Error('Comprobante no encontrado')
+
+    const { error } = await adminClient.from('invoices').update({ status: 'rejected', admin_comments: comment, approved_by: user?.id }).eq('id', id)
 
     if (error) throw error
+
+    // Send Rejection Email
+    if (fullInvoice.profiles?.email) {
+        const expenseData = {
+            id: fullInvoice.id,
+            date: fullInvoice.date,
+            vendor_name: fullInvoice.vendor_name,
+            total_amount: fullInvoice.total_amount,
+            currency: fullInvoice.currency,
+            user_name: fullInvoice.profiles.full_name,
+            user_id: fullInvoice.user_id,
+            area: fullInvoice.profiles.area
+        }
+        await sendRejectionEmail(expenseData, fullInvoice.profiles.email, comment || 'Sin comentarios')
+    }
 
     revalidatePath('/expenses')
     revalidatePath(`/expenses/${id}`)
@@ -108,7 +132,7 @@ export async function managerRejectApprovedExpense(id: string, comment: string) 
     // Update status using admin client
     const { error: updateError } = await adminClient
         .from('invoices')
-        .update({ status: 'rejected', admin_comments: comment })
+        .update({ status: 'rejected', admin_comments: comment, approved_by: user?.id })
         .eq('id', id)
 
     if (updateError) {

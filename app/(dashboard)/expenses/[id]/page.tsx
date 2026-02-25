@@ -32,7 +32,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
     // 2. Fetch invoice data using admin client to bypass RLS
     const { data: invoice, error } = await adminClient
         .from('invoices')
-        .select('*, profiles!invoices_user_id_fkey(*), loaded_by_profile:profiles!invoices_loaded_by_fkey(*)')
+        .select('*, profiles!invoices_user_id_fkey(*), loaded_by_profile:profiles!invoices_loaded_by_fkey(*), approved_by_profile:profiles!invoices_approved_by_fkey(full_name)')
         .eq('id', id)
         .single()
 
@@ -115,6 +115,16 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                                 <p className={styles.metaText}>
                                     <span className={styles.metaLabel}>Cargado por:</span> {invoice.loaded_by_profile.full_name}
                                 </p>
+                            )}
+                            {invoice.approved_by_profile && (invoice.status === 'approved' || invoice.status === 'rejected' || invoice.status === 'submitted_to_bc') && (
+                                <>
+                                    <span className={styles.separator}>|</span>
+                                    <p className={styles.metaText}>
+                                        <span className={styles.metaLabel}>
+                                            {invoice.status === 'rejected' ? 'Rechazado por:' : 'Aprobado por:'}
+                                        </span> {invoice.approved_by_profile.full_name}
+                                    </p>
+                                </>
                             )}
                         </div>
                     </div>
