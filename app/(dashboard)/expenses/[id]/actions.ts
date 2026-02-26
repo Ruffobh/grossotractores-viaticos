@@ -69,7 +69,14 @@ export async function rejectExpense(id: string, comment: string | null = null) {
 
     if (invoiceError || !fullInvoice) throw new Error('Comprobante no encontrado')
 
-    const { error } = await adminClient.from('invoices').update({ status: 'rejected', admin_comments: comment, approved_by: user?.id }).eq('id', id)
+    let updateQuery = adminClient.from('invoices').update({ status: 'rejected', admin_comments: comment, approved_by: user?.id })
+    if (fullInvoice.split_group_id) {
+        updateQuery = updateQuery.eq('split_group_id', fullInvoice.split_group_id)
+    } else {
+        updateQuery = updateQuery.eq('id', id)
+    }
+
+    const { error } = await updateQuery
 
     if (error) throw error
 
@@ -130,10 +137,17 @@ export async function managerRejectApprovedExpense(id: string, comment: string) 
     }
 
     // Update status using admin client
-    const { error: updateError } = await adminClient
+    let updateQuery = adminClient
         .from('invoices')
         .update({ status: 'rejected', admin_comments: comment, approved_by: user?.id })
-        .eq('id', id)
+
+    if (invoice.split_group_id) {
+        updateQuery = updateQuery.eq('split_group_id', invoice.split_group_id)
+    } else {
+        updateQuery = updateQuery.eq('id', id)
+    }
+
+    const { error: updateError } = await updateQuery
 
     if (updateError) {
         console.error('Error rejecting invoice:', updateError)
