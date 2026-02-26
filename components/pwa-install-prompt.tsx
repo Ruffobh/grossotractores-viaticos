@@ -17,8 +17,15 @@ export default function InstallPrompt() {
 
         const handler = (e: any) => {
             e.preventDefault()
-            setDeferredPrompt(e)
-            setIsVisible(true)
+
+            // Solo mostrar en dispositivos móviles o tablets (pantallas pequeñas)
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            const isSmallScreen = window.innerWidth <= 1024
+
+            if (isMobileDevice || isSmallScreen) {
+                setDeferredPrompt(e)
+                setIsVisible(true)
+            }
         }
 
         window.addEventListener('beforeinstallprompt', handler)
