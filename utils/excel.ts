@@ -103,12 +103,12 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
     const areaCode = AREA_MAP[userArea] || 'GTOS-ADM';
 
     const typeUpper = (invoice.invoiceType || '').toUpperCase();
-    const isA = typeUpper === 'A' || typeUpper === 'M' || typeUpper === 'FACTURA A' || typeUpper === 'FA' || typeUpper === 'TIQUE FACTURA A';
+    const isA = typeUpper === 'A' || typeUpper === 'M' || typeUpper === 'FACTURA A' || typeUpper === 'FA' || typeUpper.includes(' FACTURA A') || typeUpper.includes(' FACTURA \'A\'') || typeUpper.includes('TIQUE A') || typeUpper === 'TICKET A' || typeUpper.includes('FACTURA "A"');
 
     // Helper to check for standard VAT
     const isStandardVat = (name: string) => {
         const n = name.toUpperCase();
-        return n.includes('IVA 21') || n.includes('IVA 10') || n.includes('IVA 10.5') || n.includes('IVA 10,5');
+        return n.includes('IVA 21') || n.includes('IVA 10') || n.includes('IVA 10.5') || n.includes('IVA 10,5') || n.includes('ALICUOTA') || n.includes('ALÍCUOTA') || n.includes('TASA 21') || n.includes('TASA 10');
     };
 
     // Robustness: If we have explicit VAT taxes, treat as "A" (Discriminates VAT) even if type is ambiguous

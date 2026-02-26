@@ -33,7 +33,8 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
             vendorName: parsed.vendorName || invoice.vendor_name,
             vendorCuit: parsed.vendorCuit || invoice.vendor_cuit,
             invoiceNumber: parsed.invoiceNumber || invoice.invoice_number,
-            invoiceType: parsed.invoiceType || invoice.invoice_type || 'FC', // Default to FC/C
+            // Prefer database normalizated type first, then parsed fallback
+            invoiceType: invoice.invoice_type || parsed.invoiceType || 'FC', // Default to FC/C
             date: parsed.date || invoice.date,
             totalAmount: parsed.totalAmount || invoice.total_amount || 0,
             // Fallback for Net Amount if explicit
