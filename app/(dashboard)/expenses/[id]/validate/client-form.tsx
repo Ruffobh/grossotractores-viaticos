@@ -357,8 +357,8 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                     onClose={() => setShowSplitModal(false)}
                     onSuccess={() => {
                         setShowSplitModal(false)
+                        router.push('/expenses')
                         router.refresh()
-                        // Maybe show success toast?
                     }}
                 />
             )}
