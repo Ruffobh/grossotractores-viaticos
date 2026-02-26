@@ -52,7 +52,8 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
 
             // Context
             userBranch: invoice.branch || profile?.branch,
-            userArea: profile?.area
+            userArea: profile?.area,
+            expenseType: invoice.expense_category
         }
 
         // Backward compatibility: If no taxes array but we have tax_amount (old logic), 
