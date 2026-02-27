@@ -3,13 +3,15 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import { approveExpense, rejectExpense } from '@/app/(dashboard)/expenses/[id]/actions'
+import { RejectOptionsModal } from './reject-options-modal'
 import styles from './admin-actions.module.css'
 
 interface AdminActionsProps {
     invoiceId: string
+    totalAmount: number
 }
 
-export function AdminActions({ invoiceId }: AdminActionsProps) {
+export function AdminActions({ invoiceId, totalAmount }: AdminActionsProps) {
     const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null)
     const [comment, setComment] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -26,27 +28,35 @@ export function AdminActions({ invoiceId }: AdminActionsProps) {
 
     const handleSubmit = async () => {
         if (!actionType) return
-        if (actionType === 'reject' && !comment.trim()) {
-            alert('Por favor, indica un motivo para el rechazo.')
-            return
-        }
 
         setIsSubmitting(true)
         try {
             if (actionType === 'approve') {
                 await approveExpense(invoiceId, comment)
-            } else {
-                await rejectExpense(invoiceId, comment)
             }
-            // Server action redirects, so no need to close manually or reset state usually
+            // Reject is handled by the new modal now
         } catch (error: any) {
             if (error.message === 'NEXT_REDIRECT' || error.digest?.includes('NEXT_REDIRECT')) {
-                // Redirecting, do nothing or explicitly set submitting false
-                setIsSubmitting(true) // Keep it true while redirecting
+                setIsSubmitting(true)
                 return
             }
             console.error(error)
             alert('Ocurrió un error al procesar la solicitud.')
+            setIsSubmitting(false)
+        }
+    }
+
+    const handleRejectConfirm = async (isPartial: boolean, amount: number, rejectComment: string) => {
+        setIsSubmitting(true)
+        try {
+            await rejectExpense(invoiceId, rejectComment, isPartial, amount)
+        } catch (error: any) {
+            if (error.message === 'NEXT_REDIRECT' || error.digest?.includes('NEXT_REDIRECT')) {
+                setIsSubmitting(true)
+                return
+            }
+            console.error(error)
+            alert('Ocurrió un error al rechazar el comprobante.')
             setIsSubmitting(false)
         }
     }
@@ -72,26 +82,24 @@ export function AdminActions({ invoiceId }: AdminActionsProps) {
                 </button>
             </div>
 
-            {actionType && (
+            {actionType === 'approve' && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modalContent}>
-                        <div className={`${styles.modalIconWrapper} ${styles[actionType]}`}>
-                            {actionType === 'approve' ? <CheckCircle size={32} /> : <AlertCircle size={32} />}
+                        <div className={`${styles.modalIconWrapper} ${styles.approve}`}>
+                            <CheckCircle size={32} />
                         </div>
 
                         <h3 className={styles.modalTitle}>
-                            {actionType === 'approve' ? 'Aprobar Comprobante' : 'Rechazar Comprobante'}
+                            Aprobar Comprobante
                         </h3>
 
                         <p className={styles.modalText}>
-                            {actionType === 'approve'
-                                ? '¿Estás seguro de que deseas aprobar este comprobante? Puedes dejar un comentario opcional.'
-                                : 'Por favor, indica el motivo del rechazo para que el usuario pueda corregirlo.'}
+                            ¿Estás seguro de que deseas aprobar este comprobante? Puedes dejar un comentario opcional.
                         </p>
 
                         <textarea
                             className={styles.textarea}
-                            placeholder={actionType === 'approve' ? "Comentario (Opcional)" : "Motivo del rechazo (Requerido)"}
+                            placeholder="Comentario (Opcional)"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             rows={4}
@@ -108,15 +116,23 @@ export function AdminActions({ invoiceId }: AdminActionsProps) {
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                className={`${styles.modalButtonConfirm} ${styles[actionType]}`}
+                                className={`${styles.modalButtonConfirm} ${styles.approve}`}
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting ? 'Procesando...' : (actionType === 'approve' ? 'Confirmar Aprobación' : 'Confirmar Rechazo')}
+                                {isSubmitting ? 'Procesando...' : 'Confirmar Aprobación'}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
+            <RejectOptionsModal
+                isOpen={actionType === 'reject'}
+                onClose={handleClose}
+                onConfirm={handleRejectConfirm}
+                maxAmount={totalAmount}
+                isLoading={isSubmitting}
+            />
         </>
     )
 }

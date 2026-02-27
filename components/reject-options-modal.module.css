@@ -1,0 +1,265 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal {
+    position: relative;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-width: 32rem;
+    width: 100%;
+    animation: zoomIn 0.2s ease-out;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.closeButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0.25rem;
+}
+
+.closeButton:hover {
+    color: var(--gray-700);
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--nh-black);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.typeSelector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.typeButton {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 0.75rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.typeButton:hover {
+    border-color: var(--gray-300);
+    background-color: var(--gray-50);
+}
+
+.typeButton strong {
+    display: block;
+    font-size: 1rem;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.typeButton p {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.typeIconFull {
+    color: #ef4444;
+    background-color: #fee2e2;
+    padding: 0.75rem;
+    border-radius: 9999px;
+    margin-bottom: 1rem;
+}
+
+.typeIconPartial {
+    color: #d97706;
+    /* amber-600 */
+    background-color: #fef3c7;
+    /* amber-50 */
+    padding: 0.75rem;
+    border-radius: 9999px;
+    margin-bottom: 1rem;
+}
+
+/* Active States */
+.activeFull {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.activeFull:hover {
+    border-color: #dc2626;
+    background-color: #fee2e2;
+}
+
+.activePartial {
+    border-color: #d97706;
+    background-color: #fffbeb;
+}
+
+.activePartial:hover {
+    border-color: #b45309;
+    background-color: #fef3c7;
+}
+
+/* Form Styles */
+.formGroup {
+    margin-bottom: 1.5rem;
+}
+
+.label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.textarea,
+.input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.textarea:focus,
+.input:focus {
+    outline: none;
+    border-color: var(--nh-blue);
+    box-shadow: 0 0 0 3px rgba(0, 69, 137, 0.1);
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.helperText {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin: 0.5rem 0 0 0;
+    font-style: italic;
+}
+
+.errorMessage {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.cancelButton,
+.confirmButton {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancelButton {
+    background-color: white;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+}
+
+.cancelButton:hover {
+    background-color: var(--gray-50);
+}
+
+.cancelButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.confirmFull {
+    background-color: #ef4444;
+    border: 1px solid #ef4444;
+    color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.confirmFull:hover:not(:disabled) {
+    background-color: #dc2626;
+    border-color: #dc2626;
+}
+
+.confirmPartial {
+    background-color: #f59e0b;
+    /* amber-500 */
+    border: 1px solid #f59e0b;
+    color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.confirmPartial:hover:not(:disabled) {
+    background-color: #d97706;
+    /* amber-600 */
+    border-color: #d97706;
+}
+
+.confirmButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .typeSelector {
+        flex-direction: column;
+    }
+}

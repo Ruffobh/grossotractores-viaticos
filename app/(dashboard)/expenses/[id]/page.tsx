@@ -99,7 +99,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                                 <BCExportButton invoice={invoice} profile={invoice.profiles} />
                             )}
                             {canExport && invoice.status === 'approved' && (
-                                <ManagerRejectButton invoiceId={invoice.id} />
+                                <ManagerRejectButton invoiceId={invoice.id} totalAmount={invoice.total_amount} />
                             )}
                         </div>
                     </div>
@@ -126,12 +126,12 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                                     )}
                                 </p>
                             )}
-                            {invoice.approved_by_profile && (invoice.status === 'approved' || invoice.status === 'rejected' || invoice.status === 'submitted_to_bc') && (
+                            {invoice.approved_by_profile && (invoice.status === 'approved' || invoice.status === 'rejected' || invoice.status === 'partially_rejected' || invoice.status === 'submitted_to_bc') && (
                                 <>
                                     <span className={styles.separator}>|</span>
                                     <p className={styles.metaText}>
                                         <span className={styles.metaLabel}>
-                                            {invoice.status === 'rejected' ? 'Rechazado por:' : 'Aprobado por:'}
+                                            {(invoice.status === 'rejected' || invoice.status === 'partially_rejected') ? 'Rechazado por:' : 'Aprobado por:'}
                                         </span> {invoice.approved_by_profile.full_name}
                                     </p>
                                 </>
@@ -145,6 +145,18 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                     <p className={styles.amountValue}>
                         {invoice.currency} {invoice.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                     </p>
+                    {invoice.status === 'partially_rejected' && invoice.rejected_amount > 0 && (
+                        <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                            <p className={styles.amountLabel} style={{ color: '#fed7aa' }}>Monto a cargo del empleado (Alcohol, multas, etc.)</p>
+                            <p className={styles.amountValue} style={{ fontSize: '1.25rem', color: '#ffedd5' }}>
+                                - {invoice.currency} {invoice.rejected_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                            </p>
+                            <p className={styles.amountLabel} style={{ marginTop: '0.5rem', color: '#fff' }}>Subtotal Reintegrable a Rendir</p>
+                            <p className={styles.amountValue} style={{ fontSize: '1.5rem', color: '#fff' }}>
+                                {invoice.currency} {(invoice.total_amount - invoice.rejected_amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <div className={styles.gridSection}>
@@ -217,7 +229,7 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                 </div>
 
                 {showAdminActions && (
-                    <AdminActions invoiceId={invoice.id} />
+                    <AdminActions invoiceId={invoice.id} totalAmount={invoice.total_amount} />
                 )}
             </div>
         </div>
@@ -240,6 +252,7 @@ function formatStatus(status: string) {
         'pending_approval': 'Pendiente de Aprobación',
         'approved': 'Aprobado',
         'rejected': 'Rechazado',
+        'partially_rejected': 'Rechazado Parcialmente',
         'exceeded_budget': 'Excede Presupuesto',
         'pending': 'Pendiente',
         'submitted_to_bc': 'Cargado a BC'
@@ -252,6 +265,7 @@ function getStatusClass(status: string) {
         'pending_approval': 'statusPending',
         'approved': 'statusApproved',
         'rejected': 'statusRejected',
+        'partially_rejected': 'statusPartiallyRejected',
         'exceeded_budget': 'statusExceeded',
         'pending': 'statusPending',
         'submitted_to_bc': 'statusSubmitted'

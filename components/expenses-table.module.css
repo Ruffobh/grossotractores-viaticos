@@ -243,6 +243,14 @@
     border: 1px solid transparent;
 }
 
+.statusPartiallyRejected {
+    background-color: #fffbeb;
+    /* amber-50 */
+    color: #b45309;
+    /* amber-700 */
+    border: 1px solid transparent;
+}
+
 .exceeded_budget {
     background-color: var(--purple-100);
     /* Use purple for special attention */

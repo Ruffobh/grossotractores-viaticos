@@ -16,6 +16,7 @@ interface Expense {
     total_amount: number | null
     currency: string | null
     status: string | null
+    rejected_amount?: number | null
     user_id: string
     loaded_by?: string | null
     profiles?: {
@@ -250,8 +251,15 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                     <td><span className={styles.cellContent}>{formatInvoiceType(expense.invoice_type)}</span></td>
                                     <td className={styles.amount}>
                                         <span className={styles.tableValue}>
-                                            {expense.currency} {expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                            {expense.currency} {expense.status === 'partially_rejected'
+                                                ? (expense.total_amount! - (expense.rejected_amount || 0)).toLocaleString('es-AR', { minimumFractionDigits: 2 })
+                                                : expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                         </span>
+                                        {expense.status === 'partially_rejected' && expense.rejected_amount! > 0 && (
+                                            <div style={{ fontSize: '0.7rem', color: '#f59e0b', marginTop: '2px' }}>
+                                                Desc: -${expense.rejected_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                            </div>
+                                        )}
                                     </td>
                                     <td>
                                         <span className={`${styles.badge} ${styles[expense.status || 'pending']}`}>
@@ -321,9 +329,18 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                 </div>
                                 <div className={styles.cardRow}>
                                     <span className={styles.cardLabel}>Monto:</span>
-                                    <span className={styles.cardAmount}>
-                                        {expense.currency} {expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                                    </span>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <span className={styles.cardAmount}>
+                                            {expense.currency} {expense.status === 'partially_rejected'
+                                                ? (expense.total_amount! - (expense.rejected_amount || 0)).toLocaleString('es-AR', { minimumFractionDigits: 2 })
+                                                : expense.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                        </span>
+                                        {expense.status === 'partially_rejected' && expense.rejected_amount! > 0 && (
+                                            <div style={{ fontSize: '0.75rem', color: '#f59e0b', marginTop: '2px' }}>
+                                                Desc: -${expense.rejected_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -380,6 +397,7 @@ function formatStatus(status: string | null) {
         case 'pending_approval': return 'Pendiente'
         case 'approved': return 'Aprobado'
         case 'rejected': return 'Rechazado'
+        case 'partially_rejected': return 'Rechazado Parcialmente'
         case 'exceeded_budget': return 'Excede Límite'
         case 'submitted_to_bc': return 'Cargado en BC'
         default: return status

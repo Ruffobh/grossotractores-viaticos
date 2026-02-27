@@ -37,7 +37,7 @@ export async function approveExpense(id: string, comment: string | null = null) 
     redirect('/expenses')
 }
 
-export async function rejectExpense(id: string, comment: string | null = null) {
+export async function rejectExpense(id: string, comment: string | null = null, isPartial: boolean = false, partialAmount: number = 0) {
     const supabase = await createClient()
 
     // Verify admin or permission
@@ -69,8 +69,16 @@ export async function rejectExpense(id: string, comment: string | null = null) {
 
     if (invoiceError || !fullInvoice) throw new Error('Comprobante no encontrado')
 
-    let updateQuery = adminClient.from('invoices').update({ status: 'rejected', admin_comments: comment, approved_by: user?.id })
+    const statusName = isPartial ? 'partially_rejected' : 'rejected'
+    let updateQuery = adminClient.from('invoices').update({
+        status: statusName,
+        admin_comments: comment,
+        approved_by: user?.id,
+        rejected_amount: isPartial ? partialAmount : 0
+    })
+
     if (fullInvoice.split_group_id) {
+        // If one is partially rejected, we assume the whole group is affected the same way for now
         updateQuery = updateQuery.eq('split_group_id', fullInvoice.split_group_id)
     } else {
         updateQuery = updateQuery.eq('id', id)
@@ -92,7 +100,11 @@ export async function rejectExpense(id: string, comment: string | null = null) {
             user_id: fullInvoice.user_id,
             area: fullInvoice.profiles.area
         }
-        await sendRejectionEmail(expenseData, fullInvoice.profiles.email, comment || 'Sin comentarios')
+        let emailComment = comment || 'Sin comentarios'
+        if (isPartial) {
+            emailComment = `RECHAZO PARCIAL ($${partialAmount}): ` + emailComment
+        }
+        await sendRejectionEmail(expenseData, fullInvoice.profiles.email, emailComment)
     }
 
     revalidatePath('/expenses')
@@ -100,7 +112,7 @@ export async function rejectExpense(id: string, comment: string | null = null) {
     redirect('/expenses')
 }
 
-export async function managerRejectApprovedExpense(id: string, comment: string) {
+export async function managerRejectApprovedExpense(id: string, comment: string, isPartial: boolean = false, partialAmount: number = 0) {
     const supabase = await createClient()
 
     // Verify permissions: admin, manager, or branch_manager, or area approver
@@ -137,9 +149,15 @@ export async function managerRejectApprovedExpense(id: string, comment: string) 
     }
 
     // Update status using admin client
+    const statusName = isPartial ? 'partially_rejected' : 'rejected'
     let updateQuery = adminClient
         .from('invoices')
-        .update({ status: 'rejected', admin_comments: comment, approved_by: user?.id })
+        .update({
+            status: statusName,
+            admin_comments: comment,
+            approved_by: user?.id,
+            rejected_amount: isPartial ? partialAmount : 0
+        })
 
     if (invoice.split_group_id) {
         updateQuery = updateQuery.eq('split_group_id', invoice.split_group_id)
@@ -166,7 +184,11 @@ export async function managerRejectApprovedExpense(id: string, comment: string) 
             user_id: invoice.user_id,
             area: invoice.profiles.area
         }
-        await sendRejectionEmail(expenseData, invoice.profiles.email, comment)
+        let emailComment = comment || 'Sin comentarios'
+        if (isPartial) {
+            emailComment = `RECHAZO PARCIAL ($${partialAmount}): ` + emailComment
+        }
+        await sendRejectionEmail(expenseData, invoice.profiles.email, emailComment)
     }
 
     revalidatePath('/expenses')

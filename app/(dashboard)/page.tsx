@@ -55,7 +55,7 @@ export default async function DashboardPage({
 
     let query = supabase
         .from('invoices')
-        .select('*, profiles!invoices_user_id_fkey(branch, area, full_name), expense_category')
+        .select('*, profiles!invoices_user_id_fkey(branch, area, full_name), expense_category, rejected_amount')
         .gte('date', startDate)
         .lte('date', endDate)
         .lte('date', endDate)
@@ -84,20 +84,30 @@ export default async function DashboardPage({
 
     const { data: myInvoices } = await supabase
         .from('invoices')
-        .select('total_amount, payment_method')
+        .select('total_amount, payment_method, rejected_amount, status')
         .eq('user_id', user.id)
-        .neq('status', 'rejected') // Exclude rejected
+        .neq('status', 'rejected') // Exclude fully rejected
         .neq('status', 'draft') // Exclude drafts
         .gte('date', startOfCurrentMonth)
         .lte('date', endOfCurrentMonth)
 
-    const myConsumption = myInvoices?.reduce((sum, inv) => sum + (inv.total_amount || 0), 0) || 0
+    const myConsumption = myInvoices?.reduce((sum, inv) => {
+        let amount = inv.total_amount || 0;
+        if (inv.status === 'partially_rejected') {
+            amount -= (inv.rejected_amount || 0);
+        }
+        return sum + amount;
+    }, 0) || 0
 
     // Split Consumption by Type
     let myCardConsumption = 0
     let myCashConsumption = 0
     myInvoices?.forEach(inv => {
-        const amt = inv.total_amount || 0
+        let amt = inv.total_amount || 0
+        if (inv.status === 'partially_rejected') {
+            amt -= (inv.rejected_amount || 0);
+        }
+
         const method = inv.payment_method
         if (method === 'Cash' || method === 'Transfer') {
             myCashConsumption += amt
@@ -124,7 +134,13 @@ export default async function DashboardPage({
     // KPI Calculations
     const consumedAmount = invoices.reduce((sum, inv) => {
         if (inv.status === 'rejected') return sum
-        return sum + (inv.total_amount || 0)
+
+        let amount = inv.total_amount || 0;
+        if (inv.status === 'partially_rejected') {
+            amount -= (inv.rejected_amount || 0);
+        }
+
+        return sum + amount
     }, 0)
     const pendingCount = invoices.filter(inv => inv.status === 'pending_approval' || inv.status === 'exceeded_budget').length
     const monthlyLimit = profile?.monthly_limit || 0
