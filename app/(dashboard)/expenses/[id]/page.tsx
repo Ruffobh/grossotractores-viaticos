@@ -110,10 +110,20 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                             <span className={styles.separator}>|</span>
                             <p className={styles.metaText}>
                                 <span className={styles.metaLabel}>Por:</span> {invoice.profiles?.full_name}
+                                {(invoice.profiles?.branch || invoice.profiles?.area) && (
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginLeft: '0.5rem', fontWeight: 'normal' }}>
+                                        ({invoice.profiles?.branch || 'Sin sucursal'}{invoice.profiles?.area ? ` - ${invoice.profiles.area}` : ''})
+                                    </span>
+                                )}
                             </p>
                             {invoice.loaded_by_profile && invoice.loaded_by !== invoice.user_id && (
                                 <p className={styles.metaText}>
                                     <span className={styles.metaLabel}>Cargado por:</span> {invoice.loaded_by_profile.full_name}
+                                    {(invoice.loaded_by_profile?.branch || invoice.loaded_by_profile?.area) && (
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginLeft: '0.5rem', fontWeight: 'normal' }}>
+                                            ({invoice.loaded_by_profile?.branch || 'Sin sucursal'}{invoice.loaded_by_profile?.area ? ` - ${invoice.loaded_by_profile.area}` : ''})
+                                        </span>
+                                    )}
                                 </p>
                             )}
                             {invoice.approved_by_profile && (invoice.status === 'approved' || invoice.status === 'rejected' || invoice.status === 'submitted_to_bc') && (

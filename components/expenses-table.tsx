@@ -20,9 +20,13 @@ interface Expense {
     loaded_by?: string | null
     profiles?: {
         full_name: string | null
+        branch?: string | null
+        area?: string | null
     } | null
     loaded_by_profile?: {
         full_name: string | null
+        branch?: string | null
+        area?: string | null
     } | null
     [key: string]: any
 }
@@ -220,13 +224,24 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                             {displayedExpenses.map((expense) => (
                                 <tr key={expense.id}>
                                     <td><span className={styles.tableValue}>{new Date(expense.date).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</span></td>
-                                    {isManagerOrAdmin && <td><span className={styles.cellContent}>{expense.profiles?.full_name || 'Desconocido'}</span></td>}
+                                    {isManagerOrAdmin && (
+                                        <td>
+                                            <div className={styles.vendorWrapper}>
+                                                <span className={styles.cellContent}>{expense.profiles?.full_name || 'Desconocido'}</span>
+                                                {(expense.profiles?.branch || expense.profiles?.area) && (
+                                                    <span className={styles.loadedByLabel}>
+                                                        {expense.profiles?.branch || 'Sin sucursal'}{expense.profiles?.area ? ` - ${expense.profiles.area}` : ''}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    )}
                                     <td>
                                         <div className={styles.vendorWrapper}>
                                             <span className={styles.cellContent}>{expense.vendor_name}</span>
                                             {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
                                                 <span className={styles.loadedByLabel}>
-                                                    Cargado por: {expense.loaded_by_profile.full_name}
+                                                    Cargado por: {expense.loaded_by_profile.full_name} ({expense.loaded_by_profile.branch || 'Sin sucursal'}{expense.loaded_by_profile.area ? ` - ${expense.loaded_by_profile.area}` : ''})
                                                 </span>
                                             )}
                                         </div>
@@ -275,7 +290,14 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                 {isManagerOrAdmin && (
                                     <div className={styles.cardRow}>
                                         <span className={styles.cardLabel}>Usuario:</span>
-                                        <span className={styles.cardValue}>{expense.profiles?.full_name || 'Desconocido'}</span>
+                                        <div className={styles.vendorWrapper} style={{ alignItems: 'flex-end', textAlign: 'right' }}>
+                                            <span className={styles.cardValue}>{expense.profiles?.full_name || 'Desconocido'}</span>
+                                            {(expense.profiles?.branch || expense.profiles?.area) && (
+                                                <span className={styles.loadedByLabel} style={{ textAlign: 'right' }}>
+                                                    {expense.profiles?.branch || 'Sin sucursal'}{expense.profiles?.area ? ` - ${expense.profiles.area}` : ''}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                                 <div className={styles.cardRow}>
@@ -283,8 +305,8 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                     <div className={styles.vendorWrapper}>
                                         <span className={styles.cardValue}><strong>{expense.vendor_name}</strong></span>
                                         {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
-                                            <span className={styles.loadedByLabel}>
-                                                Cargado por: {expense.loaded_by_profile.full_name}
+                                            <span className={styles.loadedByLabel} style={{ textAlign: 'right' }}>
+                                                Cargado por: {expense.loaded_by_profile.full_name} ({expense.loaded_by_profile.branch || 'Sin sucursal'}{expense.loaded_by_profile.area ? ` - ${expense.loaded_by_profile.area}` : ''})
                                             </span>
                                         )}
                                     </div>
