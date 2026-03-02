@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
         pathname: '/**', // Allow all paths
       },
     ],
+    unoptimized: true, // Temporarily disabled to debug Vercel serverless limit
   },
   async headers() {
     return [
