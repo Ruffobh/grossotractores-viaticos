@@ -29,20 +29,4 @@ const nextConfig: NextConfig = {
     ];
   },
 };
-
-const withPWA = require("@ducanh2912/next-pwa").default({
-  dest: "public",
-  // Temporarily disable PWA to test if it's causing Vercel internal errors
-  disable: true,
-  register: true,
-  skipWaiting: true,
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
-  reloadOnOnline: true,
-  swMinify: true,
-  workboxOptions: {
-    disableDevLogs: true,
-  },
-});
-
-export default withPWA(nextConfig);
+export default nextConfig;
