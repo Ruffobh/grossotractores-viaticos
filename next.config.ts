@@ -4,7 +4,6 @@ import type { NextConfig } from 'next'; // Fix for Hostinger build
 
 const nextConfig: NextConfig = {
   /* config options here */
-  serverExternalPackages: ['xlsx', 'exceljs', 'nodemailer', '@google/generative-ai'],
   images: {
     remotePatterns: [
       {
