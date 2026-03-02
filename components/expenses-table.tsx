@@ -266,11 +266,13 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                             {formatStatus(expense.status)}
                                         </span>
                                     </td>
-                                    <td className={styles.actionsWrapper}>
-                                        <Link href={`/expenses/${expense.id}`} className={styles.link}>Ver</Link>
-                                        <button onClick={() => handleDeleteClick(expense.id)} className={styles.deleteButton} title="Eliminar">
-                                            <Trash2 size={16} />
-                                        </button>
+                                    <td>
+                                        <div className={styles.actionsWrapper}>
+                                            <Link href={`/expenses/${expense.id}`} className={styles.link}>Ver</Link>
+                                            <button onClick={() => handleDeleteClick(expense.id)} className={styles.deleteButton} title="Eliminar">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
