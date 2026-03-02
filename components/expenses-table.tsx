@@ -397,7 +397,7 @@ function formatStatus(status: string | null) {
         case 'pending_approval': return 'Pendiente'
         case 'approved': return 'Aprobado'
         case 'rejected': return 'Rechazado'
-        case 'partially_rejected': return 'Rechazado Parcialmente'
+        case 'partially_rejected': return 'Par. Rechazado'
         case 'exceeded_budget': return 'Excede Límite'
         case 'submitted_to_bc': return 'Cargado en BC'
         default: return status

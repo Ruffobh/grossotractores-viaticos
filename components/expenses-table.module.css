@@ -25,7 +25,7 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    /* Crucial for text-overflow to work */
+    border-spacing: 0;
 }
 
 .table th {
@@ -243,7 +243,7 @@
     border: 1px solid transparent;
 }
 
-.statusPartiallyRejected {
+.partially_rejected {
     background-color: #fffbeb;
     /* amber-50 */
     color: #b45309;

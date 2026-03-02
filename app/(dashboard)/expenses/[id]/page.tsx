@@ -252,10 +252,9 @@ function formatStatus(status: string) {
         'pending_approval': 'Pendiente de Aprobación',
         'approved': 'Aprobado',
         'rejected': 'Rechazado',
-        'partially_rejected': 'Rechazado Parcialmente',
-        'exceeded_budget': 'Excede Presupuesto',
-        'pending': 'Pendiente',
-        'submitted_to_bc': 'Cargado a BC'
+        'partially_rejected': 'Par. Rechazado',
+        'submitted_to_bc': 'Cargado en BC',
+        'exceeded_budget': 'Excede Límite'
     }
     return map[status] || status
 }
