@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import NewUserForm from './user-form'
 import { BRANCHES } from '@/app/constants'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NewUserPage() {
     try {
         const supabase = await createClient()
