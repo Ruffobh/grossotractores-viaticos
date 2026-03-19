@@ -41,11 +41,18 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
 
     const installApp = async () => {
         if (!deferredPrompt) return
-        deferredPrompt.prompt()
-        const { outcome } = await deferredPrompt.userChoice
-        if (outcome === 'accepted') {
+        
+        try {
+            deferredPrompt.prompt()
+            const { outcome } = await deferredPrompt.userChoice
+            if (outcome === 'accepted') {
+                setIsInstallable(false)
+            }
+        } catch (error) {
+            console.error('Error with PWA prompt:', error)
+        } finally {
             setDeferredPrompt(null)
-            setIsInstallable(false)
+            setIsInstallable(false) 
         }
     }
 
