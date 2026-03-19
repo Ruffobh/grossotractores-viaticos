@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import InstallPrompt from "@/components/pwa-install-prompt";
+import { PWAProvider } from "@/components/pwa-context";
 
 export const metadata: Metadata = {
   title: "Viáticos - Grosso Tractores",
@@ -71,8 +72,10 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        {children}
-        <InstallPrompt />
+        <PWAProvider>
+          {children}
+          <InstallPrompt />
+        </PWAProvider>
       </body>
     </html>
   );

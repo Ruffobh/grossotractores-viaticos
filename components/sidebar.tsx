@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styles from './sidebar.module.css' // We'll move styles here
+import { usePWA } from './pwa-context'
 import {
     LayoutDashboard,
     PlusCircle,
@@ -12,7 +13,8 @@ import {
     Building,
     LogOut,
     Menu,
-    X
+    X,
+    Download
 } from 'lucide-react'
 
 type SidebarProps = {
@@ -23,6 +25,7 @@ type SidebarProps = {
 export function Sidebar({ profile, role }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
+    const { isInstallable, installApp } = usePWA()
 
     const toggleSidebar = () => setIsOpen(!isOpen)
     const closeSidebar = () => setIsOpen(false)
@@ -99,6 +102,23 @@ export function Sidebar({ profile, role }: SidebarProps) {
                                 <Building size={20} />
                                 <span>Sucursales</span>
                             </Link> */}
+                        </>
+                    )}
+
+                    {isInstallable && (
+                        <>
+                            <div className={styles.divider} />
+                            <button
+                                onClick={() => {
+                                    closeSidebar()
+                                    installApp()
+                                }}
+                                className={styles.navItem}
+                                style={{ width: '100%', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit' }}
+                            >
+                                <Download size={20} />
+                                <span>Instalar App</span>
+                            </button>
                         </>
                     )}
                 </nav>

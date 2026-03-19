@@ -1,61 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Download, X } from 'lucide-react'
 import styles from './pwa-install-prompt.module.css'
+import { usePWA } from './pwa-context'
+import { useState, useEffect } from 'react'
 
 export default function InstallPrompt() {
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+    const { isInstallable, installApp } = usePWA()
     const [isVisible, setIsVisible] = useState(false)
-    const [isIOS, setIsIOS] = useState(false)
+    const [hasDismissed, setHasDismissed] = useState(false)
 
     useEffect(() => {
-        // Check if iOS
-        const userAgent = window.navigator.userAgent.toLowerCase();
-        const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
-        setIsIOS(isIosDevice);
-
-        const handler = (e: any) => {
-            e.preventDefault()
-
-            // Solo mostrar en dispositivos móviles o tablets (pantallas pequeñas)
-            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-            const isSmallScreen = window.innerWidth <= 1024
-
-            if (isMobileDevice || isSmallScreen) {
-                setDeferredPrompt(e)
-                setIsVisible(true)
-            }
+        if (isInstallable && !hasDismissed) {
+             setIsVisible(true)
+        } else {
+             setIsVisible(false)
         }
-
-        window.addEventListener('beforeinstallprompt', handler)
-
-        // Check if already installed
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            setIsVisible(false)
-        }
-
-        return () => window.removeEventListener('beforeinstallprompt', handler)
-    }, [])
-
-    const handleInstallClick = async () => {
-        if (!deferredPrompt) return
-
-        deferredPrompt.prompt()
-        const { outcome } = await deferredPrompt.userChoice
-
-        if (outcome === 'accepted') {
-            setDeferredPrompt(null)
-            setIsVisible(false)
-        }
-    }
-
-    if (!isVisible && !isIOS) return null
-
-    // For iOS, we might want to show instructions if not standalone
-    // But let's focus on Android/Desktop first where 'beforeinstallprompt' works.
-    // Use isIOS state if we want to show a specific iOS instruction banner.
-    // For now, only show if beforeinstallprompt fired (Android/Desktop).
+    }, [isInstallable, hasDismissed])
 
     if (!isVisible) return null
 
@@ -63,7 +24,7 @@ export default function InstallPrompt() {
         <div className={styles.overlay}>
             <div className={styles.card}>
                 <button
-                    onClick={() => setIsVisible(false)}
+                    onClick={() => { setIsVisible(false); setHasDismissed(true) }}
                     className={styles.closeButton}
                     aria-label="Cerrar"
                 >
@@ -79,7 +40,10 @@ export default function InstallPrompt() {
                             Instala Viáticos Grosso en tu dispositivo para un acceso más rápido y sin conexión.
                         </p>
                         <button
-                            onClick={handleInstallClick}
+                            onClick={async () => {
+                                await installApp()
+                                setHasDismissed(true)
+                            }}
                             className={styles.installButton}
                         >
                             Instalar ahora
