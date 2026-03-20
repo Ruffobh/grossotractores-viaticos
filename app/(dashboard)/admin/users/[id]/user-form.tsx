@@ -18,14 +18,23 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
         profile.branches || (profile.branch ? [profile.branch] : [])
     )
 
-    // Parse permissions (handle null/string/object safely)
     const [permissions, setPermissions] = useState<Record<string, boolean>>(() => {
         try {
-            if (!profile.permissions) return {}
-            if (typeof profile.permissions === 'string') return JSON.parse(profile.permissions)
-            return profile.permissions as Record<string, boolean>
+            let perms: Record<string, boolean> = {}
+            if (profile.permissions) {
+                if (typeof profile.permissions === 'string') perms = JSON.parse(profile.permissions)
+                else perms = profile.permissions as Record<string, boolean>
+            }
+            
+            // Admins receive emails implicitly by default.
+            // Reflect this in the UI so turning it off saves 'false'.
+            if (profile.role === 'admin' && perms.receive_approval_emails === undefined) {
+                perms.receive_approval_emails = true
+            }
+            
+            return perms
         } catch {
-            return {}
+            return profile.role === 'admin' ? { receive_approval_emails: true } : {}
         }
     })
 

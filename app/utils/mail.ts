@@ -41,47 +41,43 @@ export async function sendAdminAlert(expense: ExpenseData, overrideEmail?: strin
             console.log('[sendAdminAlert] TEST MODE: Sending email to:', overrideEmail)
             adminEmails = [overrideEmail]
         } else {
-            // 1. Fetch all admins with emails (Using Admin Client to bypass RLS)
-            const { data: admins, error: adminError } = await adminClient
+            // Fetch all users with emails
+            const { data: users, error: usersError } = await adminClient
                 .from('profiles')
-                .select('email')
-                .eq('role', 'admin')
+                .select('email, role, area, permissions')
                 .not('email', 'is', null)
 
-            if (adminError) {
-                console.error('[sendAdminAlert] Error fetching admins:', adminError)
-            }
-
-            // 2. Fetch users with "receive_approval_emails" permission
-            const { data: permissionUsers, error: permError } = await adminClient
-                .from('profiles')
-                .select('email, area, permissions')
-                .not('email', 'is', null)
-
-            if (permError) {
-                console.error('[sendAdminAlert] Error fetching permission users:', permError)
+            if (usersError) {
+                console.error('Error fetching users for email alert:', usersError)
             }
 
             const expenseArea = expense.area
-            const validPermissionUsers = permissionUsers?.filter(u => {
+            const validUsers = users?.filter(u => {
                 const perms = u.permissions as any || {}
-                const hasPerm = perms.receive_approval_emails || perms.approve_area_expenses
+                
+                // If ANY user specifically toggled OFF the email notifications, respect it
+                if (perms.receive_approval_emails === false) return false
+
+                // Admins receive all emails by default unless opted out above
+                if (u.role === 'admin') return true
+
+                // For Non-Admins: They must have permission enabled
+                const hasPerm = perms.receive_approval_emails === true || perms.approve_area_expenses === true
                 if (!hasPerm) return false
+
+                // And they must match the expense area
                 if (expenseArea && u.area !== expenseArea) return false
+
                 return true
             }) || []
 
-            const allRecipients = new Set([
-                ...(admins?.map(a => a.email!) || []),
-                ...validPermissionUsers.map(u => u.email!)
-            ])
-
-            if (allRecipients.size === 0) {
-                console.warn('[sendAdminAlert] No recipients found to notify.')
-                return { error: 'No recipients found' }
-            }
-
+            const allRecipients = new Set(validUsers.map(u => u.email!))
+            
             adminEmails = Array.from(allRecipients)
+        }
+        if (adminEmails.length === 0) {
+            console.warn('[sendAdminAlert] No recipients found to notify.')
+            return { error: 'No recipients found' }
         }
 
         console.log(`[sendAdminAlert] Recipients calculated: [${adminEmails.join(', ')}]`)
