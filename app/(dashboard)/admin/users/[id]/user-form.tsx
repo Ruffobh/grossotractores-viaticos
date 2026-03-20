@@ -26,15 +26,19 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                 else perms = profile.permissions as Record<string, boolean>
             }
             
-            // Admins receive emails implicitly by default.
+            // Admins receive New Ticket emails implicitly by default.
             // Reflect this in the UI so turning it off saves 'false'.
-            if (profile.role === 'admin' && perms.receive_approval_emails === undefined) {
-                perms.receive_approval_emails = true
+            if (profile.role === 'admin' && perms.receive_new_expense_emails === undefined) {
+                if (perms.receive_approval_emails === false) {
+                    perms.receive_new_expense_emails = false;
+                } else {
+                    perms.receive_new_expense_emails = true;
+                }
             }
             
             return perms
         } catch {
-            return profile.role === 'admin' ? { receive_approval_emails: true } : {}
+            return profile.role === 'admin' ? { receive_new_expense_emails: true } : {}
         }
     })
 

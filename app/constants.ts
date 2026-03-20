@@ -32,9 +32,10 @@ export const AREAS = [
 
 // Permissions Configuration
 export const PERMISSIONS = [
-    { key: 'approve_area_expenses', label: 'Aprobar Gastos (Solo su Área)', description: 'Permite aprobar/rechazar gastos si coinciden con su área.' },
+    { key: 'approve_area_expenses', label: 'Aprobar Gastos (Solo su Área)', description: 'Permite aprobar/rechazar gastos y recibir alertas de nuevos tickets si coinciden con su área.' },
     { key: 'view_all_expenses', label: 'Ver Todos los Gastos', description: 'Permite ver el historial completo de comprobantes de la empresa.' },
-    { key: 'receive_approval_emails', label: 'Recibir Alertas de Aprobación', description: 'Recibe correos cuando se carga un gasto en su área.' },
+    { key: 'receive_new_expense_emails', label: 'Recibir Alertas de Nuevos Tickets', description: 'Recibe un correo cuando un usuario carga un comprobante nuevo.' },
+    { key: 'receive_approval_emails', label: 'Recibir Alertas de Tickets Aprobados', description: 'Recibe correo cuando un encargado aprueba un comprobante (Listo para BC).' },
 ]
 
 export const BRANCHES = [

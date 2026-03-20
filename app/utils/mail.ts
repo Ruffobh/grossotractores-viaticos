@@ -56,13 +56,13 @@ export async function sendAdminAlert(expense: ExpenseData, overrideEmail?: strin
                 const perms = u.permissions as any || {}
                 
                 // If ANY user specifically toggled OFF the email notifications, respect it
-                if (perms.receive_approval_emails === false) return false
+                if (perms.receive_new_expense_emails === false) return false
 
                 // Admins receive all emails by default unless opted out above
                 if (u.role === 'admin') return true
 
                 // For Non-Admins: They must have permission enabled
-                const hasPerm = perms.receive_approval_emails === true || perms.approve_area_expenses === true
+                const hasPerm = perms.receive_new_expense_emails === true || perms.approve_area_expenses === true
                 if (!hasPerm) return false
 
                 // And they must match the expense area
@@ -156,43 +156,54 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
                 return { error: 'Branch name not found' }
             }
 
-            const { data: managers, error: managerError } = await adminClient
+            const { data: potentialRecipients, error: recError } = await adminClient
                 .from('profiles')
-                .select('email, branch, branches')
-                .eq('role', 'branch_manager')
+                .select('email, role, branch, branches, permissions')
                 .not('email', 'is', null)
 
-            if (managerError) {
-                console.error('[sendManagerNotification] Error fetching branch managers:', managerError)
+            if (recError) {
+                console.error('[sendManagerNotification] Error fetching users:', recError)
             }
 
-            if (!managers || managers.length === 0) {
-                console.warn('[sendManagerNotification] No managers found in system.')
-                return { error: 'No managers found' }
+            if (!potentialRecipients || potentialRecipients.length === 0) {
+                console.warn('[sendManagerNotification] No users found in system.')
+                return { error: 'No users found' }
             }
 
-            // Filter managers who cover this branch
-            const relevantManagers = managers.filter(m => {
-                if (m.branch === branchName) return true
-                let managerBranches: string[] = []
-                if (Array.isArray(m.branches)) {
-                    managerBranches = m.branches
-                } else if (typeof m.branches === 'string') {
-                    try {
-                        managerBranches = JSON.parse(m.branches)
-                    } catch {
-                        managerBranches = [m.branches]
-                    }
+            // Filter managers who cover this branch OR users who have receive_approval_emails enabled
+            const relevantRecipients = potentialRecipients.filter(u => {
+                const perms = u.permissions as any || {}
+                
+                // 1. Is branch manager of this branch?
+                let isManagerForThisBranch = false;
+                if (u.role === 'branch_manager') {
+                     if (u.branch === branchName) {
+                         isManagerForThisBranch = true;
+                     } else {
+                         let managerBranches: string[] = []
+                         if (Array.isArray(u.branches)) {
+                             managerBranches = u.branches
+                         } else if (typeof u.branches === 'string') {
+                             try { managerBranches = JSON.parse(u.branches) } catch { managerBranches = [u.branches] }
+                         }
+                         if (managerBranches.includes(branchName)) {
+                             isManagerForThisBranch = true;
+                         }
+                     }
                 }
-                return managerBranches.includes(branchName)
+
+                // 2. Or has the explicit permission enabled?
+                const wantsApprovalEmails = perms.receive_approval_emails === true;
+
+                return isManagerForThisBranch || wantsApprovalEmails;
             })
 
-            if (relevantManagers.length === 0) {
-                console.warn('[sendManagerNotification] No manager found for branch:', branchName)
-                return { error: 'No manager found for this branch' }
+            if (relevantRecipients.length === 0) {
+                console.warn('[sendManagerNotification] No recipient found for branch:', branchName)
+                return { error: 'No manager or recipient found for this branch' }
             }
 
-            recipients = relevantManagers.map(m => m.email!)
+            recipients = relevantRecipients.map(m => m.email!)
         }
 
         console.log(`[sendManagerNotification] Recipients calculated: [${recipients.join(', ')}]`)
