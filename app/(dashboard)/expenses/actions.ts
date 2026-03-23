@@ -347,7 +347,7 @@ async function checkLimitAndGetStatus(
     // 3. Fetch Monthly Consumption
     const { data: expenses } = await supabase
         .from('invoices')
-        .select('total_amount, payment_method')
+        .select('total_amount, payment_method, status, rejected_amount')
         .eq('user_id', userId)
         .gte('date', firstDay)
         .lte('date', lastDay)
@@ -366,7 +366,13 @@ async function checkLimitAndGetStatus(
         }
     }) || []
 
-    const currentTotal = relevantExpenses.reduce((sum: any, item: any) => sum + (item.total_amount || 0), 0)
+    const currentTotal = relevantExpenses.reduce((sum: any, item: any) => {
+        let amt = item.total_amount || 0;
+        if (item.status === 'partially_rejected') {
+            amt -= (item.rejected_amount || 0);
+        }
+        return sum + amt;
+    }, 0)
     const activeLimit = isCashOrTransfer ? cashLimit : cardLimit
 
     // 5. Determine Status

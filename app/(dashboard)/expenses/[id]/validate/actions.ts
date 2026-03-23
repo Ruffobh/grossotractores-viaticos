@@ -76,7 +76,7 @@ export async function updateInvoice(formData: FormData) {
 
     const { data: expenses } = await supabase
         .from('invoices')
-        .select('total_amount, payment_method')
+        .select('total_amount, payment_method, status, rejected_amount')
         .eq('user_id', user.user?.id)
         .gte('date', firstDay)
         .lte('date', lastDay)
@@ -98,7 +98,13 @@ export async function updateInvoice(formData: FormData) {
         }
     }) || []
 
-    const currentTotal = relevantExpenses.reduce((sum, item) => sum + (item.total_amount || 0), 0)
+    const currentTotal = relevantExpenses.reduce((sum, item) => {
+        let amt = item.total_amount || 0;
+        if (item.status === 'partially_rejected') {
+            amt -= (item.rejected_amount || 0);
+        }
+        return sum + amt;
+    }, 0)
     const newAmount = data.total_amount
     const activeLimit = isCashOrTransfer ? cashLimit : cardLimit
 

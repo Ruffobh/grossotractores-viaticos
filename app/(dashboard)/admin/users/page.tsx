@@ -33,7 +33,7 @@ export default async function UsersListPage() {
 
     const { data: invoices } = await supabase
         .from('invoices')
-        .select('user_id, total_amount, payment_method, status')
+        .select('user_id, total_amount, payment_method, status, rejected_amount')
         .gte('date', startDate)
         .lte('date', endDate)
         .neq('status', 'draft') // Exclude drafts
@@ -45,10 +45,15 @@ export default async function UsersListPage() {
         if (inv.status === 'rejected') return // Exclude rejected
         const current = consumptionMap.get(inv.user_id) || { card: 0, cash: 0 }
 
+        let amountToAdd = inv.total_amount || 0
+        if (inv.status === 'partially_rejected') {
+            amountToAdd -= (inv.rejected_amount || 0)
+        }
+
         if (inv.payment_method === 'Cash' || inv.payment_method === 'Transfer') {
-            current.cash += (inv.total_amount || 0)
+            current.cash += amountToAdd
         } else {
-            current.card += (inv.total_amount || 0)
+            current.card += amountToAdd
         }
 
         consumptionMap.set(inv.user_id, current)
