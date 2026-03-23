@@ -186,22 +186,30 @@ export async function deleteExpense(id: string) {
     // Delete from Storage
     if (invoice?.file_url) {
         try {
-            // Extract file path from URL. Assuming format contains .../receipts/path...
-            // Or simpler: if it's a signed URL or public URL, the path is usually the last segment(s).
-            // But let's look for 'receipts/' segment.
-            const parts = invoice.file_url.split('/receipts/')
-            if (parts.length > 1) {
-                const filePath = parts[1] // content after receipts/
-                // Handle URL decoding if needed, usually browser handles it but keep in mind space -> %20
-                const decodedPath = decodeURIComponent(filePath)
+            // Ensure no other invoice is using the exact same file_url (e.g., from a Split Expense)
+            // We already deleted this row, so if count > 0, others are still using it.
+            const { count, error: countError } = await supabase
+                .from('invoices')
+                .select('id', { count: 'exact', head: true })
+                .eq('file_url', invoice.file_url)
 
-                const { error: storageError } = await supabase.storage
-                    .from('receipts')
-                    .remove([decodedPath])
+            if (!countError && count === 0) {
+                // Extract file path from URL. Assuming format contains .../receipts/path...
+                const parts = invoice.file_url.split('/receipts/')
+                if (parts.length > 1) {
+                    const filePath = parts[1] // content after receipts/
+                    const decodedPath = decodeURIComponent(filePath)
 
-                if (storageError) {
-                    console.error('Storage Deletion Error:', storageError)
+                    const { error: storageError } = await supabase.storage
+                        .from('receipts')
+                        .remove([decodedPath])
+
+                    if (storageError) {
+                        console.error('Storage Deletion Error:', storageError)
+                    }
                 }
+            } else {
+                console.log(`Not deleting storage file. ${count} other invoices still reference it.`)
             }
         } catch (e) {
             console.error('Error attempting to delete file from storage:', e)
