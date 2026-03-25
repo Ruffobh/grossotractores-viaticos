@@ -409,8 +409,12 @@ export async function splitExpense(invoiceId: string, targetUserIds: string[], f
             const diffTime = todayZero.getTime() - expenseDate.getTime()
             const diffDays = diffTime / (1000 * 3600 * 24)
 
-            if (isNaN(diffDays) || diffDays > 7) {
+            if (isNaN(diffDays)) {
+                return { error: 'La fecha es inválida.' }
+            } else if (diffDays > 7) {
                 return { error: 'La fecha del comprobante excede el límite de 7 días.' }
+            } else if (diffDays < 0) {
+                return { error: 'La fecha del comprobante no puede ser futura.' }
             }
         } else {
             return { error: 'La fecha es obligatoria.' }

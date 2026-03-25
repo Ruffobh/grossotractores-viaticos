@@ -55,18 +55,17 @@ export async function sendAdminAlert(expense: ExpenseData, overrideEmail?: strin
             const validUsers = users?.filter(u => {
                 const perms = u.permissions as any || {}
                 
-                // If ANY user specifically toggled OFF the email notifications, respect it
                 if (perms.receive_new_expense_emails === false) return false
 
-                // Admins receive all emails by default unless opted out above
-                if (u.role === 'admin') return true
+                const explicitlyWantsAll = perms.receive_new_expense_emails === true;
+                const wantsAreaOnly = perms.approve_area_expenses === true;
 
-                // For Non-Admins: They must have permission enabled
-                const hasPerm = perms.receive_new_expense_emails === true || perms.approve_area_expenses === true
-                if (!hasPerm) return false
+                if (!explicitlyWantsAll && !wantsAreaOnly) return false;
 
-                // And they must match the expense area
-                if (expenseArea && u.area !== expenseArea) return false
+                // If they ONLY want area emails (and not explicitlyWantsAll), filter by area
+                if (!explicitlyWantsAll && wantsAreaOnly && expenseArea && u.area !== expenseArea) {
+                    return false;
+                }
 
                 return true
             }) || []
@@ -170,13 +169,16 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
                 return { error: 'No users found' }
             }
 
-            // Filter managers who cover this branch OR users who have receive_approval_emails enabled
+            // Filter ONLY users who have receive_approval_emails explicitly enabled
             const relevantRecipients = potentialRecipients.filter(u => {
                 const perms = u.permissions as any || {}
                 
-                // 1. Is branch manager of this branch?
-                let isManagerForThisBranch = false;
+                const wantsApprovalEmails = perms.receive_approval_emails === true;
+                if (!wantsApprovalEmails) return false; // Strict requirement
+
+                // If they are a branch manager, restrict their notifications to their own branch
                 if (u.role === 'branch_manager') {
+                     let isManagerForThisBranch = false;
                      if (u.branch === branchName) {
                          isManagerForThisBranch = true;
                      } else {
@@ -190,12 +192,11 @@ export async function sendManagerNotification(expense: ExpenseData, overrideEmai
                              isManagerForThisBranch = true;
                          }
                      }
+                     return isManagerForThisBranch;
                 }
 
-                // 2. Or has the explicit permission enabled?
-                const wantsApprovalEmails = perms.receive_approval_emails === true;
-
-                return isManagerForThisBranch || wantsApprovalEmails;
+                // If they are an admin or regular user with explicit permission, they get all
+                return true;
             })
 
             if (relevantRecipients.length === 0) {

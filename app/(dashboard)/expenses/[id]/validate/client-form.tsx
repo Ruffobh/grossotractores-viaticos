@@ -23,6 +23,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
     const [expenseCategory, setExpenseCategory] = useState<string>(invoice.expense_category || '')
     const [date, setDate] = useState<string>(invoice.date ? invoice.date.split('T')[0] : '')
     const [isDateInvalid, setIsDateInvalid] = useState(false)
+    const [dateErrorMessage, setDateErrorMessage] = useState('')
 
     const [amount, setAmount] = useState<number>(invoice.total_amount || 0)
     const [isExceeded, setIsExceeded] = useState(false)
@@ -61,11 +62,19 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
         const diffTime = todayZero.getTime() - selectedZero.getTime()
         const diffDays = diffTime / (1000 * 3600 * 24)
 
-        // Strict check: if date is invalid or diff > 7
-        if (isNaN(diffDays) || diffDays > 7) {
+        // Strict check: if date is invalid or diff > 7 or diff < 0
+        if (isNaN(diffDays)) {
             setIsDateInvalid(true)
+            setDateErrorMessage('Fecha inválida.')
+        } else if (diffDays > 7) {
+            setIsDateInvalid(true)
+            setDateErrorMessage('La factura no puede tener más de 7 días de antigüedad.')
+        } else if (diffDays < 0) {
+            setIsDateInvalid(true)
+            setDateErrorMessage('La factura no puede tener una fecha futura.')
         } else {
             setIsDateInvalid(false)
+            setDateErrorMessage('')
         }
     }, [date])
 
@@ -92,9 +101,18 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
             const diffTime = todayZero.getTime() - selectedZero.getTime()
             const diffDays = diffTime / (1000 * 3600 * 24)
 
-            if (isNaN(diffDays) || diffDays > 7) {
+            if (isNaN(diffDays) || diffDays > 7 || diffDays < 0) {
                 e.preventDefault()
-                alert(`La factura tiene ${diffDays.toFixed(0)} días de antigüedad. El límite es 7 días.`)
+                if (diffDays < 0) {
+                    alert('La factura no puede tener una fecha futura.')
+                    setDateErrorMessage('La factura no puede tener una fecha futura.')
+                } else if (diffDays > 7) {
+                    alert(`La factura tiene ${diffDays.toFixed(0)} días de antigüedad. El límite es 7 días.`)
+                    setDateErrorMessage('La factura no puede tener más de 7 días de antigüedad.')
+                } else {
+                    alert('Fecha inválida.')
+                    setDateErrorMessage('Fecha inválida.')
+                }
                 setIsDateInvalid(true)
                 return
             }
@@ -203,7 +221,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                     <div className={styles.errorContent}>
                         <div className={styles.errorTitle}>Fecha Inválida</div>
                         <div className={styles.errorText}>
-                            La factura no puede tener más de 7 días de antigüedad.
+                            {dateErrorMessage || 'La fecha ingresada no es permitida.'}
                         </div>
                     </div>
                 </div>

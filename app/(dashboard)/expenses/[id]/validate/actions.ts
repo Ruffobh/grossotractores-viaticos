@@ -65,6 +65,11 @@ export async function updateInvoice(formData: FormData) {
         throw new Error('La factura tiene más de 7 días de antigüedad. No se puede cargar.')
     }
 
+    if (diffDays < 0) {
+        console.error('Future date restriction triggered. Blocking update.')
+        throw new Error('La factura tiene una fecha futura. No se puede cargar.')
+    }
+
 
     // Adjust to local timezone logic if needed, but ISO string split is safer for bounds
     const year = invoiceDate.getFullYear()
