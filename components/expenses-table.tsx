@@ -32,12 +32,31 @@ interface Expense {
     [key: string]: any
 }
 
-export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expense[], isManagerOrAdmin: boolean }) {
+interface ExpensesTableProps {
+    expenses: Expense[]
+    isManagerOrAdmin: boolean
+    currentUserId: string
+    currentUserRole: string
+}
+
+export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, currentUserRole }: ExpensesTableProps) {
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc' }) // Default sort
     const router = useRouter()
+
+    // Determine if current user can delete a specific expense
+    const canDelete = (expense: Expense): boolean => {
+        if (currentUserRole === 'admin') return true
+        if (currentUserRole === 'branch_manager') {
+            return expense.status !== 'submitted_to_bc'
+        }
+        // Standard user: only own expenses in draft or pending_approval
+        const isOwner = expense.user_id === currentUserId || expense.loaded_by === currentUserId
+        const isDeletableStatus = expense.status === 'draft' || expense.status === 'pending_approval'
+        return isOwner && isDeletableStatus
+    }
 
     const handleDeleteClick = (id: string) => {
         setDeleteId(id)
@@ -269,9 +288,11 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
                                     <td>
                                         <div className={styles.actionsWrapper}>
                                             <Link href={`/expenses/${expense.id}`} className={styles.link}>Ver</Link>
-                                            <button onClick={() => handleDeleteClick(expense.id)} className={styles.deleteButton} title="Eliminar">
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {canDelete(expense) && (
+                                                <button onClick={() => handleDeleteClick(expense.id)} className={styles.deleteButton} title="Eliminar">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -348,9 +369,11 @@ export function ExpensesTable({ expenses, isManagerOrAdmin }: { expenses: Expens
 
                             <div className={styles.cardActions}>
                                 <Link href={`/expenses/${expense.id}`} className={styles.cardLink}>Ver Detalle</Link>
-                                <button onClick={() => handleDeleteClick(expense.id)} className={styles.cardDeleteButton}>
-                                    <Trash2 size={18} />
-                                </button>
+                                {canDelete(expense) && (
+                                    <button onClick={() => handleDeleteClick(expense.id)} className={styles.cardDeleteButton}>
+                                        <Trash2 size={18} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}

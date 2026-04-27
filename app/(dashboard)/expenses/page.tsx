@@ -116,7 +116,12 @@ export default async function ExpensesPage({
                 <Link href="/expenses?status=submitted_to_bc" className={params.status === 'submitted_to_bc' ? styles.activeFilter : styles.filter}>Cargado en BC</Link>
             </div>
 
-            <ExpensesTable expenses={expenses as any} isManagerOrAdmin={isManagerOrAdmin || hasApproveArea} />
+            <ExpensesTable
+                expenses={expenses as any}
+                isManagerOrAdmin={isManagerOrAdmin || hasApproveArea}
+                currentUserId={user.id}
+                currentUserRole={role}
+            />
         </div>
     )
 }

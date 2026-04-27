@@ -196,58 +196,107 @@ export async function deleteExpense(id: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    // Check status first
-    const { data: invoice } = await supabase.from('invoices').select('status, file_url').eq('id', id).single()
+    // Fetch invoice details including split info
+    const { createAdminClient } = await import('@/utils/supabase/admin')
+    const adminClient = createAdminClient()
+
+    const { data: invoice } = await adminClient
+        .from('invoices')
+        .select('status, file_url, user_id, split_group_id, is_parent, loaded_by')
+        .eq('id', id)
+        .single()
+
+    if (!invoice) return { error: 'Comprobante no encontrado.' }
 
     // Check user role
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const role = profile?.role || 'user'
 
-    if (invoice?.status === 'submitted_to_bc' && profile?.role !== 'admin') {
-        return { error: 'No se puede eliminar un comprobante que ya fue cargado en Business Central (Solo Administradores).' }
+    // --- PERMISSION RULES ---
+    if (role === 'user') {
+        // Standard users: only own expenses in draft or pending_approval
+        if (invoice.user_id !== user.id && invoice.loaded_by !== user.id) {
+            return { error: 'No tenés permiso para eliminar comprobantes de otros usuarios.' }
+        }
+        if (invoice.status !== 'draft' && invoice.status !== 'pending_approval') {
+            return { error: 'Solo podés eliminar comprobantes en estado Borrador o Pendiente.' }
+        }
+    } else if (role === 'branch_manager') {
+        // Branch managers: can delete most, except submitted_to_bc
+        if (invoice.status === 'submitted_to_bc') {
+            return { error: 'No se puede eliminar un comprobante cargado en Business Central (Solo Administradores).' }
+        }
+    }
+    // Admins: no restrictions
+
+    // --- CASCADE DELETE FOR SPLIT GROUPS ---
+    // If this is a parent of a split group AND the current user is the original uploader,
+    // delete ALL invoices in the split group
+    if (invoice.split_group_id && invoice.is_parent) {
+        // Get all invoices in the split group
+        const { data: groupInvoices } = await adminClient
+            .from('invoices')
+            .select('id, file_url')
+            .eq('split_group_id', invoice.split_group_id)
+
+        if (groupInvoices && groupInvoices.length > 0) {
+            // Delete all invoices in the group
+            const { error: groupDeleteError } = await adminClient
+                .from('invoices')
+                .delete()
+                .eq('split_group_id', invoice.split_group_id)
+
+            if (groupDeleteError) {
+                return { error: 'Error al eliminar el grupo de gastos compartidos: ' + groupDeleteError.message }
+            }
+
+            // Clean up storage (all share the same file_url typically)
+            const fileUrls = new Set(groupInvoices.map(inv => inv.file_url).filter(Boolean))
+            for (const fileUrl of fileUrls) {
+                await cleanupStorageFile(supabase, fileUrl as string)
+            }
+
+            revalidatePath('/expenses')
+            return { success: true }
+        }
     }
 
-    const { error } = await supabase.from('invoices').delete().eq('id', id)
+    // --- SINGLE DELETE ---
+    const { error } = await adminClient.from('invoices').delete().eq('id', id)
 
     if (error) {
         return { error: error.message }
     }
 
     // Delete from Storage
-    if (invoice?.file_url) {
-        try {
-            // Ensure no other invoice is using the exact same file_url (e.g., from a Split Expense)
-            // We already deleted this row, so if count > 0, others are still using it.
-            const { count, error: countError } = await supabase
-                .from('invoices')
-                .select('id', { count: 'exact', head: true })
-                .eq('file_url', invoice.file_url)
-
-            if (!countError && count === 0) {
-                // Extract file path from URL. Assuming format contains .../receipts/path...
-                const parts = invoice.file_url.split('/receipts/')
-                if (parts.length > 1) {
-                    const filePath = parts[1] // content after receipts/
-                    const decodedPath = decodeURIComponent(filePath)
-
-                    const { error: storageError } = await supabase.storage
-                        .from('receipts')
-                        .remove([decodedPath])
-
-                    if (storageError) {
-                        console.error('Storage Deletion Error:', storageError)
-                    }
-                }
-            } else {
-                console.log(`Not deleting storage file. ${count} other invoices still reference it.`)
-            }
-        } catch (e) {
-            console.error('Error attempting to delete file from storage:', e)
-        }
+    if (invoice.file_url) {
+        await cleanupStorageFile(supabase, invoice.file_url)
     }
 
-    // Setup revalidation
     revalidatePath('/expenses')
     return { success: true }
+}
+
+// Helper to clean up storage files
+async function cleanupStorageFile(supabase: any, fileUrl: string) {
+    try {
+        // Ensure no other invoice is using the exact same file_url
+        const { count, error: countError } = await supabase
+            .from('invoices')
+            .select('id', { count: 'exact', head: true })
+            .eq('file_url', fileUrl)
+
+        if (!countError && count === 0) {
+            const parts = fileUrl.split('/receipts/')
+            if (parts.length > 1) {
+                const filePath = parts[1]
+                const decodedPath = decodeURIComponent(filePath)
+                await supabase.storage.from('receipts').remove([decodedPath])
+            }
+        }
+    } catch (e) {
+        console.error('Error attempting to delete file from storage:', e)
+    }
 }
 
 export async function markInvoiceAsSubmitted(id: string) {
