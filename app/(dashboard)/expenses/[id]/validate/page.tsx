@@ -1,9 +1,9 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import Image from 'next/image'
 import styles from './style.module.css'
 import { updateInvoice } from './actions'
 import { ValidationForm as ClientValidationForm } from './client-form'
+import { ReceiptViewer } from '@/components/receipt-viewer'
 
 export default async function ValidateExpensePage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
     const { id } = await params
@@ -72,19 +72,7 @@ export default async function ValidateExpensePage({ params, searchParams }: { pa
         <div className={styles.container}>
             {/* Left: Image Viewer */}
             <div className={styles.imageSection}>
-                <div className={styles.imageWrapper}>
-                    {/* If PDF, embed it? If Image, show Image */}
-                    {invoice.file_url?.toLowerCase().endsWith('.pdf') ? (
-                        <iframe src={invoice.file_url} className="w-full h-full border-none" />
-                    ) : (
-                        <Image
-                            src={invoice.file_url || ''}
-                            alt="Receipt"
-                            fill
-                            className={styles.image}
-                        />
-                    )}
-                </div>
+                <ReceiptViewer fileUrl={invoice.file_url} />
             </div>
 
             {/* Right: Validation Form */}
