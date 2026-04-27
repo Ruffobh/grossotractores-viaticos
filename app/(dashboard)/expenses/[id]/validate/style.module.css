@@ -432,3 +432,32 @@
         transform: translateY(0);
     }
 }
+
+/* DUPLICATE ALERT STYLES */
+.duplicateAlert {
+    background-color: #fffbeb;
+    /* amber-50 */
+    border-left: 4px solid #f59e0b;
+    /* amber-500 */
+    padding: 1rem;
+    margin-top: 0.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.duplicateAlert .errorIcon {
+    color: #f59e0b;
+    /* amber-500 */
+}
+
+.duplicateAlert .errorTitle {
+    color: #92400e;
+    /* amber-800 */
+}
+
+.duplicateAlert .errorText {
+    color: #b45309;
+    /* amber-700 */
+}

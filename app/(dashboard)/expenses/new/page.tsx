@@ -77,7 +77,13 @@ export default function NewExpensePage() {
                     alert(`⚠️ La IA falló. MODO MANUAL activado.\n\nError Técnico: ${result.debugInfo || 'Desconocido'}`)
                 }
                 setUploadStatus('¡Completado! Redirigiendo...')
-                router.push(`/expenses/${result.invoiceId}/validate`)
+
+                // Build redirect URL with optional duplicate warning
+                let redirectUrl = `/expenses/${result.invoiceId}/validate`
+                if (result.warning === 'DUPLICATE' && result.duplicateInfo) {
+                    redirectUrl += `?dup=${encodeURIComponent(result.duplicateInfo)}`
+                }
+                router.push(redirectUrl)
             } else {
                 throw new Error('No se recibió confirmación del servidor.')
             }

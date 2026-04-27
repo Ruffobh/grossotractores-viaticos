@@ -5,8 +5,9 @@ import styles from './style.module.css'
 import { updateInvoice } from './actions'
 import { ValidationForm as ClientValidationForm } from './client-form'
 
-export default async function ValidateExpensePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ValidateExpensePage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
     const { id } = await params
+    const query = await searchParams
     const supabase = await createClient()
 
     // Fetch invoice data
@@ -64,6 +65,9 @@ export default async function ValidateExpensePage({ params }: { params: Promise<
         }
     })
 
+    // Read duplicate warning from query param (set by processReceipt early check)
+    const duplicateWarning = query.dup ? decodeURIComponent(query.dup as string) : null
+
     return (
         <div className={styles.container}>
             {/* Left: Image Viewer */}
@@ -109,6 +113,7 @@ export default async function ValidateExpensePage({ params }: { params: Promise<
                     cardLimit={cardLimit}
                     cashLimit={cashLimit}
                     styles={styles}
+                    duplicateWarning={duplicateWarning}
                 />
             </div>
         </div>

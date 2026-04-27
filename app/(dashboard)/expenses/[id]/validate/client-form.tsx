@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { AlertTriangle, Users } from 'lucide-react'
+import { AlertTriangle, Users, Copy } from 'lucide-react'
 import { updateInvoice } from './actions'
 import { deleteExpense } from '../../actions'
 import { SplitExpenseModal } from '@/components/split-expense-modal'
@@ -15,9 +15,10 @@ interface ValidationFormProps {
     cardLimit: number
     cashLimit: number
     styles: any
+    duplicateWarning?: string | null
 }
 
-export function ValidationForm({ invoice, cardConsumption, cashConsumption, cardLimit, cashLimit, styles }: ValidationFormProps) {
+export function ValidationForm({ invoice, cardConsumption, cashConsumption, cardLimit, cashLimit, styles, duplicateWarning }: ValidationFormProps) {
     // 1. Initialize with empty strings if data is missing, forcing user selection
     const [paymentMethod, setPaymentMethod] = useState<string>(invoice.payment_method || '')
     const [expenseCategory, setExpenseCategory] = useState<string>(invoice.expense_category || '')
@@ -174,6 +175,7 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
     return (
         <form action={updateInvoice} ref={formRef} onSubmit={handleSubmit}>
             <input type="hidden" name="id" value={invoice.id} />
+            <input type="hidden" name="invoice_number" value={invoice.invoice_number || ''} />
 
             {/* ... Modal Logic ... */}
             {showModal && (
@@ -207,6 +209,24 @@ export function ValidationForm({ invoice, cardConsumption, cashConsumption, card
                             >
                                 Solicitar Aprobación
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Duplicate Warning Banner */}
+            {duplicateWarning && (
+                <div className={styles.duplicateAlert} style={{ marginBottom: '1.5rem' }}>
+                    <div className={styles.errorIconWrapper}>
+                        <Copy className={styles.errorIcon} />
+                    </div>
+                    <div className={styles.errorContent}>
+                        <div className={styles.errorTitle}>⚠️ Posible Factura Duplicada</div>
+                        <div className={styles.errorText}>
+                            {duplicateWarning}
+                        </div>
+                        <div className={styles.errorText} style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}>
+                            Si los datos son diferentes, podés corregir el CUIT o Nº de comprobante y continuar.
                         </div>
                     </div>
                 </div>

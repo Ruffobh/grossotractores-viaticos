@@ -153,6 +153,36 @@ export async function processReceipt(imageUrl: string) {
             return { success: true, invoiceId: invoice.id, warning: 'AI_FAILED', debugInfo: aiErrorDetail };
         }
 
+        // --- EARLY DUPLICATE CHECK ---
+        // If AI extracted both CUIT and invoice number, check for existing duplicates
+        const extractedCuit = (parsedData.vendorCuit || '').trim()
+        const extractedNumber = (parsedData.invoiceNumber || '').trim()
+
+        if (extractedCuit && extractedNumber) {
+            const { data: existingDup } = await supabase
+                .from('invoices')
+                .select('id, vendor_name, date')
+                .eq('vendor_cuit', extractedCuit)
+                .eq('invoice_number', extractedNumber)
+                .neq('id', invoice.id)
+                .neq('status', 'draft')
+                .neq('status', 'rejected')
+                .limit(1)
+
+            if (existingDup && existingDup.length > 0) {
+                const dup = existingDup[0]
+                const dupDate = dup.date ? new Date(dup.date).toLocaleDateString('es-AR') : 'fecha desconocida'
+                return {
+                    success: true,
+                    invoiceId: invoice.id,
+                    warning: 'DUPLICATE',
+                    duplicateInfo: `Ya existe un comprobante con CUIT ${extractedCuit} y Nº ${extractedNumber} ` +
+                        `(${dup.vendor_name || 'Proveedor'}, ${dupDate}). Verificá que no sea una carga duplicada.`
+                }
+            }
+        }
+        // --- END EARLY DUPLICATE CHECK ---
+
         return { success: true, invoiceId: invoice.id }
 
     } catch (err: any) {

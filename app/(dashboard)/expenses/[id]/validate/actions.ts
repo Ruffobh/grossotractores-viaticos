@@ -21,6 +21,37 @@ export async function updateInvoice(formData: FormData) {
         comments: formData.get('comments'),
     }
 
+    // --- DUPLICATE CHECK ---
+    // Only verify if both CUIT and invoice number are present
+    const vendorCuit = (data.vendor_cuit as string || '').trim()
+    const invoiceNumber = (formData.get('invoice_number') as string || '').trim()
+
+    if (vendorCuit && invoiceNumber) {
+        const { createAdminClient } = await import('@/utils/supabase/admin')
+        const adminClient = createAdminClient()
+
+        const { data: existing, error: dupError } = await adminClient
+            .from('invoices')
+            .select('id, vendor_name, date, user_id, profiles!invoices_user_id_fkey(full_name)')
+            .eq('vendor_cuit', vendorCuit)
+            .eq('invoice_number', invoiceNumber)
+            .neq('id', id)
+            .neq('status', 'draft')
+            .neq('status', 'rejected')
+            .limit(1)
+
+        if (!dupError && existing && existing.length > 0) {
+            const dup = existing[0]
+            const dupUser = (dup as any).profiles?.full_name || 'otro usuario'
+            const dupDate = dup.date ? new Date(dup.date).toLocaleDateString('es-AR') : 'fecha desconocida'
+            throw new Error(
+                `FACTURA DUPLICADA: Ya existe un comprobante con CUIT ${vendorCuit} y Nº ${invoiceNumber}, ` +
+                `cargado por ${dupUser} el ${dupDate}. No se puede cargar dos veces el mismo comprobante.`
+            )
+        }
+    }
+    // --- END DUPLICATE CHECK ---
+
     // Business Logic: Check Monthly Budget
     const { data: user } = await supabase.auth.getUser()
     const { data: profile } = await supabase
