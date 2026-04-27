@@ -214,12 +214,13 @@ export async function deleteExpense(id: string) {
 
     // --- PERMISSION RULES ---
     if (role === 'user') {
-        // Standard users: only own expenses in draft or pending_approval
+        // Standard users: only own expenses in draft, pending_approval or approved
         if (invoice.user_id !== user.id && invoice.loaded_by !== user.id) {
             return { error: 'No tenés permiso para eliminar comprobantes de otros usuarios.' }
         }
-        if (invoice.status !== 'draft' && invoice.status !== 'pending_approval') {
-            return { error: 'Solo podés eliminar comprobantes en estado Borrador o Pendiente.' }
+        const deletableStatuses = ['draft', 'pending_approval', 'approved']
+        if (!deletableStatuses.includes(invoice.status || '')) {
+            return { error: 'Solo podés eliminar comprobantes en estado Borrador, Pendiente o Aprobado.' }
         }
     } else if (role === 'branch_manager') {
         // Branch managers: can delete most, except submitted_to_bc

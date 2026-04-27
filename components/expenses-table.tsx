@@ -52,9 +52,9 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
         if (currentUserRole === 'branch_manager') {
             return expense.status !== 'submitted_to_bc'
         }
-        // Standard user: only own expenses in draft or pending_approval
+        // Standard user: only own expenses in draft, pending_approval or approved
         const isOwner = expense.user_id === currentUserId || expense.loaded_by === currentUserId
-        const isDeletableStatus = expense.status === 'draft' || expense.status === 'pending_approval'
+        const isDeletableStatus = expense.status === 'draft' || expense.status === 'pending_approval' || expense.status === 'approved'
         return isOwner && isDeletableStatus
     }
 
