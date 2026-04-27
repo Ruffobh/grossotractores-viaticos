@@ -1,13 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Verified models available to this API key
+// Optimized model list: 3 models, 2 retries each = max 6 attempts (keeps under timeout)
 const MODELS_TO_TRY = [
-    "gemini-1.5-flash",           // New primary: Fast, cost-effective
-    "gemini-2.0-flash",           // Original primary: Standard, fast
-    "gemini-1.5-pro",             // New option: More capable, higher cost
-    "gemini-2.0-flash-001",       // Backup: Versioned alias
-    "gemini-2.5-flash",           // Upgrade: Newer model (verified in list)
-    "gemini-2.0-flash-lite-001"   // Fallback: Lightweight/Fast
+    "gemini-2.0-flash",           // Primary: Fast, reliable
+    "gemini-1.5-flash",           // Fallback: Proven stable
+    "gemini-2.5-flash",           // Last resort: Newer model
 ];
 
 export async function generateWithFallback(prompt: string, inlineData: any) {
@@ -55,7 +52,7 @@ export async function generateWithFallback(prompt: string, inlineData: any) {
 
     for (const modelName of MODELS_TO_TRY) {
         let attempts = 0;
-        const maxAttempts = 3;
+        const maxAttempts = 2;
 
         while (attempts < maxAttempts) {
             attempts++;
@@ -79,7 +76,7 @@ export async function generateWithFallback(prompt: string, inlineData: any) {
                 const isRetryable = error.message?.includes('429') || error.message?.includes('503') || error.message?.includes('Overloaded');
 
                 if (isRetryable && attempts < maxAttempts) {
-                    const waitTime = 2000 * attempts; // 2s, 4s, 6s...
+                    const waitTime = 1500 * attempts; // 1.5s, 3s
                     console.warn(`⏳ Rate Limited/Overloaded (${modelName}). Waiting ${waitTime}ms...`);
                     await delay(waitTime);
                     continue; // Retry same model

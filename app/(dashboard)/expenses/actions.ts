@@ -13,8 +13,15 @@ export async function processReceipt(imageUrl: string) {
 
         if (!user) return { error: 'Unauthorized' }
 
-        // 1. Fetch image data
-        const imageResp = await fetch(imageUrl)
+        // 1. Fetch image data (with timeout to prevent hanging)
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 8000) // 8s timeout
+        let imageResp: Response
+        try {
+            imageResp = await fetch(imageUrl, { signal: controller.signal })
+        } finally {
+            clearTimeout(timeout)
+        }
         const imageBuffer = await imageResp.arrayBuffer()
         const base64Image = Buffer.from(imageBuffer).toString('base64')
 

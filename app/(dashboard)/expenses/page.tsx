@@ -5,6 +5,9 @@ import styles from './style.module.css'
 import { ExpensesTable } from '@/components/expenses-table'
 import { ExpensesFilter } from '@/components/expenses-filter'
 
+// Allow server actions (processReceipt, etc.) up to 60 seconds
+export const maxDuration = 60
+
 export default async function ExpensesPage({
     searchParams,
 }: {
