@@ -58,7 +58,6 @@ export default async function DashboardPage({
         .select('*, profiles!invoices_user_id_fkey(branch, area, full_name), expense_category, rejected_amount')
         .gte('date', startDate)
         .lte('date', endDate)
-        .lte('date', endDate)
         .neq('status', 'draft')
         .order('date', { ascending: false })
 

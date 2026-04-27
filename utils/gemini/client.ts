@@ -43,8 +43,7 @@ export async function generateWithFallback(prompt: string, inlineData: any) {
         console.error("❌ API Key Missing. Status:", status);
         throw new Error(`Missing API Key. (Standard: ${status.standard}, B64: ${status.b64})`);
     } else {
-        // Obfuscated log check
-        console.log(`🔑 API Key loaded (Source: ${process.env.GOOGLE_API_KEY_B64 ? 'B64' : 'Standard'}, Length: ${apiKey.length}, Ends: ...${apiKey.slice(-4)})`);
+        console.log(`🔑 API Key loaded (Source: ${process.env.GOOGLE_API_KEY_B64 ? 'B64' : 'Standard'})`);
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);

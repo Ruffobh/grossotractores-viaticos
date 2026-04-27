@@ -167,7 +167,6 @@ export async function deleteExpense(id: string) {
     if (!user) return { error: 'Unauthorized' }
 
     // Check status first
-    // Check status first
     const { data: invoice } = await supabase.from('invoices').select('status, file_url').eq('id', id).single()
 
     // Check user role

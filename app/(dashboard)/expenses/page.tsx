@@ -120,15 +120,3 @@ export default async function ExpensesPage({
         </div>
     )
 }
-
-function formatStatus(status: string | null) {
-    if (!status) return 'Pendiente'
-    switch (status) {
-        case 'pending_approval': return 'Pendiente'
-        case 'approved': return 'Aprobado'
-        case 'rejected': return 'Rechazado'
-        case 'exceeded_budget': return 'Excede Límite'
-        case 'submitted_to_bc': return 'Cargado en BC'
-        default: return status
-    }
-}

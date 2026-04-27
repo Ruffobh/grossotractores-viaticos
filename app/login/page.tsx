@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import styles from './style.module.css'
@@ -12,11 +12,11 @@ export default function LoginPage() {
     const [envError, setEnvError] = useState<string | null>(null)
 
     // Check Env Vars on Mount
-    useState(() => {
+    useEffect(() => {
         if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
             setEnvError('Error Crítico: Faltan variables de entorno (Supabase URL/Key). Contacte al administrador.')
         }
-    })
+    }, [])
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()

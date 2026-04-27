@@ -271,14 +271,3 @@ function getStatusClass(status: string) {
     }
     return map[status] || 'statusPending'
 }
-
-function formatPaymentMethod(method: string) {
-    const map: Record<string, string> = {
-        'Cash': 'Efectivo',
-        'Transfer': 'Transferencia',
-        'Credit Card': 'Tarjeta de Crédito',
-        'Debit Card': 'Tarjeta de Débito',
-        'Other': 'Otro'
-    }
-    return map[method] || method
-}
