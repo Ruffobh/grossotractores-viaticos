@@ -1,14 +1,25 @@
 [
   {
     "lineNo": 10000,
-    "type": "GET",
-    "error": "",
-    "url": "https://api.businesscentral.dynamics.com/v2.0/4af316b5-92f0-4e36-9242-99fd5953ae01/Production/ODataV4/Company('GROSSO%20TRACTORES%20S.A')/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='CPR-008625',Line_No=10000)"
+    "type": "PATCH",
+    "error": "{\"error\":{\"code\":\"Internal_InvalidTableRelation\",\"message\":\"The field Canal vta C\\u00f3digo of table Purchase Line contains a value (COM-PVSR) that cannot be found in the related table (Dimension Value).  CorrelationId:  47c06068-0c5d-4b6e-859e-c4b4948024f3.\"}}",
+    "url": "https://api.businesscentral.dynamics.com/v2.0/4af316b5-92f0-4e36-9242-99fd5953ae01/Production/ODataV4/Company('GROSSO%20TRACTORES%20S.A')/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='CPR-008626',Line_No=10000)",
+    "payload": {
+      "VAT_Prod_Posting_Group": "IVA 21%",
+      "Shortcut_Dimension_1_Code": "RF",
+      "Shortcut_Dimension_2_Code": "COM-PVSR",
+      "Tax_Area_Code": "PRO-RI"
+    }
   },
   {
     "lineNo": 20000,
-    "type": "GET",
-    "error": "",
-    "url": "https://api.businesscentral.dynamics.com/v2.0/4af316b5-92f0-4e36-9242-99fd5953ae01/Production/ODataV4/Company('GROSSO%20TRACTORES%20S.A')/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='CPR-008625',Line_No=20000)"
+    "type": "PATCH",
+    "error": "{\"error\":{\"code\":\"Internal_InvalidTableRelation\",\"message\":\"The field Canal vta C\\u00f3digo of table Purchase Line contains a value (COM-PVSR) that cannot be found in the related table (Dimension Value).  CorrelationId:  6421199d-9054-4bf5-b7b4-d59d65061a5e.\"}}",
+    "url": "https://api.businesscentral.dynamics.com/v2.0/4af316b5-92f0-4e36-9242-99fd5953ae01/Production/ODataV4/Company('GROSSO%20TRACTORES%20S.A')/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='CPR-008626',Line_No=20000)",
+    "payload": {
+      "Shortcut_Dimension_1_Code": "RF",
+      "Shortcut_Dimension_2_Code": "COM-PVSR",
+      "Tax_Area_Code": "PRO-RI"
+    }
   }
 ]

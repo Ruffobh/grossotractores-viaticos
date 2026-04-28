@@ -143,7 +143,7 @@ serve(async (req) => {
             const patchFields: Record<string, any> = {}
             if (vatGroup) patchFields['VAT_Prod_Posting_Group'] = vatGroup
             if (sucursal) patchFields['Shortcut_Dimension_1_Code'] = sucursal
-            if (areaDim) patchFields['Shortcut_Dimension_2_Code'] = areaDim
+            // Shortcut_Dimension_2_Code is CANAL, not AREA. Do not send areaDim here.
             if (taxAreaCode) patchFields['Tax_Area_Code'] = taxAreaCode
 
             const odataLineUrl = `${odataBase}/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='${encodeURIComponent(docNo)}',Line_No=${lineNo})`
