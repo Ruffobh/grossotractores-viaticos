@@ -115,7 +115,7 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
             unitCost: parseFloat(String(row.coste_unit).replace(/\./g, '').replace(',', '.')) || 0,
             sucursal: row.sucursal,
             area: row.area,
-            vatGroup: row.grupo_iva && row.grupo_iva.includes('GRAV') ? '' : row.grupo_iva,
+            vatGroup: row.grupo_iva,
             areaDim: row.area,
             taxAreaCode: row.cod_area_impuesto,
         }))

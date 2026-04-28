@@ -791,7 +791,7 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
             description: (row.descripcion || '').substring(0, 100),
             quantity: row.cantidad,
             unitCost: parseFloat(String(row.coste_unit).replace(/\./g, '').replace(',', '.')) || 0,
-            vatGroup: (row.grupo_iva && row.grupo_iva.includes('GRAV')) ? '' : (row.grupo_iva || ''),
+            vatGroup: row.grupo_iva || '',
             sucursal: row.sucursal || '',
             areaDim: row.area || '',
             taxAreaCode: row.cod_area_impuesto || '',
