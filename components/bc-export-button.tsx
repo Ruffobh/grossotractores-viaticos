@@ -1,17 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { FileSpreadsheet } from 'lucide-react'
-import { BCCopyModal } from '@/components/bc-copy-modal'
+import { Building2 } from 'lucide-react'
+import { BCCreateModal } from '@/components/bc-create-modal'
 import styles from './BCExportButton.module.css'
 
 interface BCExportButtonProps {
     invoice: any
     profile: any
+    ownerProfile?: any
 }
 
-export function BCExportButton({ invoice, profile }: BCExportButtonProps) {
-    const [isModalOpen, setIsModalOpen] = useState(false)
+export function BCExportButton({ invoice, profile, ownerProfile }: BCExportButtonProps) {
+    const [isOpen, setIsModalOpen] = useState(false)
+
+    // Use ownerProfile if provided, otherwise fallback to profile (backward compat)
+    const effectiveOwnerProfile = ownerProfile || profile
 
     return (
         <>
@@ -19,16 +23,19 @@ export function BCExportButton({ invoice, profile }: BCExportButtonProps) {
                 onClick={() => setIsModalOpen(true)}
                 className={styles.button}
             >
-                <FileSpreadsheet size={16} className={styles.icon} />
-                Exportar a BC
+                <Building2 size={16} className={styles.icon} />
+                Cargar a BC
             </button>
 
-            <BCCopyModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                invoice={invoice}
-                profile={profile}
-            />
+            {isOpen && (
+                <BCCreateModal
+                    isOpen={isOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    invoice={invoice}
+                    profile={profile}
+                    ownerProfile={effectiveOwnerProfile}
+                />
+            )}
         </>
     )
 }

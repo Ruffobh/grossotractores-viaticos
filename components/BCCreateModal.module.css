@@ -1,0 +1,531 @@
+/* BCCreateModal — Grosso Design System */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+    background-color: var(--gt-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 64rem;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+    transition: max-width 0.3s ease;
+}
+
+.modalCompact {
+    max-width: 32rem;
+}
+
+.header {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.headerContent {
+    display: flex;
+    gap: 0.875rem;
+    align-items: center;
+}
+
+.iconWrapper {
+    padding: 0.625rem;
+    background-color: rgba(13, 67, 97, 0.08);
+    color: var(--gt-navy);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--gt-dark);
+    margin: 0;
+}
+
+.subtitle {
+    color: var(--gray-500);
+    font-size: 0.8rem;
+    margin-top: 0.125rem;
+}
+
+.closeButton {
+    color: var(--gray-400);
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    border-radius: 4px;
+}
+
+.closeButton:hover {
+    color: var(--gt-dark);
+    background: var(--gray-50);
+}
+
+.closeButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.content {
+    flex: 1;
+    overflow: auto;
+    padding: 1.25rem;
+}
+
+.stepContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.875rem;
+    text-align: center;
+}
+
+.summaryCard {
+    width: 100%;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.125rem;
+    text-align: left;
+}
+
+.summaryCard h3 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin: 0 0 0.625rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.summaryGrid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.label {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+    font-weight: 500;
+}
+
+.value {
+    font-size: 0.85rem;
+    color: var(--gt-dark);
+    font-weight: 500;
+}
+
+.statusIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+.statusIcon.warning { color: var(--gt-amber); }
+.statusIcon.success { color: var(--status-approved); }
+.statusIcon.successSmall { color: var(--status-approved); padding: 0.5rem; }
+.statusIcon.errorIcon { color: var(--gt-red); }
+
+.statusText {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gt-dark);
+    margin: 0;
+}
+
+.statusSubtext {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    margin: 0;
+    max-width: 28rem;
+    line-height: 1.5;
+}
+
+.vendorFound {
+    font-size: 0.875rem;
+    color: var(--status-approved);
+    margin: 0;
+}
+
+.vendorCounty {
+    font-size: 0.8rem;
+    color: var(--gray-500);
+    margin: 0;
+}
+
+.previewSection {
+    width: 100%;
+    text-align: left;
+    margin-top: 0.5rem;
+}
+
+.previewSection h4 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    margin: 0 0 0.5rem 0;
+}
+
+.previewTable {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+}
+
+.previewTable table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.previewTable th {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.65rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background-color: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    text-align: left;
+}
+
+.previewTable td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-700);
+}
+
+.previewTable code {
+    font-family: monospace;
+    font-size: 0.75rem;
+    background: var(--gray-100);
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.65rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badgePurple {
+    background-color: #F3E8FF;
+    color: #7C3AED;
+}
+
+.badgeGray {
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.invoiceNumber {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--status-approved-bg);
+    border: 1px solid #A7F3D0;
+    padding: 0.625rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+}
+
+.invoiceNumber span {
+    color: var(--gray-500);
+}
+
+.invoiceNumber strong {
+    color: var(--status-approved);
+    font-size: 1.125rem;
+    font-family: monospace;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+    justify-content: center;
+    margin-top: 0.75rem;
+}
+
+.primaryButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--gt-navy);
+    color: white;
+    border: none;
+    padding: 0.625rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(13, 67, 97, 0.2);
+    transition: all 0.2s;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.primaryButton:hover {
+    background-color: var(--gt-navy-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(13, 67, 97, 0.3);
+}
+
+.fullWidth {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.secondaryButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--gt-white);
+    border: 1px solid var(--gray-300);
+    color: var(--gray-600);
+    padding: 0.625rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.secondaryButton:hover {
+    border-color: var(--gt-navy);
+    color: var(--gt-navy);
+    background: rgba(13, 67, 97, 0.03);
+}
+
+.cancelButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.cancelButton:hover {
+    color: var(--gt-dark);
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+    color: var(--gt-navy);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (max-width: 640px) {
+    .modal {
+        max-width: 100%;
+        margin: 0.5rem;
+        max-height: 95vh;
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .headerGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .header {
+        padding: 1rem;
+    }
+
+    .content {
+        padding: 1rem;
+    }
+
+    .title {
+        font-size: 1rem;
+    }
+}
+
+/* ========== Header Preview ========== */
+.headerPreview {
+    width: 100%;
+    text-align: left;
+    margin-top: 0.5rem;
+}
+
+.headerPreview h4 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gray-600);
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.headerGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.625rem;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+}
+
+.headerField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.headerField label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.headerValue {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gt-dark);
+}
+
+/* ========== Scrollable Table ========== */
+.previewTableScroll {
+    overflow-x: auto;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    max-width: 100%;
+}
+
+.fullTable {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+}
+
+.fullTable th {
+    background-color: var(--gt-navy);
+    color: var(--gt-white);
+    font-weight: 600;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.5rem 0.5rem;
+    white-space: nowrap;
+    text-align: left;
+    position: sticky;
+    top: 0;
+}
+
+.fullTable td {
+    padding: 0.4rem 0.5rem;
+    border-top: 1px solid var(--gray-100);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.fullTable tbody tr:hover {
+    background-color: var(--gray-50);
+}
+
+.fullTable code {
+    font-size: 0.72rem;
+    background: var(--gray-100);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    color: var(--gray-600);
+}
+
+.mono {
+    font-family: monospace;
+    text-align: right;
+}
+
+/* ========== Editable line inputs ========== */
+.editSelect {
+    padding: 0.3rem 0.4rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.72rem;
+    background: var(--gt-white);
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-width: 0;
+    max-width: 170px;
+}
+
+.editSelect:focus {
+    outline: none;
+    border-color: var(--gt-navy);
+    box-shadow: 0 0 0 2px rgba(13, 67, 97, 0.1);
+}
+
+.editInput {
+    padding: 0.3rem 0.4rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.72rem;
+    color: var(--gray-700);
+    transition: border-color 0.2s;
+    min-width: 160px;
+    max-width: 220px;
+}
+
+.editInput:focus {
+    outline: none;
+    border-color: var(--gt-navy);
+    box-shadow: 0 0 0 2px rgba(13, 67, 97, 0.1);
+}

@@ -43,5 +43,22 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
         branchesOptions = BRANCHES.map(b => ({ label: b, value: b }))
     }
 
-    return <UserForm profile={profile} branchesOptions={branchesOptions} />
+    // Fetch BC Users for dropdown
+    let bcUsers: { userId: string, purchaserCode?: string }[] = []
+    try {
+        const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+        const bcRes = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'FETCH_BC_USERS' })
+        })
+        const bcResult = await bcRes.json()
+        if (bcResult.success && bcResult.users) {
+            bcUsers = bcResult.users
+        }
+    } catch (e) {
+        console.error('Error fetching BC users:', e)
+    }
+
+    return <UserForm profile={profile} branchesOptions={branchesOptions} bcUsers={bcUsers} />
 }

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styles from './sidebar.module.css' // We'll move styles here
 import { usePWA } from './pwa-context'
+import Image from 'next/image'
 import {
     LayoutDashboard,
     PlusCircle,
@@ -38,7 +39,14 @@ export function Sidebar({ profile, role }: SidebarProps) {
             {/* Mobile Header / Hamburger */}
             <div className={styles.mobileHeader}>
                 <div className={styles.brandMobile}>
-                    <span className={styles.brandHighlight}>GROSSO</span> TRACTORES
+                    <Image
+                        src="/logo-grosso-navy.png"
+                        alt="Grosso Tractores"
+                        width={140}
+                        height={40}
+                        className={styles.logoImgMobile}
+                        priority
+                    />
                 </div>
                 <button onClick={toggleSidebar} className={styles.hamburger}>
                     {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -51,7 +59,14 @@ export function Sidebar({ profile, role }: SidebarProps) {
             <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
                 <div className={styles.header}>
                     <div className={styles.brand}>
-                        <span className={styles.brandHighlight}>GROSSO</span> TRACTORES
+                        <Image
+                            src="/logo-grosso-navy.png"
+                            alt="Grosso Tractores"
+                            width={180}
+                            height={52}
+                            className={styles.logoImg}
+                            priority
+                        />
                     </div>
                 </div>
 

@@ -6,6 +6,7 @@ import { CheckCircle, XCircle, ChevronLeft } from 'lucide-react'
 import { BCExportButton } from '@/components/bc-export-button'
 import { EditableDetailRow } from '@/components/editable-detail-row'
 import { AdminActions } from '@/components/admin-actions'
+import { BCRevertButton } from '@/components/bc-revert-button'
 import { ManagerRejectButton } from '@/components/manager-reject-button'
 import { EXPENSE_TYPES, INVOICE_TYPES, PAYMENT_METHODS } from '@/app/constants'
 import { ReceiptViewer } from '@/components/receipt-viewer'
@@ -26,13 +27,15 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
         .single()
 
     const isAdmin = currentUserProfile?.role === 'admin'
-    const isManager = currentUserProfile?.role === 'manager' || currentUserProfile?.role === 'branch_manager'
+    const isBranchManager = currentUserProfile?.role === 'branch_manager'
+    const isManager = currentUserProfile?.role === 'manager' || isBranchManager
+    const canRevertBC = isAdmin || isBranchManager
     const hasApproveAreaAttr = (currentUserProfile?.permissions as any)?.approve_area_expenses === true
 
     // 2. Fetch invoice data using admin client to bypass RLS
     const { data: invoice, error } = await adminClient
         .from('invoices')
-        .select('*, profiles!invoices_user_id_fkey(*), loaded_by_profile:profiles!invoices_loaded_by_fkey(*), approved_by_profile:profiles!invoices_approved_by_fkey(full_name)')
+        .select('*, profiles!invoices_user_id_fkey(*, bc_user_id, bc_purchaser_code), loaded_by_profile:profiles!invoices_loaded_by_fkey(*), approved_by_profile:profiles!invoices_approved_by_fkey(full_name)')
         .eq('id', id)
         .single()
 
@@ -95,8 +98,8 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                     <div className={styles.headerTopRow}>
                         <h2 className={styles.titleCompact}>Detalle de Comprobante</h2>
                         <div className={styles.actionButtons}>
-                            {canExport && (!invoice.split_group_id || invoice.is_parent) && (
-                                <BCExportButton invoice={invoice} profile={invoice.profiles} />
+                            {canExport && (!invoice.split_group_id || invoice.is_parent) && invoice.status !== 'submitted_to_bc' && (
+                                <BCExportButton invoice={invoice} profile={currentUserProfile} ownerProfile={invoice.profiles} />
                             )}
                             {canExport && invoice.status === 'approved' && (
                                 <ManagerRejectButton invoiceId={invoice.id} totalAmount={invoice.total_amount} />
@@ -217,6 +220,20 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                         canEdit={isAdmin || isManager}
                     />
                 </div>
+
+                {invoice.bc_invoice_number && (
+                    <div className={styles.commentsSection}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '0.5rem', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.8125rem', color: '#6b7280' }}>Nº Serie BC:</span>
+                            <strong style={{ fontSize: '1rem', color: '#059669', fontFamily: 'monospace' }}>{invoice.bc_invoice_number}</strong>
+                            <div style={{ marginLeft: 'auto' }}>
+                                {canRevertBC && invoice.status === 'submitted_to_bc' && (
+                                    <BCRevertButton invoiceId={invoice.id} bcInvoiceNumber={invoice.bc_invoice_number} />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className={styles.commentsSection}>
                     <DetailRow label="Comentarios del Usuario" value={invoice.comments} />

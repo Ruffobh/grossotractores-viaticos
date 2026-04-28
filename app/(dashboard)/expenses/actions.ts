@@ -649,3 +649,205 @@ export async function splitExpense(invoiceId: string, targetUserIds: string[], f
         return { error: e.message }
     }
 }
+
+// --- Business Central Integration ---
+
+import { BC_BRANCH_MAP, BC_AREA_TO_PURCHASER } from '@/app/constants'
+import { generateBCRowsForInvoice, InvoiceData } from '@/utils/excel'
+
+export async function searchVendorByCuit(cuit: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    try {
+        const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+        const res = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'SEARCH_VENDORS', data: { cuit } })
+        })
+        const result = await res.json()
+        if (!result.success) return { error: result.error || `No se pudo buscar el CUIT ${cuit} en Business Central. Verifique la conexión con BC.` }
+        return { success: true, found: result.found, vendors: result.vendors }
+    } catch (e: any) {
+        console.error('[searchVendorByCuit] Error:', e)
+        return { error: 'Error de conexión con BC: ' + e.message }
+    }
+}
+
+export async function fetchBCUsers() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized', users: [] }
+
+    try {
+        const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+        const res = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'FETCH_BC_USERS' })
+        })
+        const result = await res.json()
+        if (!result.success) return { error: result.error || 'Error obteniendo usuarios', users: [] }
+        return { success: true, users: result.users || [] }
+    } catch (e: any) {
+        console.error('[fetchBCUsers] Error:', e)
+        return { error: 'Error de conexión con BC: ' + e.message, users: [] }
+    }
+}
+
+export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?: { account: string, description: string, unitCost: number, sucursal?: string, area?: string, vatGroup?: string, areaDim?: string, taxAreaCode?: string }[], overrides?: { purchaser?: string }) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: currentProfile } = await supabase
+        .from('profiles').select('role').eq('id', user.id).single()
+    if (!currentProfile || !['admin', 'manager', 'branch_manager'].includes(currentProfile.role)) {
+        return { error: 'No tienes permisos para cargar facturas a BC' }
+    }
+
+    const { data: invoice, error: fetchError } = await supabase
+        .from('invoices')
+        .select('*, profiles!invoices_user_id_fkey(full_name, area, branch, bc_user_id, bc_purchaser_code)')
+        .eq('id', invoiceId)
+        .single()
+
+    if (fetchError || !invoice) return { error: 'Comprobante no encontrado' }
+    if (invoice.loaded_to_bc) return { error: 'Este comprobante ya fue cargado a BC' }
+
+    const ownerProfile = Array.isArray(invoice.profiles) ? invoice.profiles[0] : invoice.profiles
+    const purchaserCode = ownerProfile?.bc_purchaser_code || BC_AREA_TO_PURCHASER[ownerProfile?.area || ''] || ''
+
+    const vendorCuit = invoice.vendor_cuit
+    if (!vendorCuit) return { error: 'El comprobante no tiene CUIT de proveedor' }
+
+    const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+
+    const vendorResult = await fetch(bcProxyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'SEARCH_VENDORS', data: { cuit: vendorCuit } })
+    }).then(r => r.json())
+
+    if (!vendorResult.success || !vendorResult.found || !vendorResult.vendors?.length) {
+        return { error: 'VENDOR_NOT_FOUND', message: `No se encontró un proveedor con CUIT ${vendorCuit} en BC.` }
+    }
+
+    const vendorNumber = vendorResult.vendors[0].number
+
+    const parsed = invoice.parsed_data || {}
+    const invoiceData: InvoiceData = {
+        vendorName: parsed.vendorName || invoice.vendor_name,
+        vendorCuit: parsed.vendorCuit || invoice.vendor_cuit,
+        invoiceNumber: parsed.invoiceNumber || invoice.invoice_number,
+        invoiceType: invoice.invoice_type || parsed.invoiceType || 'FC',
+        date: parsed.date || invoice.date,
+        totalAmount: parsed.totalAmount || invoice.total_amount || 0,
+        netAmount: parsed.netAmount,
+        perceptionsAmount: parsed.perceptionsAmount,
+        currency: parsed.currency || invoice.currency || 'ARS',
+        exchangeRate: parsed.exchangeRate || 1,
+        taxes: parsed.taxes || [],
+        items: parsed.items || [],
+        userBranch: invoice.branch || ownerProfile?.branch,
+        userArea: ownerProfile?.area,
+        expenseType: invoice.expense_category,
+    }
+    if ((!invoiceData.taxes || invoiceData.taxes.length === 0) && parsed.tax_amount) {
+        invoiceData.taxes = [{ name: "IVA Estimado", amount: parsed.tax_amount }]
+    }
+
+    const bcRows = generateBCRowsForInvoice(invoiceData as any)
+
+    const branchCode = BC_BRANCH_MAP[invoiceData.userBranch || ''] || 'GRAL'
+    const effectivePurchaser = overrides?.purchaser || purchaserCode
+    const header: Record<string, any> = {
+        vendorNumber: vendorNumber,
+        invoiceDate: invoice.date,
+        vendorInvoiceNumber: invoice.invoice_number || '',
+    }
+    if (effectivePurchaser) header.purchaser = effectivePurchaser
+
+    let lines: Record<string, any>[]
+    if (customLines && customLines.length > 0) {
+        lines = customLines.map(cl => ({
+            lineType: 'Account',
+            lineObjectNumber: cl.account,
+            description: (cl.description || '').substring(0, 100),
+            quantity: 1,
+            unitCost: cl.unitCost,
+            // Extra fields for OData PATCH (bc-proxy will strip before API v2.0 POST)
+            vatGroup: cl.vatGroup || '',
+            sucursal: cl.sucursal || '',
+            areaDim: cl.areaDim || '',
+            taxAreaCode: cl.taxAreaCode || '',
+        }))
+    } else {
+        lines = bcRows.map(row => ({
+            lineType: 'Account',
+            lineObjectNumber: row.n,
+            description: (row.descripcion || '').substring(0, 100),
+            quantity: row.cantidad,
+            unitCost: parseFloat(String(row.coste_unit).replace(/\./g, '').replace(',', '.')) || 0,
+            vatGroup: (row.grupo_iva && row.grupo_iva.includes('GRAV')) ? '' : (row.grupo_iva || ''),
+            sucursal: row.sucursal || '',
+            areaDim: row.area || '',
+            taxAreaCode: row.cod_area_impuesto || '',
+        }))
+    }
+
+    try {
+        const createRes = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'CREATE_PURCHASE_INVOICE',
+                data: { header, lines }
+            })
+        })
+
+        const createResult = await createRes.json()
+        if (!createResult.success) {
+            return { error: 'Error creando factura en BC: ' + (createResult.error || 'Error desconocido') }
+        }
+
+        if (createResult.odataWarnings && createResult.odataWarnings.length > 0) {
+            console.error('Business Central OData Warnings:', JSON.stringify(createResult.odataWarnings, null, 2))
+            try {
+                const fs = await import('fs')
+                fs.writeFileSync('bc_errors.json', JSON.stringify(createResult.odataWarnings, null, 2))
+            } catch (e) {}
+        }
+
+        const { createAdminClient } = await import('@/utils/supabase/admin')
+        const adminClient = createAdminClient()
+
+        const updateData = {
+            status: 'submitted_to_bc',
+            loaded_to_bc: true,
+            bc_invoice_number: createResult.invoiceNumber || '',
+        }
+
+        await adminClient.from('invoices').update(updateData).eq('id', invoiceId)
+
+        if (invoice.split_group_id) {
+            await adminClient.from('invoices').update(updateData).eq('split_group_id', invoice.split_group_id)
+        }
+
+        // NOTE: revalidatePath is NOT called here on purpose.
+        // The modal's handleClose triggers router.refresh() so the success screen
+        // stays visible until the user clicks "Cerrar" or "Abrir en BC".
+
+        return {
+            success: true,
+            bcInvoiceNumber: createResult.invoiceNumber || '',
+            bcInvoiceId: createResult.invoiceId || ''
+        }
+
+    } catch (e: any) {
+        console.error('[createPurchaseInvoiceInBC] Error:', e)
+        return { error: 'Error de conexión con BC: ' + e.message }
+    }
+}

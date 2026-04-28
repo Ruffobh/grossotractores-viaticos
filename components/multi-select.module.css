@@ -1,3 +1,5 @@
+/* MultiSelect — Grosso Design System */
+
 .container {
   position: relative;
   min-width: 200px;
@@ -10,17 +12,17 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background-color: white;
+  background-color: var(--gt-white);
   border: 1px solid var(--gray-300);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 0.875rem;
-  color: var(--nh-black);
+  font-size: 0.85rem;
+  color: var(--gt-dark);
   transition: all 0.2s;
 }
 
 .trigger:hover {
-  border-color: var(--nh-blue);
+  border-color: var(--gt-navy);
 }
 
 .placeholder {
@@ -28,11 +30,11 @@
 }
 
 .count {
-  background-color: var(--nh-blue);
+  background-color: var(--gt-navy);
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   padding: 0.1rem 0.4rem;
-  border-radius: 99px;
+  border-radius: var(--radius-pill);
   font-weight: 600;
 }
 
@@ -41,26 +43,26 @@
   top: 100%;
   left: 0;
   width: 100%;
-  margin-top: 0.5rem;
-  background-color: white;
+  margin-top: 0.375rem;
+  background-color: var(--gt-white);
   border: 1px solid var(--gray-200);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
   z-index: 50;
   max-height: 250px;
   overflow-y: auto;
-  padding: 0.5rem;
+  padding: 0.375rem;
 }
 
 .option {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
+  gap: 0.625rem;
+  padding: 0.45rem;
   cursor: pointer;
   border-radius: 4px;
-  font-size: 0.875rem;
-  color: var(--gray-800);
+  font-size: 0.85rem;
+  color: var(--gray-700);
 }
 
 .option:hover {
@@ -80,6 +82,6 @@
 }
 
 .option.selected .checkbox {
-  background-color: var(--nh-blue);
-  border-color: var(--nh-blue);
+  background-color: var(--gt-navy);
+  border-color: var(--gt-navy);
 }

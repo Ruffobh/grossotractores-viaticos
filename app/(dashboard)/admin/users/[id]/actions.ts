@@ -41,6 +41,8 @@ export async function updateUserProfile(formData: FormData) {
         monthly_limit: Number(formData.get('monthly_limit')) || 0,
         cash_limit: Number(formData.get('cash_limit')) || 0,
         permissions: formData.get('permissions') ? JSON.parse(formData.get('permissions') as string) : {},
+        bc_user_id: (formData.get('bc_user_id') as string || '').trim() || null,
+        bc_purchaser_code: (formData.get('bc_purchaser_code') as string || '').trim() || null,
         // Sync branch_id
         branch_id: null as string | null
     }

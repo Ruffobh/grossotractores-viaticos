@@ -6,14 +6,15 @@ import styles from './style.module.css'
 import { ArrowLeft, Save } from 'lucide-react'
 import { updateUserProfile } from './actions'
 import { MultiSelect } from '@/components/multi-select'
-import { AREAS, PERMISSIONS } from '@/app/constants'
+import { AREAS, PERMISSIONS, BC_PURCHASER_CODES } from '@/app/constants'
 
 interface UserFormProps {
     profile: any
     branchesOptions: { label: string, value: string }[]
+    bcUsers?: { userId: string, purchaserCode?: string }[]
 }
 
-export default function UserForm({ profile, branchesOptions }: UserFormProps) {
+export default function UserForm({ profile, branchesOptions, bcUsers = [] }: UserFormProps) {
     const [selectedBranches, setSelectedBranches] = useState<string[]>(
         profile.branches || (profile.branch ? [profile.branch] : [])
     )
@@ -151,6 +152,42 @@ export default function UserForm({ profile, branchesOptions }: UserFormProps) {
                             defaultValue={profile.cash_limit || 0}
                             className={styles.input}
                         />
+                    </div>
+
+                    <div className={styles.fullWidth}>
+                        <h3 className="text-lg font-semibold mt-4 mb-2 text-gray-800 border-t pt-4">Business Central</h3>
+                    </div>
+
+                    <div>
+                        <label className={styles.label}>Id. Usuario BC</label>
+                        <select
+                            name="bc_user_id"
+                            defaultValue={profile.bc_user_id || ''}
+                            className={styles.input}
+                        >
+                            <option value="">Sin asignar</option>
+                            {bcUsers.map(u => (
+                                <option key={u.userId} value={u.userId}>
+                                    {u.userId}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-sm text-gray-500 mt-1">
+                            Usuario asignado en Business Central.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label className={styles.label}>Cód. Comprador BC</label>
+                        <select name="bc_purchaser_code" defaultValue={profile.bc_purchaser_code || ''} className={styles.input}>
+                            <option value="">Sin asignar</option>
+                            {BC_PURCHASER_CODES.map(pc => (
+                                <option key={pc.code} value={pc.code}>{pc.code} — {pc.name}</option>
+                            ))}
+                        </select>
+                        <p className="text-sm text-gray-500 mt-1">
+                            Código de comprador para facturas de compra en BC.
+                        </p>
                     </div>
 
                     <div className={styles.fullWidth}>

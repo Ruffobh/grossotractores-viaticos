@@ -1,3 +1,5 @@
+/* BCCopyModal — Grosso Design System */
+
 .overlay {
     position: fixed;
     inset: 0;
@@ -6,18 +8,17 @@
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
     animation: fadeIn 0.2s ease-out;
 }
 
 .modal {
-    background-color: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    background-color: var(--gt-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-xl);
     width: 100%;
     max-width: 64rem;
-    /* 5xl */
     display: flex;
     flex-direction: column;
     max-height: 90vh;
@@ -25,7 +26,7 @@
 }
 
 .header {
-    padding: 1.5rem;
+    padding: 1.25rem;
     border-bottom: 1px solid var(--gray-100);
     display: flex;
     justify-content: space-between;
@@ -34,37 +35,35 @@
 
 .headerContent {
     display: flex;
-    gap: 1rem;
+    gap: 0.875rem;
     align-items: center;
 }
 
 .iconWrapper {
-    padding: 0.75rem;
-    background-color: #d1fae5;
-    /* emerald-100 */
-    color: #059669;
-    /* emerald-600 */
-    border-radius: 0.5rem;
+    padding: 0.625rem;
+    background-color: var(--status-approved-bg);
+    color: var(--status-approved);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .title {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 700;
-    color: var(--gray-900);
+    color: var(--gt-dark);
     margin: 0;
 }
 
 .subtitle {
-    color: var(--gray-700);
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
+    color: var(--gray-500);
+    font-size: 0.8rem;
+    margin-top: 0.125rem;
 }
 
 .closeButton {
-    color: #9ca3af;
+    color: var(--gray-400);
     background: none;
     border: none;
     padding: 0.25rem;
@@ -73,7 +72,7 @@
 }
 
 .closeButton:hover {
-    color: #4b5563;
+    color: var(--gt-dark);
 }
 
 .tableContainer {
@@ -85,70 +84,70 @@
 .table {
     width: 100%;
     text-align: left;
-    font-size: 0.875rem;
-    color: #4b5563;
+    font-size: 0.85rem;
+    color: var(--gray-600);
     border-collapse: collapse;
 }
 
 .table thead {
     position: sticky;
     top: 0;
-    background-color: #f9fafb;
+    background-color: var(--gray-50);
     z-index: 10;
 }
 
 .table th {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.75rem;
-    color: #6b7280;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.7rem;
+    color: var(--gray-500);
     text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     border-bottom: 1px solid var(--gray-200);
 }
 
 .table td {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--gray-100);
     white-space: nowrap;
 }
 
 .table tr:hover td {
-    background-color: #f9fafb;
+    background-color: var(--gray-50);
 }
 
 .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    line-height: 1;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.2;
 }
 
 .badgePurple {
-    background-color: #f3e8ff;
-    color: #7e22ce;
+    background-color: #F3E8FF;
+    color: #7C3AED;
 }
 
 .badgeGray {
-    background-color: #f3f4f6;
-    color: #374151;
+    background-color: var(--gray-100);
+    color: var(--gray-700);
 }
 
 .footer {
-    padding: 1.5rem;
+    padding: 1.25rem;
     border-top: 1px solid var(--gray-100);
-    background-color: #f9fafb;
+    background-color: var(--gray-50);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .footerText {
-    font-size: 0.875rem;
-    color: #6b7280;
+    font-size: 0.85rem;
+    color: var(--gray-500);
     font-weight: 500;
 }
 
@@ -159,9 +158,9 @@
 
 .cancelButton {
     padding: 0.5rem 1rem;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    color: #4b5563;
+    color: var(--gray-500);
     background: none;
     border: none;
     cursor: pointer;
@@ -169,78 +168,70 @@
 }
 
 .cancelButton:hover {
-    color: #1f2937;
+    color: var(--gt-dark);
 }
 
-/* Submit Button (Cargado a BC) */
 .submitButton {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background-color: white;
+    background-color: var(--gt-white);
     border: 1px solid var(--gray-300);
-    color: var(--gray-700);
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--radius);
-    font-size: 0.875rem;
+    color: var(--gray-600);
+    padding: 0.5rem 1.125rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .submitButton:hover {
-    border-color: var(--nh-blue);
-    color: var(--nh-blue);
-    background-color: #f0f9ff;
+    border-color: var(--gt-navy);
+    color: var(--gt-navy);
+    background-color: rgba(13, 67, 97, 0.03);
 }
 
 .submitButton.loading {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-/* Copy Button */
 .copyButton {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background-color: var(--nh-blue);
+    background-color: var(--gt-navy);
     color: white;
     border: none;
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--radius);
-    font-size: 0.875rem;
+    padding: 0.5rem 1.125rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(0, 69, 137, 0.3);
+    box-shadow: 0 2px 4px rgba(13, 67, 97, 0.2);
     transition: all 0.2s;
 }
 
 .copyButton:hover {
-    background-color: #003366;
+    background-color: var(--gt-navy-dark);
     transform: translateY(-1px);
-    box-shadow: 0 6px 8px -1px rgba(0, 69, 137, 0.4);
 }
 
 .copyButtonCopied {
-    background-color: var(--emerald-600);
+    background-color: var(--status-approved);
     box-shadow: none;
     cursor: default;
 }
 
 .copyButtonCopied:hover {
-    background-color: var(--emerald-600);
+    background-color: var(--status-approved);
     transform: none;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .tableInput {
@@ -249,7 +240,6 @@
     background: transparent;
     border: 1px solid transparent;
     padding: 0;
-    /* Remove padding to match text alignment */
     margin: 0;
     border-radius: 4px;
     font-family: inherit;
@@ -264,21 +254,18 @@
 }
 
 .tableInput:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    /* Very subtle hover */
+    background-color: rgba(0, 0, 0, 0.03);
     border-color: transparent;
     cursor: text;
 }
 
 .tableInput:focus {
     outline: none;
-    background-color: white;
-    border-color: var(--nh-blue);
-    box-shadow: 0 0 0 2px rgba(0, 69, 137, 0.1);
+    background-color: var(--gt-white);
+    border-color: var(--gt-navy);
+    box-shadow: 0 0 0 2px rgba(13, 67, 97, 0.08);
     padding: 2px 4px;
-    /* Add padding only on focus */
     margin: -2px -4px;
-    /* Negative margin to counteract padding */
     width: calc(100% + 8px);
     position: relative;
     z-index: 20;

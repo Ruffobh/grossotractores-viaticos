@@ -240,3 +240,116 @@ export async function updateInvoiceField(id: string, field: string, value: any) 
 
     return { success: true }
 }
+
+export async function revertBCInvoice(invoiceId: string) {
+    const supabase = await createClient()
+
+    // Verify admin or branch_manager
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'No autenticado' }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const canRevert = profile?.role === 'admin' || profile?.role === 'branch_manager'
+
+    if (!canRevert) {
+        return { error: 'Solo administradores pueden revertir cargas de BC.' }
+    }
+
+    // Fetch the invoice
+    const { createAdminClient } = await import('@/utils/supabase/admin')
+    const adminClient = createAdminClient()
+
+    const { data: invoice, error: fetchError } = await adminClient
+        .from('invoices')
+        .select('id, status, bc_invoice_number, loaded_to_bc, split_group_id')
+        .eq('id', invoiceId)
+        .single()
+
+    if (fetchError || !invoice) {
+        return { error: 'Comprobante no encontrado' }
+    }
+
+    if (invoice.status !== 'submitted_to_bc') {
+        return { error: 'El comprobante no está en estado "Cargado en BC".' }
+    }
+
+    if (!invoice.bc_invoice_number) {
+        return { error: 'No se encontró número de factura BC para revertir.' }
+    }
+
+    // Step 1: Find the invoice in BC by number to get its ID
+    const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+
+    try {
+        // List to find the BC invoice ID
+        const listRes = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'LIST_PURCHASE_INVOICES',
+                data: { number: invoice.bc_invoice_number }
+            })
+        })
+        const listResult = await listRes.json()
+
+        if (!listResult.success || !listResult.invoices?.length) {
+            return { error: 'No se encontró la factura en BC. Es posible que ya haya sido eliminada o registrada.' }
+        }
+
+        const bcInvoice = listResult.invoices[0]
+
+        // Check if it's been posted (registered) - can only delete Draft or Open invoices
+        const allowedStatuses = ['Draft', 'Open']
+        if (!allowedStatuses.includes(bcInvoice.status)) {
+            return { error: `No se puede revertir: la factura está en estado "${bcInvoice.status}" en BC. Solo se pueden revertir facturas no registradas (Draft/Abierto).` }
+        }
+
+        // Step 2: Delete from BC
+        const deleteRes = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'DELETE_PURCHASE_INVOICE',
+                data: { invoiceId: bcInvoice.id }
+            })
+        })
+        const deleteResult = await deleteRes.json()
+
+        if (!deleteResult.success) {
+            return { error: 'Error eliminando factura de BC: ' + (deleteResult.error || 'Error desconocido') }
+        }
+
+        // Step 3: Revert status in the app
+        const updateData = {
+            status: 'approved',
+            bc_invoice_number: null,
+            loaded_to_bc: false
+        }
+
+        const { error: updateError } = await adminClient
+            .from('invoices')
+            .update(updateData)
+            .eq('id', invoiceId)
+
+        // Also revert split group siblings
+        if (invoice.split_group_id) {
+            await adminClient
+                .from('invoices')
+                .update(updateData)
+                .eq('split_group_id', invoice.split_group_id)
+        }
+
+        if (updateError) {
+            console.error('[revertBCInvoice] DB Update Error:', updateError)
+            return { error: 'Se eliminó de BC pero hubo un error actualizando la app: ' + updateError.message }
+        }
+
+        revalidatePath('/expenses')
+        revalidatePath(`/expenses/${invoiceId}`)
+        return { success: true }
+
+    } catch (e: any) {
+        console.error('[revertBCInvoice] Error:', e)
+        return { error: 'Error de conexión: ' + e.message }
+    }
+}

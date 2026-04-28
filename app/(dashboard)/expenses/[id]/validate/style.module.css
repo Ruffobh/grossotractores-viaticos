@@ -1,13 +1,12 @@
 .container {
     display: flex;
     height: calc(100vh - 64px);
-    /* Full height minus header */
     overflow: hidden;
 }
 
 .imageSection {
     flex: 1;
-    background-color: #000;
+    background-color: #111;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,29 +26,26 @@
 
 .formSection {
     flex: 1;
-    background-color: #fff;
-    border-left: 1px solid var(--border);
+    background-color: var(--gt-white);
+    border-left: 1px solid var(--gray-200);
     overflow-y: auto;
     padding: 1.5rem;
     max-width: 600px;
 }
 
 .header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     border-bottom: 1px solid var(--gray-200);
     padding-bottom: 0.75rem;
 }
 
-/* NEW: Warning Header Style */
 .warningHeader {
-    background-color: #fff7ed;
-    /* orange-50 */
-    border-left: 4px solid #f97316;
-    /* orange-500 */
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    border-radius: 0 0.5rem 0.5rem 0;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    background-color: #FFF7ED;
+    border-left: 3px solid #F97316;
+    padding: 0.875rem;
+    margin-bottom: 1.25rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    box-shadow: var(--shadow-xs);
     display: flex;
     align-items: flex-start;
 }
@@ -63,44 +59,35 @@
 }
 
 .warningIcon {
-    width: 1.5rem;
-    /* h-6 */
-    height: 1.5rem;
-    /* w-6 */
-    color: #fb923c;
-    /* orange-400 */
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #FB923C;
 }
 
 .warningTitle {
-    font-size: 1.125rem;
-    /* lg */
-    line-height: 1.75rem;
-    font-weight: 500;
-    color: #9a3412;
-    /* orange-800 */
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+    color: #9A3412;
     margin: 0;
 }
 
 .warningText {
     margin-top: 0.25rem;
-    font-size: 0.875rem;
-    /* sm */
-    color: #c2410c;
-    /* orange-700 */
+    font-size: 0.85rem;
+    color: #C2410C;
 }
 
-/* END NEW Header Style */
-
 .title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--nh-black);
+    color: var(--gt-dark);
 }
 
 .formGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.875rem;
 }
 
 .fullWidth {
@@ -109,122 +96,131 @@
 
 .label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-weight: 600;
     color: var(--gray-500);
     margin-bottom: 0.25rem;
 }
 
 .input {
     width: 100%;
-    padding: 0.6rem 0.875rem;
-    background-color: #f9fafb;
+    padding: 0.55rem 0.875rem;
+    background-color: var(--gray-50);
     border: 1px solid var(--gray-200);
-    border-radius: 0.75rem;
-    font-size: 1rem;
-    color: var(--nh-black);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    color: var(--gt-dark);
     transition: all 0.2s ease;
 }
 
-/* NEW: Invalid Input Style */
 .inputInvalid {
-    border-color: #ef4444 !important;
-    /* red-500 */
-    background-color: #fef2f2 !important;
-    /* red-50 */
-    color: #b91c1c !important;
-    /* red-700 */
+    border-color: var(--gt-red) !important;
+    background-color: var(--status-rejected-bg) !important;
+    color: var(--status-rejected) !important;
     font-weight: 500 !important;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: .7;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: .7; }
 }
 
-/* END NEW Invalid Input Style */
-
 .input:hover {
-    background-color: #fff;
+    background-color: var(--gt-white);
     border-color: var(--gray-300);
 }
 
 .input:focus {
     outline: none;
-    background-color: #fff;
-    border-color: var(--nh-blue);
-    box-shadow: 0 0 0 4px rgba(0, 69, 137, 0.1);
+    background-color: var(--gt-white);
+    border-color: var(--gt-navy);
+    box-shadow: 0 0 0 3px rgba(13, 67, 97, 0.08);
 }
 
 .actions {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     justify-content: flex-end;
+    flex-wrap: wrap;
 }
 
 .saveButton {
-    padding: 0.75rem 1.5rem;
-    background-color: var(--nh-blue);
+    padding: 0.625rem 1.25rem;
+    background-color: var(--gt-green);
     color: white;
     border: none;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     font-weight: 600;
+    font-size: 0.875rem;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.saveButton:hover {
+    background-color: var(--gt-green-hover);
+    transform: translateY(-1px);
+}
+
+.saveButton:disabled {
+    background-color: var(--gray-300);
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
 }
 
 .cancelButton {
-    padding: 0.75rem 1.5rem;
-    background-color: white;
-    color: var(--gray-700);
+    padding: 0.625rem 1.25rem;
+    background-color: var(--gt-white);
+    color: var(--gray-600);
     border: 1px solid var(--gray-300);
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     font-weight: 600;
+    font-size: 0.875rem;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelButton:hover {
+    background-color: var(--gray-50);
 }
 
 .deleteActionBtn {
-    padding: 0.75rem 1.5rem;
-    background-color: #dc2626;
+    padding: 0.625rem 1.25rem;
+    background-color: var(--gt-red);
     color: white;
     border: none;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     font-weight: 600;
+    font-size: 0.875rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .deleteActionBtn:hover {
-    background-color: #b91c1c;
+    background-color: var(--gt-red-hover);
 }
 
-/* NEW: Split Button */
 .splitButton {
-    padding: 0.75rem 1.5rem;
-    background-color: #eff6ff;
-    color: #1d4ed8;
-    border: 1px solid #dbeafe;
-    border-radius: var(--radius);
+    padding: 0.625rem 1.25rem;
+    background-color: rgba(13, 67, 97, 0.06);
+    color: var(--gt-navy);
+    border: 1px solid rgba(13, 67, 97, 0.15);
+    border-radius: var(--radius-sm);
     font-weight: 600;
+    font-size: 0.875rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .splitButton:hover {
-    background-color: #dbeafe;
+    background-color: rgba(13, 67, 97, 0.1);
 }
 
 @media (max-width: 768px) {
@@ -232,41 +228,41 @@
         flex-direction: column;
         height: auto;
         overflow: visible;
-        /* Allow scroll on mobile */
     }
 
     .imageSection {
         height: 300px;
         flex: none;
-        /* Don't shrink/grow */
     }
 
     .formSection {
         max-width: 100%;
         border-left: none;
         border-top: 1px solid var(--border);
-        padding: 1.5rem;
-        /* Slightly less padding */
+        padding: 1.25rem;
         overflow: visible;
     }
 
     .formGrid {
         grid-template-columns: 1fr;
-        /* Single column */
-        gap: 1rem;
+        gap: 0.75rem;
     }
 
     .fullWidth {
         grid-column: span 1;
     }
+
+    .actions {
+        flex-direction: column;
+    }
 }
 
-/* Modal Styles */
+/* ========== Modals ========== */
 .modalOverlay {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -275,10 +271,10 @@
 }
 
 .modalContent {
-    background-color: white;
+    background-color: var(--gt-white);
     padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-xl);
     max-width: 28rem;
     width: 100%;
     animation: zoomIn 0.2s ease-out;
@@ -286,19 +282,12 @@
 }
 
 @keyframes zoomIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .modalIconWrapper {
-    background-color: #fee2e2;
+    background-color: var(--status-rejected-bg);
     padding: 0.75rem;
     border-radius: 9999px;
     display: inline-flex;
@@ -306,44 +295,46 @@
 }
 
 .modalTitle {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 700;
-    color: var(--nh-black);
+    color: var(--gt-dark);
     margin: 0 0 0.5rem 0;
 }
 
 .modalText {
-    color: var(--gray-700);
-    margin-bottom: 1.5rem;
+    color: var(--gray-600);
+    margin-bottom: 1.25rem;
     line-height: 1.5;
+    font-size: 0.9rem;
 }
 
 .modalStats {
     display: block;
     margin-top: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     background-color: var(--gray-50);
     padding: 0.5rem;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--gray-100);
 }
 
 .modalButtons {
     display: flex;
     gap: 0.75rem;
-    margin-top: 1.5rem;
+    margin-top: 1.25rem;
 }
 
 .modalButtonCancel {
     flex: 1;
-    padding: 0.75rem 1rem;
-    background-color: white;
+    padding: 0.625rem 1rem;
+    background-color: var(--gt-white);
     border: 1px solid var(--gray-300);
-    color: var(--gray-700);
+    color: var(--gray-600);
     font-weight: 600;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .modalButtonCancel:hover {
@@ -352,37 +343,29 @@
 
 .modalButtonConfirm {
     flex: 1;
-    padding: 0.75rem 1rem;
-    background-color: var(--danger);
+    padding: 0.625rem 1rem;
+    background-color: var(--gt-red);
     color: white;
     border: none;
     font-weight: 600;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
     cursor: pointer;
-    transition: background-color 0.2s;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
 }
 
 .modalButtonConfirm:hover {
-    background-color: #b91c1c;
-    /* darker red */
+    background-color: var(--gt-red-hover);
 }
 
-.saveButton:disabled {
-    background-color: var(--gray-300);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-/* ERROR ALERT STYLES */
+/* ========== Error Alert ========== */
 .errorAlert {
-    background-color: #fef2f2;
-    /* red-50 */
-    border-left: 4px solid #ef4444;
-    /* red-500 */
-    padding: 1rem;
+    background-color: var(--status-rejected-bg);
+    border-left: 3px solid var(--gt-red);
+    padding: 0.875rem;
     margin-top: 0.5rem;
-    border-radius: 0.5rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     display: flex;
     align-items: flex-start;
     animation: fadeIn 0.3s ease-in-out;
@@ -397,10 +380,9 @@
 }
 
 .errorIcon {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: #ef4444;
-    /* red-500 */
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--gt-red);
 }
 
 .errorContent {
@@ -408,56 +390,42 @@
 }
 
 .errorTitle {
-    font-size: 0.875rem;
+    font-size: 0.825rem;
     font-weight: 700;
-    color: #991b1b;
-    /* red-800 */
+    color: #991B1B;
     margin-bottom: 0.25rem;
 }
 
 .errorText {
-    font-size: 0.875rem;
-    color: #b91c1c;
-    /* red-700 */
+    font-size: 0.825rem;
+    color: #B91C1C;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* DUPLICATE ALERT STYLES */
+/* ========== Duplicate Alert ========== */
 .duplicateAlert {
-    background-color: #fffbeb;
-    /* amber-50 */
-    border-left: 4px solid #f59e0b;
-    /* amber-500 */
-    padding: 1rem;
+    background-color: #FFFBEB;
+    border-left: 3px solid #F59E0B;
+    padding: 0.875rem;
     margin-top: 0.5rem;
-    border-radius: 0.5rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     display: flex;
     align-items: flex-start;
     animation: fadeIn 0.3s ease-in-out;
 }
 
 .duplicateAlert .errorIcon {
-    color: #f59e0b;
-    /* amber-500 */
+    color: #F59E0B;
 }
 
 .duplicateAlert .errorTitle {
-    color: #92400e;
-    /* amber-800 */
+    color: #92400E;
 }
 
 .duplicateAlert .errorText {
-    color: #b45309;
-    /* amber-700 */
+    color: #B45309;
 }

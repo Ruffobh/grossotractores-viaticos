@@ -3,19 +3,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--nh-blue) 0%, #000000 100%);
+    background: linear-gradient(145deg, #0D4361 0%, #0A2540 60%, #071B2E 100%);
     padding: 20px;
 }
 
 .card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(20px);
     padding: 2.5rem;
-    border-radius: 16px;
+    border-radius: var(--radius);
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-    border-top: 5px solid var(--nh-yellow);
+    box-shadow: var(--shadow-xl);
 }
 
 .header {
@@ -24,73 +23,100 @@
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--nh-blue);
-    margin-bottom: 0.5rem;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--gt-navy);
+    margin-bottom: 0.125rem;
     display: block;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
 }
 
 .subtitle {
-    color: var(--gray-700);
+    color: var(--gray-500);
     font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .formGroup {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .label {
     display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--gray-800);
-    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .input {
     width: 100%;
     padding: 0.75rem 1rem;
     border: 1px solid var(--gray-300);
-    border-radius: var(--radius);
-    font-size: 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
     transition: border-color 0.2s, box-shadow 0.2s;
+    background: var(--gt-white);
+    color: var(--gt-dark);
 }
 
 .input:focus {
     outline: none;
-    border-color: var(--nh-blue);
-    box-shadow: 0 0 0 3px rgba(0, 69, 137, 0.1);
+    border-color: var(--gt-navy);
+    box-shadow: 0 0 0 3px rgba(13, 67, 97, 0.1);
+}
+
+.input::placeholder {
+    color: var(--gray-400);
 }
 
 .button {
     width: 100%;
     padding: 0.875rem;
-    background-color: var(--nh-blue);
+    background-color: var(--gt-navy);
     color: white;
     border: none;
-    border-radius: var(--radius);
-    font-size: 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
     font-weight: 600;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
 }
 
 .button:hover {
-    background-color: var(--primary-hover);
+    background-color: var(--gt-navy-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 67, 97, 0.3);
 }
 
 .button:disabled {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .error {
-    background-color: #fee2e2;
-    border: 1px solid #fecaca;
-    color: #991b1b;
+    background-color: var(--status-rejected-bg);
+    border: 1px solid #FCA5A5;
+    color: var(--status-rejected);
     padding: 0.75rem;
-    border-radius: var(--radius);
-    margin-bottom: 1.5rem;
-    font-size: 0.875rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.25rem;
+    font-size: 0.85rem;
     text-align: center;
+    font-weight: 500;
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .logo {
+        font-size: 1.4rem;
+    }
 }

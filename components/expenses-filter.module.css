@@ -1,9 +1,10 @@
 .container {
-    background-color: #fff;
-    padding: 1rem 1.5rem;
-    border-radius: 1rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    background-color: var(--gt-white);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-xs);
+    border: 1px solid var(--gray-200);
     max-width: 100%;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -13,10 +14,10 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1rem;
-    color: var(--nh-blue);
+    margin-bottom: 0.875rem;
+    color: var(--gt-navy);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     border-bottom: 1px solid var(--gray-100);
     padding-bottom: 0.5rem;
 }
@@ -24,13 +25,14 @@
 .clearButton {
     margin-left: auto;
     font-size: 0.75rem;
-    color: var(--danger);
+    color: var(--gt-red);
     background: none;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    font-weight: 500;
 }
 
 .clearButton:hover {
@@ -39,61 +41,48 @@
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
     align-items: end;
     width: 100%;
-    /* Ensure grid doesn't overflow */
-}
-
-@media (max-width: 768px) {
-    .grid {
-        grid-template-columns: 1fr;
-        /* Stack vertically on mobile */
-    }
-
-    .container {
-        padding: 1rem;
-        /* Reduce padding on mobile */
-    }
 }
 
 .fieldGroup {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.3rem;
 }
 
 .label {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.7rem;
+    font-weight: 600;
     color: var(--gray-500);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
 }
 
 .select {
     width: 100%;
-    padding: 0.6rem 0.8rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--gray-300);
-    border-radius: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--nh-black);
-    background-color: #f9fafb;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: var(--gt-dark);
+    background-color: var(--gray-50);
     transition: all 0.2s;
     cursor: pointer;
 }
 
 .select:hover {
-    background-color: #fff;
-    border-color: var(--nh-blue);
+    background-color: var(--gt-white);
+    border-color: var(--gt-navy);
 }
 
 .select:focus {
     outline: none;
-    border-color: var(--nh-blue);
-    box-shadow: 0 0 0 3px rgba(0, 69, 137, 0.1);
-    background-color: #fff;
+    border-color: var(--gt-navy);
+    box-shadow: 0 0 0 3px rgba(13, 67, 97, 0.08);
+    background-color: var(--gt-white);
 }
 
 @media (max-width: 1024px) {
@@ -102,8 +91,12 @@
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .grid {
         grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 0.875rem;
     }
 }

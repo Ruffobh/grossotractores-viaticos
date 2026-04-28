@@ -1,3 +1,5 @@
+/* Admin Branches — Grosso Design System */
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -7,13 +9,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .title {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--nh-black);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gt-dark);
     letter-spacing: -0.025em;
     margin: 0;
 }
@@ -22,47 +24,49 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background-color: var(--nh-blue);
+    background-color: var(--gt-green);
     color: white;
-    padding: 0.75rem 1.25rem;
-    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill);
     font-weight: 600;
-    box-shadow: 0 4px 6px -1px rgba(0, 69, 137, 0.3);
+    font-size: 0.85rem;
+    box-shadow: 0 2px 4px rgba(31, 157, 34, 0.25);
     transition: all 0.2s;
 }
 
 .newButton:hover {
-    background-color: #003366;
+    background-color: var(--gt-green-hover);
     transform: translateY(-1px);
 }
 
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    background: var(--gt-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-xs);
     border: 1px solid var(--gray-200);
-    padding: 1.5rem;
-    transition: transform 0.2s;
+    padding: 1.25rem;
+    transition: all 0.2s;
 }
 
 .card:hover {
     transform: translateY(-2px);
-    border-color: var(--nh-blue);
+    border-color: var(--gt-navy);
+    box-shadow: var(--shadow-sm);
 }
 
 .cardHeader {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .cardTitle {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 700;
-    color: var(--nh-black);
+    color: var(--gt-dark);
     margin: 0;
 }
