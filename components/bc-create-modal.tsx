@@ -140,9 +140,10 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
 
     const handleClose = () => {
         if (step === 'success') {
-            router.refresh()
+            window.location.reload()
+        } else {
+            onClose()
         }
-        onClose()
     }
 
     const purchaserCode = ownerProfile?.bc_purchaser_code

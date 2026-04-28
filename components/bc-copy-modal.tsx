@@ -99,9 +99,8 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
             alert(result.error)
             setIsSubmitting(false)
         } else {
-            router.refresh()
-            onClose()
             setIsSubmitting(false)
+            window.location.reload()
         }
     }
 

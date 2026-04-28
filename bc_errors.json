@@ -3,12 +3,12 @@
     "lineNo": 10000,
     "type": "GET",
     "error": "",
-    "url": "https://api.businesscentral.dynamics.com/v2.0/4af316b5-92f0-4e36-9242-99fd5953ae01/Production/ODataV4/Company('GROSSO%20TRACTORES%20S.A')/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='CPR-008621',Line_No=10000)"
+    "url": "https://api.businesscentral.dynamics.com/v2.0/4af316b5-92f0-4e36-9242-99fd5953ae01/Production/ODataV4/Company('GROSSO%20TRACTORES%20S.A')/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='CPR-008625',Line_No=10000)"
   },
   {
     "lineNo": 20000,
     "type": "GET",
     "error": "",
-    "url": "https://api.businesscentral.dynamics.com/v2.0/4af316b5-92f0-4e36-9242-99fd5953ae01/Production/ODataV4/Company('GROSSO%20TRACTORES%20S.A')/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='CPR-008621',Line_No=20000)"
+    "url": "https://api.businesscentral.dynamics.com/v2.0/4af316b5-92f0-4e36-9242-99fd5953ae01/Production/ODataV4/Company('GROSSO%20TRACTORES%20S.A')/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='CPR-008625',Line_No=20000)"
   }
 ]
