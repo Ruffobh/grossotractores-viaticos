@@ -187,7 +187,7 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
             rows.push({
                 ...defaults,
                 descripcion: 'Impuestos / Otros Tributos', // Renamed from "Percepciones / Impuestos"
-                grupo_iva: 'NO GRAVADO',
+                grupo_iva: 'IVA NO GRAV',
                 cantidad: 1,
                 coste_unit: formatNumber(otherTaxesAmount),
                 importe: formatNumber(otherTaxesAmount),
@@ -200,7 +200,7 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
         rows.push({
             ...defaults,
             descripcion: invoice.items?.[0]?.description || invoice.vendorName || '',
-            grupo_iva: 'NO GRAVADO',
+            grupo_iva: 'IVA NO GRAV',
             cantidad: 1,
             coste_unit: formatNumber(invoice.totalAmount),
             importe: formatNumber(invoice.totalAmount),
