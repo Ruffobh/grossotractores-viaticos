@@ -808,9 +808,12 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
     // BC parses the letter prefix to set the Tipo Documento AFIP (FC-A, FC-B, etc.)
     let vendorInvoiceNo = invoice.invoice_number || ''
     const invoiceTypeUpper = (invoice.invoice_type || '').toUpperCase()
-    if (vendorInvoiceNo && !isConsumidorFinal) {
+    if (vendorInvoiceNo) {
         let letterPrefix = ''
-        if (invoiceTypeUpper.includes('FACTURA A') || invoiceTypeUpper === 'FA') letterPrefix = 'A'
+        if (isConsumidorFinal) {
+            // CONSUMIDOR FINAL → letra "N" → BC auto-detecta FC-NI
+            letterPrefix = 'N'
+        } else if (invoiceTypeUpper.includes('FACTURA A') || invoiceTypeUpper === 'FA') letterPrefix = 'A'
         else if (invoiceTypeUpper.includes('FACTURA B') || invoiceTypeUpper === 'FB') letterPrefix = 'B'
         else if (invoiceTypeUpper.includes('FACTURA C') || invoiceTypeUpper === 'FC') letterPrefix = 'C'
         else if (invoiceTypeUpper.includes('FACTURA M') || invoiceTypeUpper === 'FM') letterPrefix = 'M'
