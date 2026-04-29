@@ -114,7 +114,10 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
 
     // Helper to check for standard VAT
     const isStandardVat = (name: string) => {
-        const n = name.toUpperCase();
+        const n = name.toUpperCase().trim();
+        // Match plain "IVA" (without "NO GRAV") or specific rates
+        if (n === 'IVA') return true;
+        if (n.includes('NO GRAV')) return false;
         return n.includes('IVA 21') || n.includes('IVA 10') || n.includes('IVA 10.5') || n.includes('IVA 10,5') || n.includes('ALICUOTA') || n.includes('ALÍCUOTA') || n.includes('TASA 21') || n.includes('TASA 10');
     };
 
