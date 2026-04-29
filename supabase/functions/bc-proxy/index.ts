@@ -37,8 +37,30 @@ serve(async (req) => {
 
     // --- SEARCH_VENDORS ---
     if (action === 'SEARCH_VENDORS') {
-      const { cuit } = data
-      if (!cuit) throw new Error('Missing cuit')
+      const { cuit, vendorNumber } = data
+
+      // Search by vendor number (used for CONSUMIDOR FINAL → Grosso Tractores)
+      if (vendorNumber) {
+        const url = `${apiBase}/vendors?$filter=number eq '${vendorNumber}'&$select=id,number,displayName,taxRegistrationNumber,city`
+        const res = await fetch(url, { headers })
+        if (!res.ok) throw new Error('Search Vendor by Number Error: ' + (await res.text()))
+        const result = await res.json()
+        const vendors = result.value || []
+        return new Response(JSON.stringify({
+          success: true,
+          found: vendors.length > 0,
+          vendors: vendors.map((v: any) => ({
+            id: v.id,
+            number: v.number,
+            displayName: v.displayName,
+            taxRegistrationNumber: v.taxRegistrationNumber || '',
+            city: v.city || ''
+          }))
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Search by CUIT (standard flow)
+      if (!cuit) throw new Error('Missing cuit or vendorNumber')
       // Use OData Vendor_Card which allows filtering on VAT_Registration_No (CUIT/CIF/NIF)
       const url = `${odataBase}/Vendor_Card?$filter=VAT_Registration_No eq '${cuit}'&$select=No,Name,VAT_Registration_No,City,County`
       const res = await fetch(url, { headers })

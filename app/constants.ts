@@ -113,6 +113,14 @@ export const BC_BRANCH_CODES = [
     { code: 'FK', name: 'Franck' },
 ] as const;
 
+// Proveedor fijo para comprobantes tipo CONSUMIDOR FINAL
+// Estos comprobantes siempre se cargan bajo el proveedor Grosso Tractores en BC
+export const BC_CONSUMIDOR_FINAL_VENDOR = {
+    number: 'P00753',
+    displayName: 'GROSSO TRACTORES SA',
+    city: 'Rafaela',
+} as const;
+
 export const BC_AREA_CODES = [
     { code: 'COM-PVSR', name: 'Servicios' },
     { code: 'COM-PVRE', name: 'Repuestos' },

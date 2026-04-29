@@ -394,6 +394,26 @@
     }
 }
 
+/* ========== Consumidor Final Notice ========== */
+.cfNotice {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: #92400e;
+    line-height: 1.4;
+}
+
+.cfNotice svg {
+    flex-shrink: 0;
+    color: #d97706;
+}
+
 /* ========== Header Preview ========== */
 .headerPreview {
     width: 100%;

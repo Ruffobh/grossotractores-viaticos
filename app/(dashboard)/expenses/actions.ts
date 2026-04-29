@@ -652,7 +652,7 @@ export async function splitExpense(invoiceId: string, targetUserIds: string[], f
 
 // --- Business Central Integration ---
 
-import { BC_BRANCH_MAP, BC_AREA_TO_PURCHASER } from '@/app/constants'
+import { BC_BRANCH_MAP, BC_AREA_TO_PURCHASER, BC_CONSUMIDOR_FINAL_VENDOR } from '@/app/constants'
 import { generateBCRowsForInvoice, InvoiceData } from '@/utils/excel'
 
 export async function searchVendorByCuit(cuit: string) {
@@ -672,6 +672,27 @@ export async function searchVendorByCuit(cuit: string) {
         return { success: true, found: result.found, vendors: result.vendors }
     } catch (e: any) {
         console.error('[searchVendorByCuit] Error:', e)
+        return { error: 'Error de conexión con BC: ' + e.message }
+    }
+}
+
+export async function searchVendorByNumber(vendorNumber: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    try {
+        const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+        const res = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'SEARCH_VENDORS', data: { vendorNumber } })
+        })
+        const result = await res.json()
+        if (!result.success) return { error: result.error || `No se pudo buscar el proveedor ${vendorNumber} en Business Central.` }
+        return { success: true, found: result.found, vendors: result.vendors }
+    } catch (e: any) {
+        console.error('[searchVendorByNumber] Error:', e)
         return { error: 'Error de conexión con BC: ' + e.message }
     }
 }
@@ -720,22 +741,40 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
     const ownerProfile = Array.isArray(invoice.profiles) ? invoice.profiles[0] : invoice.profiles
     const purchaserCode = ownerProfile?.bc_purchaser_code || BC_AREA_TO_PURCHASER[ownerProfile?.area || ''] || ''
 
-    const vendorCuit = invoice.vendor_cuit
-    if (!vendorCuit) return { error: 'El comprobante no tiene CUIT de proveedor' }
-
     const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
 
-    const vendorResult = await fetch(bcProxyUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'SEARCH_VENDORS', data: { cuit: vendorCuit } })
-    }).then(r => r.json())
+    // Determine if CONSUMIDOR FINAL → use Grosso Tractores vendor
+    const isConsumidorFinal = (invoice.invoice_type || '').toUpperCase().includes('CONSUMIDOR FINAL')
 
-    if (!vendorResult.success || !vendorResult.found || !vendorResult.vendors?.length) {
-        return { error: 'VENDOR_NOT_FOUND', message: `No se encontró un proveedor con CUIT ${vendorCuit} en BC.` }
+    let vendorNumber: string
+    if (isConsumidorFinal) {
+        // CONSUMIDOR FINAL: always use Grosso Tractores SA (P00753)
+        const vendorResult = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'SEARCH_VENDORS', data: { vendorNumber: BC_CONSUMIDOR_FINAL_VENDOR.number } })
+        }).then(r => r.json())
+
+        if (!vendorResult.success || !vendorResult.found || !vendorResult.vendors?.length) {
+            return { error: 'VENDOR_NOT_FOUND', message: `No se encontró el proveedor ${BC_CONSUMIDOR_FINAL_VENDOR.displayName} en BC.` }
+        }
+        vendorNumber = vendorResult.vendors[0].number
+    } else {
+        // Standard flow: search by CUIT
+        const vendorCuit = invoice.vendor_cuit
+        if (!vendorCuit) return { error: 'El comprobante no tiene CUIT de proveedor' }
+
+        const vendorResult = await fetch(bcProxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'SEARCH_VENDORS', data: { cuit: vendorCuit } })
+        }).then(r => r.json())
+
+        if (!vendorResult.success || !vendorResult.found || !vendorResult.vendors?.length) {
+            return { error: 'VENDOR_NOT_FOUND', message: `No se encontró un proveedor con CUIT ${vendorCuit} en BC.` }
+        }
+        vendorNumber = vendorResult.vendors[0].number
     }
-
-    const vendorNumber = vendorResult.vendors[0].number
 
     const parsed = invoice.parsed_data || {}
     const invoiceData: InvoiceData = {

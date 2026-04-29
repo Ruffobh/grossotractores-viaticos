@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { X, Search, FileText, CheckCircle, AlertTriangle, Loader2, Building2, ExternalLink } from 'lucide-react'
 import { InvoiceData, generateBCRowsForInvoice } from '@/utils/excel'
-import { searchVendorByCuit, createPurchaseInvoiceInBC } from '@/app/(dashboard)/expenses/actions'
-import { BC_BRANCH_MAP, BC_AREA_TO_PURCHASER, BC_ACCOUNTS, BC_PURCHASER_CODES, BC_BRANCH_CODES, BC_AREA_CODES } from '@/app/constants'
+import { searchVendorByCuit, searchVendorByNumber, createPurchaseInvoiceInBC } from '@/app/(dashboard)/expenses/actions'
+import { BC_BRANCH_MAP, BC_AREA_TO_PURCHASER, BC_ACCOUNTS, BC_PURCHASER_CODES, BC_BRANCH_CODES, BC_AREA_CODES, BC_CONSUMIDOR_FINAL_VENDOR } from '@/app/constants'
 import { useRouter } from 'next/navigation'
 import styles from './BCCreateModal.module.css'
 
@@ -75,7 +75,28 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
         }
     }, [isOpen])
 
+    // Detect if this is a CONSUMIDOR FINAL invoice
+    const isConsumidorFinal = (invoice?.invoice_type || '').toUpperCase().includes('CONSUMIDOR FINAL')
+
     const handleStart = async () => {
+        setStep('searching_vendor')
+
+        // CONSUMIDOR FINAL: always use Grosso Tractores SA (P00753)
+        if (isConsumidorFinal) {
+            const result = await searchVendorByNumber(BC_CONSUMIDOR_FINAL_VENDOR.number)
+
+            if (result.error || !result.found || !result.vendors?.length) {
+                setErrorMessage(`No se encontró el proveedor ${BC_CONSUMIDOR_FINAL_VENDOR.displayName} (${BC_CONSUMIDOR_FINAL_VENDOR.number}) en Business Central.`)
+                setStep('error')
+                return
+            }
+
+            setVendor(result.vendors[0])
+            setStep('vendor_found')
+            return
+        }
+
+        // Standard flow: search by CUIT
         const cuit = (invoice.vendor_cuit || '').trim()
         if (!cuit) {
             setErrorMessage('El comprobante no tiene CUIT de proveedor')
@@ -83,7 +104,6 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
             return
         }
 
-        setStep('searching_vendor')
         const result = await searchVendorByCuit(cuit)
 
         if (result.error) {
@@ -179,11 +199,17 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
                     {/* IDLE - Initial state */}
                     {step === 'idle' && (
                         <div className={styles.stepContainer}>
+                            {isConsumidorFinal && (
+                                <div className={styles.cfNotice}>
+                                    <Building2 size={18} />
+                                    <span>Comprobante <strong>Consumidor Final</strong> — se cargará con el proveedor <strong>{BC_CONSUMIDOR_FINAL_VENDOR.displayName} ({BC_CONSUMIDOR_FINAL_VENDOR.number})</strong></span>
+                                </div>
+                            )}
                             <div className={styles.summaryCard}>
                                 <h3>Resumen del comprobante</h3>
                                 <div className={styles.summaryGrid}>
-                                    <div><span className={styles.label}>Proveedor</span><span className={styles.value}>{invoice.vendor_name}</span></div>
-                                    <div><span className={styles.label}>CUIT</span><span className={styles.value}>{invoice.vendor_cuit || '—'}</span></div>
+                                    <div><span className={styles.label}>Proveedor</span><span className={styles.value}>{isConsumidorFinal ? BC_CONSUMIDOR_FINAL_VENDOR.displayName : invoice.vendor_name}</span></div>
+                                    <div><span className={styles.label}>CUIT</span><span className={styles.value}>{isConsumidorFinal ? '—' : (invoice.vendor_cuit || '—')}</span></div>
                                     <div><span className={styles.label}>Nº Factura</span><span className={styles.value}>{invoice.invoice_number || '—'}</span></div>
                                     <div><span className={styles.label}>Fecha</span><span className={styles.value}>{invoice.date}</span></div>
                                     <div><span className={styles.label}>Total</span><span className={styles.value}>${Number(invoice.total_amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span></div>
@@ -193,8 +219,11 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
                                 </div>
                             </div>
                             <button onClick={handleStart} className={styles.primaryButton}>
-                                <Search size={18} />
-                                Buscar proveedor y continuar
+                                {isConsumidorFinal ? (
+                                    <><Building2 size={18} /> Continuar con {BC_CONSUMIDOR_FINAL_VENDOR.displayName}</>
+                                ) : (
+                                    <><Search size={18} /> Buscar proveedor y continuar</>
+                                )}
                             </button>
                         </div>
                     )}
