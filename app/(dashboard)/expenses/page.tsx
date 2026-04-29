@@ -63,33 +63,51 @@ export default async function ExpensesPage({
 
     const userBranches = profile?.branches || (profile?.branch ? [profile.branch] : [])
 
-    // --- Lightweight count query (only status + branch, no heavy data) ---
-    let countQuery = supabase
-        .from('invoices')
-        .select('status, profiles!invoices_user_id_fkey(branch)')
-        .neq('status', 'draft')
-    if (role === 'user' && !hasApproveArea) {
-        countQuery = countQuery.eq('user_id', user.id)
+    // --- Count queries using head:true (no row limit, returns only count via HTTP header) ---
+    const buildCountQuery = (status?: string) => {
+        let q = supabase.from('invoices').select('*', { count: 'exact', head: true }).neq('status', 'draft')
+        if (role === 'user' && !hasApproveArea) q = q.eq('user_id', user.id)
+        // Manager: only count invoices from their branches
+        if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0 && !params.branch) {
+            q = q.in('branch', userBranches)
+        }
+        if (isManagerOrAdmin) {
+            if (params.user_id) q = q.eq('user_id', params.user_id as string)
+            if (params.branch) q = q.eq('branch', params.branch as string)
+            if (params.expense_category) q = q.eq('expense_category', params.expense_category as string)
+            if (params.payment_method) q = q.eq('payment_method', params.payment_method as string)
+        }
+        if (status) q = q.eq('status', status)
+        return q
     }
-    // Apply advanced filters (except status) so counts reflect current filter context
-    if (isManagerOrAdmin) {
-        if (params.user_id) countQuery = countQuery.eq('user_id', params.user_id as string)
-        if (params.branch) countQuery = countQuery.eq('branch', params.branch as string)
-        if (params.expense_category) countQuery = countQuery.eq('expense_category', params.expense_category as string)
-        if (params.payment_method) countQuery = countQuery.eq('payment_method', params.payment_method as string)
+
+    const [
+        { count: allCount },
+        { count: pendingCount },
+        { count: approvedCount },
+        { count: exceededCount },
+        { count: rejectedCount },
+        { count: partiallyRejectedCount },
+        { count: bcCount }
+    ] = await Promise.all([
+        buildCountQuery(),
+        buildCountQuery('pending_approval'),
+        buildCountQuery('approved'),
+        buildCountQuery('exceeded_budget'),
+        buildCountQuery('rejected'),
+        buildCountQuery('partially_rejected'),
+        buildCountQuery('submitted_to_bc')
+    ])
+
+    const totalCount = allCount || 0
+    const statusCounts: Record<string, number> = {
+        'pending_approval': pendingCount || 0,
+        'approved': approvedCount || 0,
+        'exceeded_budget': exceededCount || 0,
+        'rejected': rejectedCount || 0,
+        'partially_rejected': partiallyRejectedCount || 0,
+        'submitted_to_bc': bcCount || 0,
     }
-    const { data: allStatusData } = await countQuery.range(0, 9999)
-    let statusItems = allStatusData || []
-    // Manager branch filter for counts
-    if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
-        statusItems = statusItems.filter((inv: any) => userBranches.includes(inv.profiles?.branch))
-    }
-    const statusCounts: Record<string, number> = {}
-    statusItems.forEach((inv: any) => {
-        const s = inv.status || 'pending_approval'
-        statusCounts[s] = (statusCounts[s] || 0) + 1
-    })
-    const totalCount = statusItems.length
 
     // --- Main data query (paginated) ---
     // Advanced Filters (Manager/Admin Only)
