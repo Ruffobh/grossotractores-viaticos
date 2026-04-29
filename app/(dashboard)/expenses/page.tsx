@@ -78,20 +78,28 @@ export default async function ExpensesPage({
         if (params.payment_method) query = query.eq('payment_method', params.payment_method as string)
     }
 
-    const { data: rawExpenses, error } = await query
+    const { data: rawExpenses, error } = await query.range(0, 199)
 
     if (error) {
         console.error("DASHBOARD QUERY ERROR:", JSON.stringify(error, null, 2))
         return <div>Error al cargar comprobantes: {error.message}</div>
     }
 
-    // Forced rebuild trigger
+    const hasMoreFromDB = (rawExpenses?.length || 0) >= 200
     let expenses = rawExpenses || []
 
     // 5. Client-side Filtering (for the main list/charts)
     if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
         expenses = expenses.filter((inv: any) => userBranches.includes(inv.profiles?.branch))
     }
+
+    // Serialize filters for the load-more action
+    const activeFilters: Record<string, string> = {}
+    if (params.status) activeFilters.status = params.status as string
+    if (params.user_id) activeFilters.user_id = params.user_id as string
+    if (params.branch) activeFilters.branch = params.branch as string
+    if (params.expense_category) activeFilters.expense_category = params.expense_category as string
+    if (params.payment_method) activeFilters.payment_method = params.payment_method as string
 
     return (
         <div className={styles.container}>
@@ -120,10 +128,14 @@ export default async function ExpensesPage({
             </div>
 
             <ExpensesTable
+                key={JSON.stringify(activeFilters)}
                 expenses={expenses as any}
                 isManagerOrAdmin={isManagerOrAdmin || hasApproveArea}
                 currentUserId={user.id}
                 currentUserRole={role}
+                hasMore={hasMoreFromDB}
+                filters={activeFilters}
+                userBranches={userBranches as string[]}
             />
         </div>
     )

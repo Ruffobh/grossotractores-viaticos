@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Trash2, Search, Download, ArrowUp, ArrowDown } from 'lucide-react'
 import styles from './expenses-table.module.css'
-import { deleteExpense } from '@/app/(dashboard)/expenses/actions'
+import { deleteExpense, loadMoreExpenses } from '@/app/(dashboard)/expenses/actions'
 import { useRouter } from 'next/navigation'
 
 interface Expense {
@@ -37,14 +37,34 @@ interface ExpensesTableProps {
     isManagerOrAdmin: boolean
     currentUserId: string
     currentUserRole: string
+    hasMore?: boolean
+    filters?: Record<string, string>
+    userBranches?: string[]
 }
 
-export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, currentUserRole }: ExpensesTableProps) {
+export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, currentUserRole, hasMore = false, filters = {}, userBranches = [] }: ExpensesTableProps) {
+    const [allExpenses, setAllExpenses] = useState<Expense[]>(expenses)
+    const [hasMoreState, setHasMoreState] = useState(hasMore)
+    const [isLoadingMore, setIsLoadingMore] = useState(false)
+    const [dbOffset, setDbOffset] = useState(200)
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc' }) // Default sort
     const router = useRouter()
+
+    const handleLoadMore = async () => {
+        setIsLoadingMore(true)
+        try {
+            const result = await loadMoreExpenses(dbOffset, filters, currentUserRole, userBranches)
+            setAllExpenses(prev => [...prev, ...result.expenses as Expense[]])
+            setHasMoreState(result.hasMore)
+            setDbOffset(prev => prev + 200)
+        } catch (e) {
+            console.error('Error loading more:', e)
+        }
+        setIsLoadingMore(false)
+    }
 
     // Determine if current user can delete a specific expense
     const canDelete = (expense: Expense): boolean => {
@@ -88,7 +108,7 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
     };
 
     const getSortedExpenses = () => {
-        let filtered = [...expenses];
+        let filtered = [...allExpenses];
 
         if (searchTerm) {
             const lowerTerm = searchTerm.toLowerCase();
@@ -390,6 +410,18 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
                     )}
                 </div>
             </div>
+
+            {hasMoreState && (
+                <div className={styles.loadMoreWrapper}>
+                    <button
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore}
+                        className={styles.loadMoreButton}
+                    >
+                        {isLoadingMore ? 'Cargando...' : 'Cargar más comprobantes'}
+                    </button>
+                </div>
+            )}
             {deleteId && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modalContent}>

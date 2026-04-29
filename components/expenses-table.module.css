@@ -454,6 +454,36 @@
     }
 }
 
+/* ========== Load More ========== */
+.loadMoreWrapper {
+    display: flex;
+    justify-content: center;
+    padding: 1.25rem 0;
+}
+
+.loadMoreButton {
+    padding: 0.625rem 2rem;
+    border: 1px solid var(--gray-300);
+    background-color: var(--gt-white);
+    color: var(--gt-navy);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.loadMoreButton:hover:not(:disabled) {
+    background-color: var(--gt-navy);
+    color: white;
+    border-color: var(--gt-navy);
+}
+
+.loadMoreButton:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 /* ========== Delete Modal ========== */
 .modalOverlay {
     position: fixed;

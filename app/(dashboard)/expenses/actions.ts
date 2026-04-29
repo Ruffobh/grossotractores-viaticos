@@ -6,6 +6,57 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { sendAdminAlert, sendManagerNotification } from '@/app/utils/mail'
 
+const PAGE_SIZE = 200
+
+export async function loadMoreExpenses(
+    offset: number,
+    filters: Record<string, string>,
+    role: string,
+    userBranches: string[]
+) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { expenses: [], hasMore: false }
+
+    const { data: profile } = await supabase.from('profiles').select('permissions').eq('id', user.id).single()
+    const hasApproveArea = (profile?.permissions as any)?.approve_area_expenses === true
+    const isManagerOrAdmin = role === 'manager' || role === 'branch_manager' || role === 'admin'
+
+    let query = supabase
+        .from('invoices')
+        .select(`
+            *,
+            profiles!invoices_user_id_fkey(full_name, branch, area),
+            loaded_by_profile:profiles!invoices_loaded_by_fkey(full_name, branch, area)
+        `)
+        .order('date', { ascending: false })
+        .neq('status', 'draft')
+        .range(offset, offset + PAGE_SIZE - 1)
+
+    if (role === 'user' && !hasApproveArea) {
+        query = query.eq('user_id', user.id)
+    }
+
+    if (filters.status) query = query.eq('status', filters.status)
+    if (isManagerOrAdmin) {
+        if (filters.user_id) query = query.eq('user_id', filters.user_id)
+        if (filters.branch) query = query.eq('branch', filters.branch)
+        if (filters.expense_category) query = query.eq('expense_category', filters.expense_category)
+        if (filters.payment_method) query = query.eq('payment_method', filters.payment_method)
+    }
+
+    const { data: rawExpenses } = await query
+    let expenses = rawExpenses || []
+    const hasMore = expenses.length >= PAGE_SIZE
+
+    // Client-side branch filtering for managers
+    if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
+        expenses = expenses.filter((inv: any) => userBranches.includes(inv.profiles?.branch))
+    }
+
+    return { expenses, hasMore }
+}
+
 export async function processReceipt(imageUrl: string) {
     try {
         const supabase = await createClient()
