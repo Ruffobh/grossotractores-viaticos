@@ -878,6 +878,30 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
             } catch (e) {}
         }
 
+        // CONSUMIDOR FINAL: PATCH header to set fiscal type = 90-NO LIBRO IVA
+        // This makes BC auto-assign AFIP doc type FC-NI (Facturas NI)
+        if (isConsumidorFinal && createResult.invoiceNumber) {
+            try {
+                const patchRes = await fetch(bcProxyUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'PATCH_INVOICE_HEADER',
+                        data: {
+                            invoiceNo: createResult.invoiceNumber,
+                            fields: { VOXI_Person_document_type: '90-NO LIBRO IVA' }
+                        }
+                    })
+                })
+                const patchResult = await patchRes.json()
+                if (!patchResult.success) {
+                    console.error('PATCH_INVOICE_HEADER warning:', patchResult.error)
+                }
+            } catch (e) {
+                console.error('PATCH_INVOICE_HEADER non-fatal error:', e)
+            }
+        }
+
         const { createAdminClient } = await import('@/utils/supabase/admin')
         const adminClient = createAdminClient()
 

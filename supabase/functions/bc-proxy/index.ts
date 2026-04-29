@@ -202,6 +202,37 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    // --- PATCH_INVOICE_HEADER ---
+    // Patches VOXI fields on the Purchase Invoice Header via OData
+    // Used for CONSUMIDOR FINAL to set fiscal type to 90-NO LIBRO IVA
+    if (action === 'PATCH_INVOICE_HEADER') {
+      const { invoiceNo, fields } = data
+      if (!invoiceNo || !fields) throw new Error('Missing invoiceNo or fields')
+
+      const odataUrl = `${odataBase}/Purchase_Invoice_Header(Document_Type='Invoice',No='${encodeURIComponent(invoiceNo)}')`
+
+      // GET to obtain ETag
+      const getRes = await fetch(odataUrl, { headers })
+      if (!getRes.ok) throw new Error('GET Purchase_Invoice_Header Error: ' + (await getRes.text()))
+      const headerData = await getRes.json()
+      const etag = headerData['@odata.etag']
+
+      // PATCH with VOXI fields
+      const patchRes = await fetch(odataUrl, {
+        method: 'PATCH',
+        headers: { ...headers, 'If-Match': etag },
+        body: JSON.stringify(fields)
+      })
+      if (!patchRes.ok) throw new Error('PATCH Purchase_Invoice_Header Error: ' + (await patchRes.text()))
+      const patchedData = await patchRes.json()
+
+      return new Response(JSON.stringify({
+        success: true,
+        patched: true,
+        fields: Object.fromEntries(Object.keys(fields).map(k => [k, patchedData[k]]))
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     // --- FETCH_SALESPERSONS ---
     if (action === 'FETCH_SALESPERSONS') {
       const url = `${odataBase}/Salesperson_Purchaser?$filter=startswith(Code,'VEND-')&$select=Code,Name,Phone_No`
