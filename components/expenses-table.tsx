@@ -258,12 +258,10 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
                                     )}
                                     <td>
                                         <div className={styles.vendorWrapper}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                                                <span className={styles.cellContent}>{expense.vendor_name}</span>
-                                                {expense.split_group_id && (
-                                                    <span className={styles.sharedBadge}>Compartido</span>
-                                                )}
-                                            </div>
+                                            <span className={styles.cellContent}>{expense.vendor_name}</span>
+                                            {expense.split_group_id && (
+                                                <span className={styles.sharedBadge}>Compartido</span>
+                                            )}
                                             {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
                                                 <span className={styles.loadedByLabel}>
                                                     Cargado por: {expense.loaded_by_profile.full_name} ({expense.loaded_by_profile.branch || 'Sin sucursal'}{expense.loaded_by_profile.area ? ` - ${expense.loaded_by_profile.area}` : ''})
