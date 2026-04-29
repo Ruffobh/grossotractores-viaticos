@@ -279,6 +279,15 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
                                 </div>
                             </div>
 
+                            {invoice.comments && (
+                                <div className={styles.commentsPreview}>
+                                    <h4>Comentarios del usuario:</h4>
+                                    <div className={styles.commentBox}>
+                                        <p>{invoice.comments}</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Lines preview - full columns, scrollable */}
                             <div className={styles.previewSection}>
                                 <h4>Líneas a crear:</h4>

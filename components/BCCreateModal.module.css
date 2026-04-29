@@ -401,6 +401,36 @@
     margin-top: 0.5rem;
 }
 
+.commentsPreview {
+    width: 100%;
+    text-align: left;
+    margin-top: 0.75rem;
+}
+
+.commentsPreview h4 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gray-600);
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.commentBox {
+    background: #fdfde8;
+    border: 1px solid #fef08a;
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+}
+
+.commentBox p {
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    margin: 0;
+    font-style: italic;
+    line-height: 1.4;
+}
+
 .headerPreview h4 {
     font-size: 0.8rem;
     font-weight: 700;
