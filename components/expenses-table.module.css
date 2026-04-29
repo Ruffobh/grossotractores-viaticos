@@ -273,6 +273,7 @@
     color: #6D28D9;
     white-space: nowrap;
     flex-shrink: 0;
+    width: fit-content;
 }
 
 .copyButton {
