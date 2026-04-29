@@ -63,14 +63,36 @@ export default async function ExpensesPage({
 
     const userBranches = profile?.branches || (profile?.branch ? [profile.branch] : [])
 
-    // ...
+    // --- Lightweight count query (only status + branch, no heavy data) ---
+    let countQuery = supabase
+        .from('invoices')
+        .select('status, profiles!invoices_user_id_fkey(branch)')
+        .neq('status', 'draft')
+    if (role === 'user' && !hasApproveArea) {
+        countQuery = countQuery.eq('user_id', user.id)
+    }
+    // Apply advanced filters (except status) so counts reflect current filter context
+    if (isManagerOrAdmin) {
+        if (params.user_id) countQuery = countQuery.eq('user_id', params.user_id as string)
+        if (params.branch) countQuery = countQuery.eq('branch', params.branch as string)
+        if (params.expense_category) countQuery = countQuery.eq('expense_category', params.expense_category as string)
+        if (params.payment_method) countQuery = countQuery.eq('payment_method', params.payment_method as string)
+    }
+    const { data: allStatusData } = await countQuery
+    let statusItems = allStatusData || []
+    // Manager branch filter for counts
+    if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
+        statusItems = statusItems.filter((inv: any) => userBranches.includes(inv.profiles?.branch))
+    }
+    const statusCounts: Record<string, number> = {}
+    statusItems.forEach((inv: any) => {
+        const s = inv.status || 'pending_approval'
+        statusCounts[s] = (statusCounts[s] || 0) + 1
+    })
+    const totalCount = statusItems.length
 
-    // 5. Client-side Filtering (for the main list/charts)
-
-
+    // --- Main data query (paginated) ---
     // Advanced Filters (Manager/Admin Only)
-    // IMPORTANT: Manager should ONLY be able to filter by branches they are assigned to.
-    // The UI should already restrict the dropdown options.
     if (isManagerOrAdmin) {
         if (params.user_id) query = query.eq('user_id', params.user_id as string)
         if (params.branch) query = query.eq('branch', params.branch as string)
@@ -88,7 +110,7 @@ export default async function ExpensesPage({
     const hasMoreFromDB = (rawExpenses?.length || 0) >= 200
     let expenses = rawExpenses || []
 
-    // 5. Client-side Filtering (for the main list/charts)
+    // Client-side branch filtering for managers
     if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
         expenses = expenses.filter((inv: any) => userBranches.includes(inv.profiles?.branch))
     }
@@ -118,13 +140,12 @@ export default async function ExpensesPage({
             />
 
             <div className={styles.filters}>
-                {/* Simple filter links for now */}
-                <Link href="/expenses" className={!params.status ? styles.activeFilter : styles.filter}>Todos</Link>
-                <Link href="/expenses?status=pending_approval" className={params.status === 'pending_approval' ? styles.activeFilter : styles.filter}>Pendientes</Link>
-                <Link href="/expenses?status=approved" className={params.status === 'approved' ? styles.activeFilter : styles.filter}>Aprobados</Link>
-                <Link href="/expenses?status=exceeded_budget" className={params.status === 'exceeded_budget' ? styles.activeFilter : styles.filter}>Excede Límite</Link>
-                <Link href="/expenses?status=rejected" className={params.status === 'rejected' ? styles.activeFilter : styles.filter}>Rechazados</Link>
-                <Link href="/expenses?status=submitted_to_bc" className={params.status === 'submitted_to_bc' ? styles.activeFilter : styles.filter}>Cargado en BC</Link>
+                <Link href="/expenses" className={!params.status ? styles.activeFilter : styles.filter}>Todos ({totalCount})</Link>
+                <Link href="/expenses?status=pending_approval" className={params.status === 'pending_approval' ? styles.activeFilter : styles.filter}>Pendientes ({statusCounts['pending_approval'] || 0})</Link>
+                <Link href="/expenses?status=approved" className={params.status === 'approved' ? styles.activeFilter : styles.filter}>Aprobados ({statusCounts['approved'] || 0})</Link>
+                <Link href="/expenses?status=exceeded_budget" className={params.status === 'exceeded_budget' ? styles.activeFilter : styles.filter}>Excede Límite ({statusCounts['exceeded_budget'] || 0})</Link>
+                <Link href="/expenses?status=rejected" className={params.status === 'rejected' ? styles.activeFilter : styles.filter}>Rechazados ({(statusCounts['rejected'] || 0) + (statusCounts['partially_rejected'] || 0)})</Link>
+                <Link href="/expenses?status=submitted_to_bc" className={params.status === 'submitted_to_bc' ? styles.activeFilter : styles.filter}>Cargado en BC ({statusCounts['submitted_to_bc'] || 0})</Link>
             </div>
 
             <ExpensesTable
