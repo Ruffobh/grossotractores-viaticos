@@ -78,7 +78,7 @@ export default async function ExpensesPage({
         if (params.expense_category) countQuery = countQuery.eq('expense_category', params.expense_category as string)
         if (params.payment_method) countQuery = countQuery.eq('payment_method', params.payment_method as string)
     }
-    const { data: allStatusData } = await countQuery
+    const { data: allStatusData } = await countQuery.range(0, 9999)
     let statusItems = allStatusData || []
     // Manager branch filter for counts
     if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0) {
