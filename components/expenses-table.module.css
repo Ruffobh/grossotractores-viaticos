@@ -262,6 +262,19 @@
     display: block;
 }
 
+.sharedBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.65rem;
+    font-weight: 600;
+    background-color: #EDE9FE;
+    color: #6D28D9;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
 .copyButton {
     display: flex;
     align-items: center;

@@ -783,7 +783,8 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
         invoiceNumber: parsed.invoiceNumber || invoice.invoice_number,
         invoiceType: invoice.invoice_type || parsed.invoiceType || 'FC',
         date: parsed.date || invoice.date,
-        totalAmount: parsed.totalAmount || invoice.total_amount || 0,
+        // SHARED INVOICES: use original_amount (full ticket total) instead of split amount
+        totalAmount: invoice.original_amount || parsed.totalAmount || invoice.total_amount || 0,
         netAmount: parsed.netAmount,
         perceptionsAmount: parsed.perceptionsAmount,
         currency: parsed.currency || invoice.currency || 'ARS',

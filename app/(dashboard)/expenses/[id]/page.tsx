@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import styles from './style.module.css'
 import { approveExpense, rejectExpense } from './actions'
-import { CheckCircle, XCircle, ChevronLeft } from 'lucide-react'
+import { CheckCircle, XCircle, ChevronLeft, Users } from 'lucide-react'
 import { BCExportButton } from '@/components/bc-export-button'
 import { EditableDetailRow } from '@/components/editable-detail-row'
 import { AdminActions } from '@/components/admin-actions'
@@ -41,6 +41,22 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
 
     if (error || !invoice) {
         redirect('/expenses')
+    }
+
+    // Fetch shared group members if this invoice is part of a split group
+    let sharedMembers: { full_name: string; total_amount: number }[] = []
+    if (invoice.split_group_id) {
+        const { data: siblings } = await adminClient
+            .from('invoices')
+            .select('user_id, total_amount, profiles!invoices_user_id_fkey(full_name)')
+            .eq('split_group_id', invoice.split_group_id)
+            .neq('id', invoice.id)
+        if (siblings) {
+            sharedMembers = siblings.map((s: any) => ({
+                full_name: (Array.isArray(s.profiles) ? s.profiles[0]?.full_name : s.profiles?.full_name) || 'Desconocido',
+                total_amount: s.total_amount || 0
+            }))
+        }
     }
 
     // 3. Manually enforce visibility rules (similar to RLS but fully controlled here)
@@ -231,6 +247,33 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                                     <BCRevertButton invoiceId={invoice.id} bcInvoiceNumber={invoice.bc_invoice_number} />
                                 )}
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {invoice.split_group_id && sharedMembers.length > 0 && (
+                    <div className={styles.sharedSection}>
+                        <div className={styles.sharedHeader}>
+                            <Users size={16} />
+                            <span>Comprobante Compartido</span>
+                        </div>
+                        <div className={styles.sharedBody}>
+                            <div className={styles.sharedMember}>
+                                <span className={styles.sharedName}>{invoice.profiles?.full_name} (Tú)</span>
+                                <span className={styles.sharedAmount}>{invoice.currency} {invoice.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            {sharedMembers.map((member, i) => (
+                                <div key={i} className={styles.sharedMember}>
+                                    <span className={styles.sharedName}>{member.full_name}</span>
+                                    <span className={styles.sharedAmount}>{invoice.currency} {member.total_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            ))}
+                            {invoice.original_amount && (
+                                <div className={styles.sharedTotal}>
+                                    <span>Total Original</span>
+                                    <span>{invoice.currency} {invoice.original_amount?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

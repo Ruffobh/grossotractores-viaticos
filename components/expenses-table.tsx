@@ -258,7 +258,12 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
                                     )}
                                     <td>
                                         <div className={styles.vendorWrapper}>
-                                            <span className={styles.cellContent}>{expense.vendor_name}</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                                                <span className={styles.cellContent}>{expense.vendor_name}</span>
+                                                {expense.split_group_id && (
+                                                    <span className={styles.sharedBadge}>Compartido</span>
+                                                )}
+                                            </div>
                                             {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
                                                 <span className={styles.loadedByLabel}>
                                                     Cargado por: {expense.loaded_by_profile.full_name} ({expense.loaded_by_profile.branch || 'Sin sucursal'}{expense.loaded_by_profile.area ? ` - ${expense.loaded_by_profile.area}` : ''})
@@ -334,7 +339,12 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
                                 <div className={styles.cardRow}>
                                     <span className={styles.cardLabel}>Proveedor:</span>
                                     <div className={styles.vendorWrapper}>
-                                        <span className={styles.cardValue}><strong>{expense.vendor_name}</strong></span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', justifyContent: 'flex-end' }}>
+                                            <span className={styles.cardValue}><strong>{expense.vendor_name}</strong></span>
+                                            {expense.split_group_id && (
+                                                <span className={styles.sharedBadge}>Compartido</span>
+                                            )}
+                                        </div>
                                         {expense.loaded_by_profile && expense.loaded_by !== expense.user_id && (
                                             <span className={styles.loadedByLabel} style={{ textAlign: 'right' }}>
                                                 Cargado por: {expense.loaded_by_profile.full_name} ({expense.loaded_by_profile.branch || 'Sin sucursal'}{expense.loaded_by_profile.area ? ` - ${expense.loaded_by_profile.area}` : ''})
