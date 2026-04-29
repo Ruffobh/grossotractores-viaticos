@@ -119,8 +119,10 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
     };
 
     // Robustness: If we have explicit VAT taxes, treat as "A" (Discriminates VAT) even if type is ambiguous
+    // EXCEPTION: CONSUMIDOR FINAL never discriminates IVA, always IVA NO GRAV
+    const isConsumidorFinal = typeUpper.includes('CONSUMIDOR FINAL');
     const hasStandardVat = invoice.taxes?.some(t => isStandardVat(t.name) && t.amount > 0);
-    const treatAsA = isA || hasStandardVat;
+    const treatAsA = isConsumidorFinal ? false : (isA || hasStandardVat);
 
     if (treatAsA) {
         let netAmount = invoice.netAmount || 0;
