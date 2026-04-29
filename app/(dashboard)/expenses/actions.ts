@@ -802,10 +802,28 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
 
     const branchCode = BC_BRANCH_MAP[invoiceData.userBranch || ''] || 'GRAL'
     const effectivePurchaser = overrides?.purchaser || purchaserCode
+
+    // Format vendorInvoiceNumber with letter prefix for AFIP document type auto-detection
+    // FACTURA A → "A0011-00020232", FACTURA C → "C0011-00020232", etc.
+    // BC parses the letter prefix to set the Tipo Documento AFIP (FC-A, FC-B, etc.)
+    let vendorInvoiceNo = invoice.invoice_number || ''
+    const invoiceTypeUpper = (invoice.invoice_type || '').toUpperCase()
+    if (vendorInvoiceNo && !isConsumidorFinal) {
+        let letterPrefix = ''
+        if (invoiceTypeUpper.includes('FACTURA A') || invoiceTypeUpper === 'FA') letterPrefix = 'A'
+        else if (invoiceTypeUpper.includes('FACTURA B') || invoiceTypeUpper === 'FB') letterPrefix = 'B'
+        else if (invoiceTypeUpper.includes('FACTURA C') || invoiceTypeUpper === 'FC') letterPrefix = 'C'
+        else if (invoiceTypeUpper.includes('FACTURA M') || invoiceTypeUpper === 'FM') letterPrefix = 'M'
+        
+        if (letterPrefix && !vendorInvoiceNo.startsWith(letterPrefix)) {
+            vendorInvoiceNo = letterPrefix + vendorInvoiceNo
+        }
+    }
+
     const header: Record<string, any> = {
         vendorNumber: vendorNumber,
         invoiceDate: invoice.date,
-        vendorInvoiceNumber: invoice.invoice_number || '',
+        vendorInvoiceNumber: vendorInvoiceNo,
     }
     if (effectivePurchaser) header.purchaser = effectivePurchaser
 
