@@ -712,7 +712,7 @@ export async function searchVendorByCuit(cuit: string) {
     if (!user) return { error: 'Unauthorized' }
 
     try {
-        const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+        const bcProxyUrl = 'https://yagyzvvupixmjovyzveu.supabase.co/functions/v1/bc-proxy'
         const res = await fetch(bcProxyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -733,7 +733,7 @@ export async function searchVendorByNumber(vendorNumber: string) {
     if (!user) return { error: 'Unauthorized' }
 
     try {
-        const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+        const bcProxyUrl = 'https://yagyzvvupixmjovyzveu.supabase.co/functions/v1/bc-proxy'
         const res = await fetch(bcProxyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -754,7 +754,7 @@ export async function fetchBCUsers() {
     if (!user) return { error: 'Unauthorized', users: [] }
 
     try {
-        const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+        const bcProxyUrl = 'https://yagyzvvupixmjovyzveu.supabase.co/functions/v1/bc-proxy'
         const res = await fetch(bcProxyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -792,7 +792,7 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
     const ownerProfile = Array.isArray(invoice.profiles) ? invoice.profiles[0] : invoice.profiles
     const purchaserCode = ownerProfile?.bc_purchaser_code || BC_AREA_TO_PURCHASER[ownerProfile?.area || ''] || ''
 
-    const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+    const bcProxyUrl = 'https://yagyzvvupixmjovyzveu.supabase.co/functions/v1/bc-proxy'
 
     // Determine if CONSUMIDOR FINAL → use Grosso Tractores vendor
     const isConsumidorFinal = (invoice.invoice_type || '').toUpperCase().includes('CONSUMIDOR FINAL')

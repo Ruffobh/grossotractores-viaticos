@@ -278,7 +278,7 @@ export async function revertBCInvoice(invoiceId: string) {
     }
 
     // Step 1: Find the invoice in BC by number to get its ID
-    const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+    const bcProxyUrl = 'https://yagyzvvupixmjovyzveu.supabase.co/functions/v1/bc-proxy'
 
     try {
         // List to find the BC invoice ID

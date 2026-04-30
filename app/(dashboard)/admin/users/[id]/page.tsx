@@ -46,7 +46,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     // Fetch BC Users for dropdown
     let bcUsers: { userId: string, purchaserCode?: string }[] = []
     try {
-        const bcProxyUrl = 'https://uztwlsqjvvirixfwjfwp.supabase.co/functions/v1/bc-proxy'
+        const bcProxyUrl = 'https://yagyzvvupixmjovyzveu.supabase.co/functions/v1/bc-proxy'
         const bcRes = await fetch(bcProxyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
