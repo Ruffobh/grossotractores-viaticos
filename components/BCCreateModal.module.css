@@ -579,3 +579,84 @@
     border-color: var(--gt-navy);
     box-shadow: 0 0 0 2px rgba(13, 67, 97, 0.1);
 }
+
+/* Perception Warning */
+.perceptionWarning {
+    background-color: #fef2f2;
+    border: 2px solid #ef4444;
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-top: 0.75rem;
+}
+
+.perceptionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #dc2626;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.perceptionDesc {
+    font-size: 0.78rem;
+    color: #7f1d1d;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+}
+
+.perceptionList {
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid #fca5a5;
+    overflow: hidden;
+}
+
+.perceptionItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #fde8e8;
+}
+
+.perceptionItem:last-child {
+    border-bottom: none;
+}
+
+.perceptionName {
+    font-size: 0.8rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.perceptionAmount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #dc2626;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.15s;
+}
+
+.perceptionAmount:hover {
+    background-color: #fee2e2;
+}
+
+.perceptionAmount:active {
+    background-color: #fca5a5;
+}
+
+.perceptionTotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    background-color: #fef2f2;
+    border-top: 2px solid #ef4444;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #991b1b;
+}

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { X, Search, FileText, CheckCircle, AlertTriangle, Loader2, Building2, ExternalLink } from 'lucide-react'
-import { InvoiceData, generateBCRowsForInvoice } from '@/utils/excel'
+import { InvoiceData, generateBCRowsForInvoice, PerceptionInfo } from '@/utils/excel'
 import { searchVendorByCuit, searchVendorByNumber, createPurchaseInvoiceInBC } from '@/app/(dashboard)/expenses/actions'
 import { BC_BRANCH_MAP, BC_AREA_TO_PURCHASER, BC_ACCOUNTS, BC_PURCHASER_CODES, BC_BRANCH_CODES, BC_AREA_CODES, BC_CONSUMIDOR_FINAL_VENDOR } from '@/app/constants'
 import { useRouter } from 'next/navigation'
@@ -26,6 +26,7 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
     const [bcInvoiceNumber, setBcInvoiceNumber] = useState('')
     const [bcInvoiceId, setBcInvoiceId] = useState('')
     const [rows, setRows] = useState<any[]>([])
+    const [detectedPerceptions, setDetectedPerceptions] = useState<PerceptionInfo[]>([])
 
     // Editable header fields
     const defaultPurchaser = ownerProfile?.bc_purchaser_code
@@ -59,7 +60,9 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
         if ((!invoiceData.taxes || invoiceData.taxes.length === 0) && parsed.tax_amount) {
             invoiceData.taxes = [{ name: "IVA Estimado", amount: parsed.tax_amount }]
         }
-        setRows(generateBCRowsForInvoice(invoiceData))
+        const result = generateBCRowsForInvoice(invoiceData)
+        setRows(result.rows)
+        setDetectedPerceptions(result.perceptions)
     }, [invoice, ownerProfile, isOpen])
 
     // Reset on open
@@ -70,6 +73,7 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
             setErrorMessage('')
             setBcInvoiceNumber('')
             setBcInvoiceId('')
+            setDetectedPerceptions([])
             setEditPurchaser(defaultPurchaser)
             setEditBcUserId(defaultBcUserId)
         }
@@ -426,6 +430,43 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
                                     </table>
                                 </div>
                             </div>
+
+                            {/* Perception Warning */}
+                            {detectedPerceptions.length > 0 && (
+                                <div className={styles.perceptionWarning}>
+                                    <div className={styles.perceptionHeader}>
+                                        <AlertTriangle size={18} />
+                                        <strong>Comprobante con percepciones — Carga manual necesaria</strong>
+                                    </div>
+                                    <p className={styles.perceptionDesc}>
+                                        Las siguientes percepciones fueron detectadas y <strong>no se incluyen</strong> en las líneas de arriba. Deben cargarse manualmente en la cabecera de la factura en BC.
+                                    </p>
+                                    <div className={styles.perceptionList}>
+                                        {detectedPerceptions.map((p, i) => (
+                                            <div key={i} className={styles.perceptionItem}>
+                                                <span className={styles.perceptionName}>{p.name}</span>
+                                                <span
+                                                    className={styles.perceptionAmount}
+                                                    onClick={() => navigator.clipboard.writeText(p.amount.toFixed(2))}
+                                                    title="Click para copiar"
+                                                >
+                                                    ${p.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                        ))}
+                                        <div className={styles.perceptionTotal}>
+                                            <span>Total percepciones:</span>
+                                            <span
+                                                className={styles.perceptionAmount}
+                                                onClick={() => navigator.clipboard.writeText(detectedPerceptions.reduce((s, p) => s + p.amount, 0).toFixed(2))}
+                                                title="Click para copiar"
+                                            >
+                                                ${detectedPerceptions.reduce((s, p) => s + p.amount, 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <button onClick={handleCreate} className={`${styles.primaryButton} ${styles.fullWidth}`}>
                                 <FileText size={18} />

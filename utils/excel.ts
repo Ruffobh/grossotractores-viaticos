@@ -48,6 +48,16 @@ export interface BCRow {
     udn: string;
 }
 
+export interface PerceptionInfo {
+    name: string;
+    amount: number;
+}
+
+export interface BCGenerationResult {
+    rows: BCRow[];
+    perceptions: PerceptionInfo[];
+}
+
 const AREA_MAP: Record<string, string> = {
     'Servicios': 'COM-PVSR',
     'Repuestos': 'COM-PVRE',
@@ -82,8 +92,9 @@ const formatNumber = (num: number) => {
     return num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
+export function generateBCRowsForInvoice(invoice: InvoiceData): BCGenerationResult {
     const rows: BCRow[] = [];
+    const perceptions: PerceptionInfo[] = [];
 
 
     let accountNumber = '540105';
@@ -147,7 +158,14 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
         if (invoice.taxes && invoice.taxes.length > 0) {
             // Calculate components
             const totalVat = invoice.taxes.filter(t => isStandardVat(t.name)).reduce((sum, t) => sum + t.amount, 0);
-            const totalPerceptions = invoice.taxes.filter(t => isPerception(t.name)).reduce((sum, t) => sum + t.amount, 0); // Ignored for export
+            const perceptionTaxes = invoice.taxes.filter(t => isPerception(t.name));
+            const totalPerceptions = perceptionTaxes.reduce((sum, t) => sum + t.amount, 0); // Ignored for export
+            // Collect perception details for manual entry warning
+            perceptionTaxes.forEach(t => {
+                if (t.amount > 0) {
+                    perceptions.push({ name: t.name, amount: t.amount });
+                }
+            });
             // Exclude VAT, Perceptions, AND Total summaries
             const totalOtherTaxes = invoice.taxes
                 .filter(t => !isStandardVat(t.name) && !isPerception(t.name) && !isTotal(t.name))
@@ -214,7 +232,7 @@ export function generateBCRowsForInvoice(invoice: InvoiceData): BCRow[] {
         });
     }
 
-    return rows;
+    return { rows, perceptions };
 }
 
 export function rowsToTSV(rows: BCRow[]): string {
