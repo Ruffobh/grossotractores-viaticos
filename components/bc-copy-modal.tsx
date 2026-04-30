@@ -68,7 +68,7 @@ export function BCCopyModal({ isOpen, onClose, invoice, profile }: BCCopyModalPr
             invoiceData.taxes.push({ name: "Percepciones Estimadas", amount: parsed.perceptions_amount });
         }
 
-        setRows(generateBCRowsForInvoice(invoiceData))
+        setRows(generateBCRowsForInvoice(invoiceData).rows)
 
     }, [invoice, profile])
 
