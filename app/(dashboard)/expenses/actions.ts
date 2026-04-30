@@ -850,7 +850,7 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
         invoiceData.taxes = [{ name: "IVA Estimado", amount: parsed.tax_amount }]
     }
 
-    const bcRows = generateBCRowsForInvoice(invoiceData as any)
+    const { rows: bcRows } = generateBCRowsForInvoice(invoiceData as any)
 
     const branchCode = BC_BRANCH_MAP[invoiceData.userBranch || ''] || 'GRAL'
     const effectivePurchaser = overrides?.purchaser || purchaserCode
