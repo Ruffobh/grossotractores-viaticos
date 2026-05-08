@@ -769,7 +769,7 @@ export async function fetchBCUsers() {
     }
 }
 
-export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?: { account: string, description: string, unitCost: number, sucursal?: string, area?: string, vatGroup?: string, areaDim?: string, taxAreaCode?: string }[], overrides?: { purchaser?: string }) {
+export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?: { account: string, description: string, unitCost: number, sucursal?: string, area?: string, vatGroup?: string, areaDim?: string, taxAreaCode?: string }[], overrides?: { purchaser?: string, vendorNumber?: string }) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
@@ -798,7 +798,11 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
     const isConsumidorFinal = (invoice.invoice_type || '').toUpperCase().includes('CONSUMIDOR FINAL')
 
     let vendorNumber: string
-    if (isConsumidorFinal) {
+
+    // If vendor number was already found by the modal, skip redundant search
+    if (overrides?.vendorNumber) {
+        vendorNumber = overrides.vendorNumber
+    } else if (isConsumidorFinal) {
         // CONSUMIDOR FINAL: always use Grosso Tractores SA (P00753)
         const vendorResult = await fetch(bcProxyUrl, {
             method: 'POST',

@@ -143,7 +143,10 @@ export function BCCreateModal({ isOpen, onClose, invoice, profile, ownerProfile 
             areaDim: row.area,
             taxAreaCode: row.cod_area_impuesto,
         }))
-        const overrides = editPurchaser !== defaultPurchaser ? { purchaser: editPurchaser } : undefined
+        const overrides = {
+            ...(editPurchaser !== defaultPurchaser ? { purchaser: editPurchaser } : {}),
+            vendorNumber: vendor?.number || '',
+        }
         const result = await createPurchaseInvoiceInBC(invoice.id, customLines, overrides)
 
         if (result.error) {
