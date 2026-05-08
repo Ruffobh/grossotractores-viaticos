@@ -61,16 +61,40 @@ serve(async (req) => {
 
       // Search by CUIT (standard flow)
       if (!cuit) throw new Error('Missing cuit or vendorNumber')
+
+      // Normalize CUIT: generate both formats (with and without dashes)
+      const cuitNoDashes = cuit.replace(/[-\s]/g, '')
+      const cuitWithDashes = cuitNoDashes.length === 11
+        ? `${cuitNoDashes.slice(0,2)}-${cuitNoDashes.slice(2,10)}-${cuitNoDashes.slice(10)}`
+        : cuit
+      // Build list of unique CUIT variants to try
+      const cuitVariants = [...new Set([cuit, cuitNoDashes, cuitWithDashes])]
+
       // Use OData Vendor_Card which allows filtering on VAT_Registration_No (CUIT/CIF/NIF)
-      const url = `${odataBase}/Vendor_Card?$filter=VAT_Registration_No eq '${cuit}'&$select=No,Name,VAT_Registration_No,City,County`
-      const res = await fetch(url, { headers })
-      if (!res.ok) {
-        // Fallback: fetch all vendors and filter client-side
+      // Try each CUIT variant until one returns results
+      let vendors: any[] = []
+      let odataSuccess = false
+      for (const variant of cuitVariants) {
+        const url = `${odataBase}/Vendor_Card?$filter=VAT_Registration_No eq '${variant}'&$select=No,Name,VAT_Registration_No,City,County`
+        const res = await fetch(url, { headers })
+        if (res.ok) {
+          odataSuccess = true
+          const result = await res.json()
+          vendors = result.value || []
+          if (vendors.length > 0) break // Found with this variant, stop trying
+        }
+      }
+
+      if (!odataSuccess || vendors.length === 0) {
+        // Fallback: fetch all vendors and filter client-side (normalize both sides)
         const allUrl = `${apiBase}/vendors?$select=id,number,displayName,taxRegistrationNumber,city`
         const allRes = await fetch(allUrl, { headers })
         if (!allRes.ok) throw new Error('Search Vendors Error: ' + (await allRes.text()))
         const allResult = await allRes.json()
-        const filtered = (allResult.value || []).filter((v: any) => v.taxRegistrationNumber === cuit)
+        const filtered = (allResult.value || []).filter((v: any) => {
+          const bcCuit = (v.taxRegistrationNumber || '').replace(/[-\s]/g, '')
+          return bcCuit === cuitNoDashes
+        })
         return new Response(JSON.stringify({
           success: true,
           found: filtered.length > 0,
@@ -83,8 +107,7 @@ serve(async (req) => {
           }))
         }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
-      const result = await res.json()
-      const vendors = result.value || []
+
       return new Response(JSON.stringify({
         success: true,
         found: vendors.length > 0,
