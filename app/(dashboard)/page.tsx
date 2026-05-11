@@ -127,7 +127,7 @@ export default async function DashboardPage({
         invoices = invoices.filter((inv: any) => filterAreas.includes(inv.profiles?.area))
     }
     if (filterTypes.length > 0) {
-        invoices = invoices.filter((inv: any) => filterTypes.includes(inv.invoice_type))
+        invoices = invoices.filter((inv: any) => filterTypes.includes(inv.expense_category))
     }
 
     // KPI Calculations
