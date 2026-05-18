@@ -155,9 +155,10 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
         worksheet.getColumn(3).width = 25; // Proveedor
         worksheet.getColumn(4).width = 20; // N° Comp
         worksheet.getColumn(5).width = 15; // Tipo
-        worksheet.getColumn(6).width = 15; // Monto
-        worksheet.getColumn(7).width = 10; // Moneda
-        worksheet.getColumn(8).width = 15; // Estado
+        worksheet.getColumn(6).width = 20; // Tipo de Gasto
+        worksheet.getColumn(7).width = 15; // Monto
+        worksheet.getColumn(8).width = 10; // Moneda
+        worksheet.getColumn(9).width = 15; // Estado
 
         // Prepare data
         const rows = getSortedExpenses().map(exp => [
@@ -166,6 +167,7 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
             exp.vendor_name || '',
             exp.invoice_number || '',
             exp.invoice_type || '',
+            exp.expense_category || '',
             exp.total_amount || 0,
             exp.currency || 'ARS',
             formatStatus(exp.status)
@@ -186,6 +188,7 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
                 { name: 'Proveedor', filterButton: true },
                 { name: 'N° Comprobante', filterButton: true },
                 { name: 'Tipo', filterButton: true },
+                { name: 'Tipo de Gasto', filterButton: true },
                 { name: 'Monto', filterButton: true },
                 { name: 'Moneda', filterButton: true },
                 { name: 'Estado', filterButton: true },
