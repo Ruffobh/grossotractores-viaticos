@@ -8,6 +8,6 @@ self.addEventListener('activate', () => {
 
 self.addEventListener('fetch', (event) => {
   // A fetch handler is required by Chrome to trigger the PWA 'beforeinstallprompt'
-  // But we let the browser handle all network requests natively.
-  return
+  // Using event.respondWith guarantees that Chrome validates this as a working PWA service worker
+  event.respondWith(fetch(event.request))
 })

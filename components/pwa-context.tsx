@@ -31,12 +31,17 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
                 return
             }
 
-            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-            const isSmallScreen = window.innerWidth <= 1024
+            const userAgent = window.navigator.userAgent.toLowerCase()
+            const isIOS = /iphone|ipad|ipod/.test(userAgent)
 
-            if (isMobileDevice || isSmallScreen) {
+            // Si es un dispositivo iOS, forzamos isInstallable a true de inmediato
+            // ya que iOS no tiene soporte para beforeinstallprompt y requiere instalación manual.
+            if (isIOS) {
                 setIsInstallable(true)
             }
+            
+            // Para Android/PC NO forzamos isInstallable en true de antemano.
+            // Esperamos a que se dispare el evento 'beforeinstallprompt' de forma nativa.
         }
 
         checkInstallable()
@@ -45,6 +50,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
             e.preventDefault()
             setDeferredPrompt(e)
             setIsInstallable(true)
+            console.log('beforeinstallprompt event fired and captured')
         }
 
         window.addEventListener('beforeinstallprompt', handler)
