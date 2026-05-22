@@ -24,6 +24,8 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     const [showInstructions, setShowInstructions] = useState(false)
 
     useEffect(() => {
+        let timer: any;
+
         const checkInstallable = () => {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone
             if (isStandalone) {
@@ -33,28 +35,37 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
 
             const userAgent = window.navigator.userAgent.toLowerCase()
             const isIOS = /iphone|ipad|ipod/.test(userAgent)
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            const isSmallScreen = window.innerWidth <= 1024
 
             // Si es un dispositivo iOS, forzamos isInstallable a true de inmediato
             // ya que iOS no tiene soporte para beforeinstallprompt y requiere instalación manual.
             if (isIOS) {
                 setIsInstallable(true)
+            } else if (isMobileDevice || isSmallScreen) {
+                // Para Android/PC, si no se ha disparado beforeinstallprompt en 3 segundos,
+                // mostramos el botón de todos modos como fallback manual.
+                timer = setTimeout(() => {
+                    setIsInstallable(true)
+                }, 3000)
             }
-            
-            // Para Android/PC NO forzamos isInstallable en true de antemano.
-            // Esperamos a que se dispare el evento 'beforeinstallprompt' de forma nativa.
         }
 
         checkInstallable()
 
         const handler = (e: any) => {
             e.preventDefault()
+            if (timer) clearTimeout(timer)
             setDeferredPrompt(e)
             setIsInstallable(true)
             console.log('beforeinstallprompt event fired and captured')
         }
 
         window.addEventListener('beforeinstallprompt', handler)
-        return () => window.removeEventListener('beforeinstallprompt', handler)
+        return () => {
+            if (timer) clearTimeout(timer)
+            window.removeEventListener('beforeinstallprompt', handler)
+        }
     }, [])
 
     const installApp = async () => {
