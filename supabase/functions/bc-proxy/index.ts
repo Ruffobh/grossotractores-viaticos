@@ -167,47 +167,31 @@ serve(async (req) => {
       const createdLines: any[] = []
       const odataWarnings: any[] = [] // <--- ADDED FOR DEBUGGING
 
-      // Get and Patch VOXI_Behavior_Code on the Header dynamically first
+      // Get VOXI_Behavior_Code from Header dynamically first
       let behaviorCode = ''
+      const debugLog: string[] = []
       if (docNo) {
+        debugLog.push(`Processing invoice header for document number: ${docNo}`)
         try {
           const headerOdataUrl = `${odataBase}/Purchase_Invoice_Header(Document_Type='Invoice',No='${encodeURIComponent(docNo)}')`
+          debugLog.push(`GET Header OData URL (Initial): ${headerOdataUrl}`)
           const headerOdataRes = await fetch(headerOdataUrl, { headers })
           if (headerOdataRes.ok) {
             const headerOdata = await headerOdataRes.json()
-            const etag = headerOdata['@odata.etag']
             behaviorCode = headerOdata.VOXI_Behavior_Code || ''
-            console.log('Initially obtained VOXI_Behavior_Code from header:', behaviorCode)
-            
-            // If empty, force fallback 'PRODUCTO'
-            if (!behaviorCode) {
-              console.log('Header behavior code was empty, forcing fallback: PRODUCTO')
-              behaviorCode = 'PRODUCTO'
-            }
-
-            // Always write the behavior code back to the Header to ensure Business Central
-            // commits it in the DB and enables propagation to the lines.
-            const patchHeaderRes = await fetch(headerOdataUrl, {
-              method: 'PATCH',
-              headers: { ...headers, 'If-Match': etag },
-              body: JSON.stringify({ VOXI_Behavior_Code: behaviorCode })
-            })
-            if (patchHeaderRes.ok) {
-              console.log('Successfully committed VOXI_Behavior_Code to Header:', behaviorCode)
-            } else {
-              console.error('Failed to PATCH Purchase_Invoice_Header with behavior code:', await patchHeaderRes.text())
-            }
+            debugLog.push(`Initially obtained VOXI_Behavior_Code from header: "${behaviorCode}"`)
           } else {
-            console.error('Failed to GET Purchase_Invoice_Header for ETag/behavior code:', await headerOdataRes.text())
-            // Fallback value for lines even if GET header failed
-            behaviorCode = 'PRODUCTO'
+            const errText = await headerOdataRes.text()
+            debugLog.push(`Failed to GET Purchase_Invoice_Header initially. Status: ${headerOdataRes.status}, Error: ${errText}`)
           }
-        } catch (err) {
-          console.error('Error handling header behavior code:', err)
-          // Fallback value for lines
-          behaviorCode = 'PRODUCTO'
+        } catch (err: any) {
+          debugLog.push(`Error handling initial header behavior code: ${err.message || err}`)
         }
-      } else {
+      }
+
+      // If empty, force fallback 'PRODUCTO'
+      if (!behaviorCode) {
+        debugLog.push(`Header behavior code was empty. Using fallback: "PRODUCTO"`)
         behaviorCode = 'PRODUCTO'
       }
       
@@ -228,6 +212,7 @@ serve(async (req) => {
           // Step 2: PATCH via OData to set fields not available in API v2.0
           // (VAT_Prod_Posting_Group, Shortcut_Dimension_1_Code, Shortcut_Dimension_2_Code, Tax_Area_Code, VOXI_Behavior_Code)
           const lineNo = createdLine.sequence // API v2.0 returns 'sequence' as the line number
+          debugLog.push(`Processing line no ${lineNo} (sequence) for extra fields. behaviorCode is "${behaviorCode}"`)
           if (docNo && lineNo && (vatGroup || sucursal || areaDim || taxAreaCode || behaviorCode)) {
             const patchFields: Record<string, any> = {}
             if (vatGroup) patchFields['VAT_Prod_Posting_Group'] = vatGroup
@@ -237,36 +222,77 @@ serve(async (req) => {
             if (behaviorCode) patchFields['VOXI_Behavior_Code'] = behaviorCode
 
             const odataLineUrl = `${odataBase}/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='${encodeURIComponent(docNo)}',Line_No=${lineNo})`
+            debugLog.push(`GET Line OData URL: ${odataLineUrl}`)
             // Get ETag first
             const getLineRes = await fetch(odataLineUrl, { headers })
             if (getLineRes.ok) {
               const lineData = await getLineRes.json()
               const etag = lineData['@odata.etag']
+              debugLog.push(`GET Line OData successful. ETag obtained: ${etag}. Current VOXI_Behavior_Code in line: "${lineData.VOXI_Behavior_Code || ''}"`)
+              
+              debugLog.push(`PATCH Line OData with fields: ${JSON.stringify(patchFields)}`)
               const patchRes = await fetch(odataLineUrl, {
                 method: 'PATCH',
                 headers: { ...headers, 'If-Match': etag },
                 body: JSON.stringify(patchFields)
               })
-              if (!patchRes.ok) {
+              if (patchRes.ok) {
+                debugLog.push(`PATCH Line OData successful. Response status: ${patchRes.status}`)
+              } else {
                 const errText = await patchRes.text()
-                console.error('OData PATCH warning (non-fatal):', errText)
+                debugLog.push(`Failed to PATCH Purchase_Invoice_Line. Status: ${patchRes.status}, Error: ${errText}`)
                 odataWarnings.push({ lineNo, type: 'PATCH', error: errText, url: odataLineUrl, payload: patchFields })
               }
             } else {
               const errText = await getLineRes.text()
-              console.error('OData GET line warning:', errText)
+              debugLog.push(`Failed to GET Purchase_Invoice_Line for ETag. Status: ${getLineRes.status}, Error: ${errText}`)
               odataWarnings.push({ lineNo, type: 'GET', error: errText, url: odataLineUrl })
             }
           }
         }
       }
+
+      // Step 3: PATCH the Header at the very end (after lines exist) to force Business Central
+      // to execute the validation trigger and propagate VOXI_Behavior_Code to all lines.
+      if (docNo && behaviorCode) {
+        debugLog.push(`--- FINAL STEP: PROPAGATION OF BEHAVIOR CODE "${behaviorCode}" TO LINES ---`)
+        try {
+          const headerOdataUrl = `${odataBase}/Purchase_Invoice_Header(Document_Type='Invoice',No='${encodeURIComponent(docNo)}')`
+          const getHeaderRes = await fetch(headerOdataUrl, { headers })
+          if (getHeaderRes.ok) {
+            const headerOdata = await getHeaderRes.json()
+            const etag = headerOdata['@odata.etag']
+            debugLog.push(`GET Header OData successful for final PATCH. ETag: ${etag}`)
+            
+            debugLog.push(`PATCH Header OData with behavior code: "${behaviorCode}" to trigger propagation`)
+            const patchHeaderRes = await fetch(headerOdataUrl, {
+              method: 'PATCH',
+              headers: { ...headers, 'If-Match': etag },
+              body: JSON.stringify({ VOXI_Behavior_Code: behaviorCode })
+            })
+            if (patchHeaderRes.ok) {
+              debugLog.push(`Successfully committed final VOXI_Behavior_Code to Header. Status: ${patchHeaderRes.status}`)
+            } else {
+              const errText = await patchHeaderRes.text()
+              debugLog.push(`Failed final PATCH to Purchase_Invoice_Header. Status: ${patchHeaderRes.status}, Error: ${errText}`)
+            }
+          } else {
+            const errText = await getHeaderRes.text()
+            debugLog.push(`Failed final GET Header OData for ETag. Status: ${getHeaderRes.status}, Error: ${errText}`)
+          }
+        } catch (err: any) {
+          debugLog.push(`Error in final behavior code propagation: ${err.message || err}`)
+        }
+      }
+
       return new Response(JSON.stringify({
         success: true,
         invoice: createdInvoice,
         invoiceNumber: docNo,
         invoiceId: createdInvoice.id || '',
         lines: createdLines,
-        odataWarnings // <--- ADDED TO RESPONSE
+        odataWarnings,
+        debugLog
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
