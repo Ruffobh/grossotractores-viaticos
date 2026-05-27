@@ -184,6 +184,13 @@ serve(async (req) => {
           console.error('Error fetching header behavior code:', err)
         }
       }
+
+      // Fallback: si el codigo de comportamiento viene vacio de la cabecera (porque la API de BC no ejecuta
+      // los triggers impositivos de VOXI al crearse), usamos 'PRODUCTO' que es el estandar para viaticos en Grosso
+      if (!behaviorCode) {
+        console.log('Behavior code from header was empty, using fallback: PRODUCTO')
+        behaviorCode = 'PRODUCTO'
+      }
       
       if (lines.length > 0) {
         const linesUrl = `${invoicesUrl}(${createdInvoice.id})/purchaseInvoiceLines`
