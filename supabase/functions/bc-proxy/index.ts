@@ -166,6 +166,24 @@ serve(async (req) => {
       const docNo = createdInvoice.number || ''
       const createdLines: any[] = []
       const odataWarnings: any[] = [] // <--- ADDED FOR DEBUGGING
+
+      // Get VOXI_Behavior_Code from Header dynamically
+      let behaviorCode = ''
+      if (docNo) {
+        try {
+          const headerOdataUrl = `${odataBase}/Purchase_Invoice_Header(Document_Type='Invoice',No='${encodeURIComponent(docNo)}')`
+          const headerOdataRes = await fetch(headerOdataUrl, { headers })
+          if (headerOdataRes.ok) {
+            const headerOdata = await headerOdataRes.json()
+            behaviorCode = headerOdata.VOXI_Behavior_Code || ''
+            console.log('Obtained VOXI_Behavior_Code from header:', behaviorCode)
+          } else {
+            console.error('Failed to GET Purchase_Invoice_Header for behavior code:', await headerOdataRes.text())
+          }
+        } catch (err) {
+          console.error('Error fetching header behavior code:', err)
+        }
+      }
       
       if (lines.length > 0) {
         const linesUrl = `${invoicesUrl}(${createdInvoice.id})/purchaseInvoiceLines`
@@ -182,14 +200,15 @@ serve(async (req) => {
           createdLines.push(createdLine)
 
           // Step 2: PATCH via OData to set fields not available in API v2.0
-          // (VAT_Prod_Posting_Group, Shortcut_Dimension_1_Code, Shortcut_Dimension_2_Code, Tax_Area_Code)
+          // (VAT_Prod_Posting_Group, Shortcut_Dimension_1_Code, Shortcut_Dimension_2_Code, Tax_Area_Code, VOXI_Behavior_Code)
           const lineNo = createdLine.sequence // API v2.0 returns 'sequence' as the line number
-          if (docNo && lineNo && (vatGroup || sucursal || areaDim || taxAreaCode)) {
+          if (docNo && lineNo && (vatGroup || sucursal || areaDim || taxAreaCode || behaviorCode)) {
             const patchFields: Record<string, any> = {}
             if (vatGroup) patchFields['VAT_Prod_Posting_Group'] = vatGroup
             if (sucursal) patchFields['Shortcut_Dimension_1_Code'] = sucursal
             // Shortcut_Dimension_2_Code is CANAL, not AREA. Do not send areaDim here.
             if (taxAreaCode) patchFields['Tax_Area_Code'] = taxAreaCode
+            if (behaviorCode) patchFields['VOXI_Behavior_Code'] = behaviorCode
 
             const odataLineUrl = `${odataBase}/Purchase_Invoice_Line(Document_Type='Invoice',Document_No='${encodeURIComponent(docNo)}',Line_No=${lineNo})`
             // Get ETag first
