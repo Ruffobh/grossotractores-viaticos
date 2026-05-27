@@ -167,7 +167,7 @@ serve(async (req) => {
       const createdLines: any[] = []
       const odataWarnings: any[] = [] // <--- ADDED FOR DEBUGGING
 
-      // Get VOXI_Behavior_Code from Header dynamically
+      // Get and Patch VOXI_Behavior_Code on the Header dynamically first
       let behaviorCode = ''
       if (docNo) {
         try {
@@ -175,20 +175,39 @@ serve(async (req) => {
           const headerOdataRes = await fetch(headerOdataUrl, { headers })
           if (headerOdataRes.ok) {
             const headerOdata = await headerOdataRes.json()
+            const etag = headerOdata['@odata.etag']
             behaviorCode = headerOdata.VOXI_Behavior_Code || ''
-            console.log('Obtained VOXI_Behavior_Code from header:', behaviorCode)
+            console.log('Initially obtained VOXI_Behavior_Code from header:', behaviorCode)
+            
+            // If empty, force fallback 'PRODUCTO'
+            if (!behaviorCode) {
+              console.log('Header behavior code was empty, forcing fallback: PRODUCTO')
+              behaviorCode = 'PRODUCTO'
+            }
+
+            // Always write the behavior code back to the Header to ensure Business Central
+            // commits it in the DB and enables propagation to the lines.
+            const patchHeaderRes = await fetch(headerOdataUrl, {
+              method: 'PATCH',
+              headers: { ...headers, 'If-Match': etag },
+              body: JSON.stringify({ VOXI_Behavior_Code: behaviorCode })
+            })
+            if (patchHeaderRes.ok) {
+              console.log('Successfully committed VOXI_Behavior_Code to Header:', behaviorCode)
+            } else {
+              console.error('Failed to PATCH Purchase_Invoice_Header with behavior code:', await patchHeaderRes.text())
+            }
           } else {
-            console.error('Failed to GET Purchase_Invoice_Header for behavior code:', await headerOdataRes.text())
+            console.error('Failed to GET Purchase_Invoice_Header for ETag/behavior code:', await headerOdataRes.text())
+            // Fallback value for lines even if GET header failed
+            behaviorCode = 'PRODUCTO'
           }
         } catch (err) {
-          console.error('Error fetching header behavior code:', err)
+          console.error('Error handling header behavior code:', err)
+          // Fallback value for lines
+          behaviorCode = 'PRODUCTO'
         }
-      }
-
-      // Fallback: si el codigo de comportamiento viene vacio de la cabecera (porque la API de BC no ejecuta
-      // los triggers impositivos de VOXI al crearse), usamos 'PRODUCTO' que es el estandar para viaticos en Grosso
-      if (!behaviorCode) {
-        console.log('Behavior code from header was empty, using fallback: PRODUCTO')
+      } else {
         behaviorCode = 'PRODUCTO'
       }
       
