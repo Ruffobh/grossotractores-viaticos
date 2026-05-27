@@ -194,6 +194,26 @@
     margin-top: 0.75rem;
 }
 
+.bcLink {
+    font-size: 1rem;
+    color: #059669;
+    font-family: monospace;
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px dashed #059669;
+    padding-bottom: 1px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.bcLink:hover {
+    color: #10b981 !important;
+    border-bottom-color: #10b981 !important;
+}
+
 .adminFeedback {
     margin-top: 0.75rem;
     padding: 1rem;

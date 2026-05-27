@@ -122,6 +122,18 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    // --- CHECK_INVOICE_STATUS ---
+    if (action === 'CHECK_INVOICE_STATUS') {
+      const { invoiceNo } = data
+      if (!invoiceNo) throw new Error('Missing invoiceNo')
+      const url = `${apiBase}/purchaseInvoices?$filter=number eq '${encodeURIComponent(invoiceNo)}'&$select=id`
+      const res = await fetch(url, { headers })
+      if (!res.ok) throw new Error('Check Invoice Error: ' + (await res.text()))
+      const result = await res.json()
+      const draftExists = result.value && result.value.length > 0
+      return new Response(JSON.stringify({ success: true, posted: !draftExists }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     // --- LIST_PURCHASE_INVOICES ---
     if (action === 'LIST_PURCHASE_INVOICES') {
       const { vendorNumber, number: invNum } = data || {}

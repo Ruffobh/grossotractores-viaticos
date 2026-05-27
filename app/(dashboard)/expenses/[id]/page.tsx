@@ -94,6 +94,31 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
     // Determine if actions are needed
     const showAdminActions = canApprove && (invoice.status === 'pending_approval' || invoice.status === 'exceeded_budget')
 
+    // Check if the invoice is posted in BC
+    let isPosted = false
+    if (invoice.bc_invoice_number) {
+        try {
+            const bcProxyUrl = 'https://yagyzvvupixmjovyzveu.supabase.co/functions/v1/bc-proxy'
+            const res = await fetch(bcProxyUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'CHECK_INVOICE_STATUS', data: { invoiceNo: invoice.bc_invoice_number } }),
+                next: { revalidate: 60 } // Cache status for 60 seconds
+            })
+            if (res.ok) {
+                const result = await res.json()
+                if (result.success) {
+                    isPosted = result.posted
+                }
+            }
+        } catch (e) {
+            console.error('Error checking BC invoice status:', e)
+        }
+    }
+
+    const bcDeepLink = `https://businesscentral.dynamics.com/4af316b5-92f0-4e36-9242-99fd5953ae01/Production?company=GROSSO%20TRACTORES%20S.A&page=${isPosted ? 138 : 51}&filter='No.' IS '${encodeURIComponent(invoice.bc_invoice_number)}'`
+
+
     return (
         <div className={styles.container}>
             {/* Left: Image Viewer */}
@@ -241,7 +266,15 @@ export default async function ExpenseDetailPage({ params }: { params: Promise<{ 
                     <div className={styles.commentsSection}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '0.5rem', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '0.8125rem', color: '#6b7280' }}>Nº Serie BC:</span>
-                            <strong style={{ fontSize: '1rem', color: '#059669', fontFamily: 'monospace' }}>{invoice.bc_invoice_number}</strong>
+                            <a
+                                href={bcDeepLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.bcLink}
+                                title={isPosted ? "Abrir factura registrada en Business Central" : "Abrir factura borrador en Business Central"}
+                            >
+                                {invoice.bc_invoice_number} ↗
+                            </a>
                             <div style={{ marginLeft: 'auto' }}>
                                 {canRevertBC && invoice.status === 'submitted_to_bc' && (
                                     <BCRevertButton invoiceId={invoice.id} bcInvoiceNumber={invoice.bc_invoice_number} />
