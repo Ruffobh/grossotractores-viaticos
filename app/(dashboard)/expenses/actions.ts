@@ -883,6 +883,7 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
         vendorNumber: vendorNumber,
         invoiceDate: invoice.date,
         vendorInvoiceNumber: vendorInvoiceNo,
+        sucursal: branchCode, // SUC dimension for header
     }
     if (effectivePurchaser) header.purchaser = effectivePurchaser
 
