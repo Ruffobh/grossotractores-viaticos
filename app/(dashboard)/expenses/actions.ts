@@ -865,7 +865,7 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
     let vendorInvoiceNo = invoice.invoice_number || ''
     const invoiceTypeUpper = (invoice.invoice_type || '').toUpperCase()
     if (vendorInvoiceNo) {
-        let letterPrefix = ''
+        let letterPrefix = 'A' // Default a la Letra A
         if (isConsumidorFinal) {
             // CONSUMIDOR FINAL → letra "N" → BC auto-detecta FC-NI
             letterPrefix = 'N'
@@ -874,9 +874,41 @@ export async function createPurchaseInvoiceInBC(invoiceId: string, customLines?:
         else if (invoiceTypeUpper.includes('FACTURA C') || invoiceTypeUpper === 'FC') letterPrefix = 'C'
         else if (invoiceTypeUpper.includes('FACTURA M') || invoiceTypeUpper === 'FM') letterPrefix = 'M'
         
-        if (letterPrefix && !vendorInvoiceNo.startsWith(letterPrefix)) {
-            vendorInvoiceNo = letterPrefix + vendorInvoiceNo
+        // Normalización estricta para localización argentina de AFIP (formato LPPPPP-NNNNNNNN)
+        // 1. Reemplazar cualquier espacio en blanco múltiple por un único guión, y quitar espacios en extremos
+        let cleanNumber = vendorInvoiceNo.trim().replace(/\s+/g, '-');
+        
+        // 2. Si ya empieza con alguna letra de comprobante (con o sin guión), la removemos temporalmente
+        cleanNumber = cleanNumber.replace(/^[A-Za-z]-?/, '');
+
+        // 3. Extraer el Punto de venta y el Número de factura
+        let parts = cleanNumber.split('-');
+        let ptoVenta = '';
+        let nroComp = '';
+
+        if (parts.length >= 2) {
+            ptoVenta = parts[0].replace(/\D/g, '');
+            nroComp = parts[1].replace(/\D/g, '');
+        } else {
+            // Si viene sin guión (ej: todo continuo como "0001800152929")
+            const digits = cleanNumber.replace(/\D/g, '');
+            if (digits.length > 8) {
+                // Los últimos 8 dígitos son el número del comprobante
+                nroComp = digits.slice(-8);
+                ptoVenta = digits.slice(0, -8);
+            } else {
+                nroComp = digits;
+                ptoVenta = '1'; // Fallback a punto de venta 1
+            }
         }
+
+        // 4. Rellenar con ceros a la izquierda según estándares fiscales
+        // Punto de venta: 5 dígitos. Número: 8 dígitos.
+        const formattedPtoVenta = ptoVenta.padStart(5, '0');
+        const formattedNroComp = nroComp.padStart(8, '0');
+
+        // 5. Unir en el formato exacto sin espacios requerido por BC
+        vendorInvoiceNo = `${letterPrefix}${formattedPtoVenta}-${formattedNroComp}`;
     }
 
     const header: Record<string, any> = {

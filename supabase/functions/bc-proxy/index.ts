@@ -35,6 +35,16 @@ serve(async (req) => {
     const odataBase = `https://api.businesscentral.dynamics.com/v2.0/${TENANT_ID}/${ENVIRONMENT}/ODataV4/Company('GROSSO%20TRACTORES%20S.A')`
     const headers = { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' }
 
+    // --- DIAGNOSTIC_GET ---
+    if (action === 'DIAGNOSTIC_GET') {
+      const { endpoint, type } = data
+      const url = type === 'ODATA' ? `${odataBase}/${endpoint}` : `${apiBase}/${endpoint}`
+      const res = await fetch(url, { headers })
+      if (!res.ok) throw new Error(`DIAGNOSTIC_GET Error: ${res.status} - ${await res.text()}`)
+      const result = await res.json()
+      return new Response(JSON.stringify({ success: true, result }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     // --- SEARCH_VENDORS ---
     if (action === 'SEARCH_VENDORS') {
       const { cuit, vendorNumber } = data
@@ -270,9 +280,10 @@ serve(async (req) => {
 
       // Step 3: PATCH the Header at the very end (after lines exist) to force Business Central
       // to execute the validation trigger and propagate VOXI_Behavior_Code to all lines,
-      // and ALSO set Shortcut_Dimension_1_Code (SUC) on the Header to keep dimensions consistent!
-      if (docNo && (behaviorCode || sucursal)) {
-        debugLog.push(`--- FINAL STEP: PROPAGATION OF BEHAVIOR CODE "${behaviorCode}" AND SUCURSAL "${sucursal || ''}" TO HEADER ---`)
+      // and ALSO set Shortcut_Dimension_1_Code (SUC) on the Header to keep dimensions consistent,
+      // and set/validate Vendor_Invoice_No via OData to trigger Argentine localization VOXI parsing!
+      if (docNo) {
+        debugLog.push(`--- FINAL STEP: PROPAGATION OF BEHAVIOR CODE, SUCURSAL, AND VENDOR INVOICE NO TO HEADER ---`)
         try {
           const headerOdataUrl = `${odataBase}/Purchase_Invoice_Header(Document_Type='Invoice',No='${encodeURIComponent(docNo)}')`
           const getHeaderRes = await fetch(headerOdataUrl, { headers })
@@ -284,6 +295,9 @@ serve(async (req) => {
             const patchHeaderFields: Record<string, any> = {}
             if (behaviorCode) patchHeaderFields['VOXI_Behavior_Code'] = behaviorCode
             if (sucursal) patchHeaderFields['Shortcut_Dimension_1_Code'] = sucursal
+            if (header.vendorInvoiceNumber) {
+              patchHeaderFields['Vendor_Invoice_No'] = header.vendorInvoiceNumber
+            }
 
             debugLog.push(`PATCH Header OData with fields: ${JSON.stringify(patchHeaderFields)}`)
             const patchHeaderRes = await fetch(headerOdataUrl, {
@@ -292,7 +306,7 @@ serve(async (req) => {
               body: JSON.stringify(patchHeaderFields)
             })
             if (patchHeaderRes.ok) {
-              debugLog.push(`Successfully committed final VOXI_Behavior_Code to Header. Status: ${patchHeaderRes.status}`)
+              debugLog.push(`Successfully committed final VOXI_Behavior_Code, Sucursal, and Vendor_Invoice_No to Header. Status: ${patchHeaderRes.status}`)
             } else {
               const errText = await patchHeaderRes.text()
               debugLog.push(`Failed final PATCH to Purchase_Invoice_Header. Status: ${patchHeaderRes.status}, Error: ${errText}`)
@@ -302,7 +316,7 @@ serve(async (req) => {
             debugLog.push(`Failed final GET Header OData for ETag. Status: ${getHeaderRes.status}, Error: ${errText}`)
           }
         } catch (err: any) {
-          debugLog.push(`Error in final behavior code propagation: ${err.message || err}`)
+          debugLog.push(`Error in final header validation/propagation: ${err.message || err}`)
         }
       }
 
