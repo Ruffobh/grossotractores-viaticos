@@ -285,7 +285,7 @@ serve(async (req) => {
       if (docNo) {
         debugLog.push(`--- FINAL STEP: PROPAGATION OF VENDOR INVOICE NO AND SUCURSAL TO HEADER ---`)
         try {
-          const headerOdataUrl = `${odataBase}/purchaseDocuments(documentType='Invoice',number='${encodeURIComponent(docNo)}')`
+          const headerOdataUrl = `${odataBase}/purchaseDocuments(${createdInvoice.id})`
           const getHeaderRes = await fetch(headerOdataUrl, { headers })
           if (getHeaderRes.ok) {
             const headerOdata = await getHeaderRes.json()
