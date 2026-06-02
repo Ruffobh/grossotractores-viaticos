@@ -280,12 +280,12 @@ serve(async (req) => {
 
       // Step 3: PATCH the Header at the very end (after lines exist) to force Business Central
       // to execute the validation trigger and propagate VOXI_Behavior_Code to all lines,
-      // and ALSO set Shortcut_Dimension_1_Code (SUC) on the Header to keep dimensions consistent,
-      // and set/validate Vendor_Invoice_No via OData to trigger Argentine localization VOXI parsing!
+      // and ALSO set shortcutDimension1Code (SUC) on the Header to keep dimensions consistent,
+      // and set/validate vendorInvoiceNumber via OData to trigger Argentine localization VOXI parsing!
       if (docNo) {
-        debugLog.push(`--- FINAL STEP: PROPAGATION OF BEHAVIOR CODE, SUCURSAL, AND VENDOR INVOICE NO TO HEADER ---`)
+        debugLog.push(`--- FINAL STEP: PROPAGATION OF VENDOR INVOICE NO AND SUCURSAL TO HEADER ---`)
         try {
-          const headerOdataUrl = `${odataBase}/Purchase_Invoice_Header(Document_Type='Invoice',No='${encodeURIComponent(docNo)}')`
+          const headerOdataUrl = `${odataBase}/purchaseDocuments(documentType='Invoice',number='${encodeURIComponent(docNo)}')`
           const getHeaderRes = await fetch(headerOdataUrl, { headers })
           if (getHeaderRes.ok) {
             const headerOdata = await getHeaderRes.json()
@@ -293,23 +293,43 @@ serve(async (req) => {
             debugLog.push(`GET Header OData successful for final PATCH. ETag: ${etag}`)
             
             const patchHeaderFields: Record<string, any> = {}
-            if (behaviorCode) patchHeaderFields['VOXI_Behavior_Code'] = behaviorCode
-            if (sucursal) patchHeaderFields['Shortcut_Dimension_1_Code'] = sucursal
+            if (sucursal) patchHeaderFields['shortcutDimension1Code'] = sucursal
             if (header.vendorInvoiceNumber) {
-              patchHeaderFields['Vendor_Invoice_No'] = header.vendorInvoiceNumber
+              patchHeaderFields['vendorInvoiceNumber'] = header.vendorInvoiceNumber
+            }
+            if (behaviorCode) {
+              patchHeaderFields['VOXI_Behavior_Code'] = behaviorCode
             }
 
             debugLog.push(`PATCH Header OData with fields: ${JSON.stringify(patchHeaderFields)}`)
-            const patchHeaderRes = await fetch(headerOdataUrl, {
+            let patchHeaderRes = await fetch(headerOdataUrl, {
               method: 'PATCH',
               headers: { ...headers, 'If-Match': etag },
               body: JSON.stringify(patchHeaderFields)
             })
+
+            if (!patchHeaderRes.ok && behaviorCode) {
+              const errText = await patchHeaderRes.text()
+              debugLog.push(`Failed PATCH with VOXI_Behavior_Code. Error: ${errText}. Retrying without behaviorCode...`)
+              
+              const retryFields: Record<string, any> = {}
+              if (sucursal) retryFields['shortcutDimension1Code'] = sucursal
+              if (header.vendorInvoiceNumber) {
+                retryFields['vendorInvoiceNumber'] = header.vendorInvoiceNumber
+              }
+              
+              patchHeaderRes = await fetch(headerOdataUrl, {
+                method: 'PATCH',
+                headers: { ...headers, 'If-Match': etag },
+                body: JSON.stringify(retryFields)
+              })
+            }
+
             if (patchHeaderRes.ok) {
-              debugLog.push(`Successfully committed final VOXI_Behavior_Code, Sucursal, and Vendor_Invoice_No to Header. Status: ${patchHeaderRes.status}`)
+              debugLog.push(`Successfully committed final Vendor Invoice No and Sucursal to Header. Status: ${patchHeaderRes.status}`)
             } else {
               const errText = await patchHeaderRes.text()
-              debugLog.push(`Failed final PATCH to Purchase_Invoice_Header. Status: ${patchHeaderRes.status}, Error: ${errText}`)
+              debugLog.push(`Failed final PATCH to purchaseDocuments. Status: ${patchHeaderRes.status}, Error: ${errText}`)
             }
           } else {
             const errText = await getHeaderRes.text()
