@@ -6,7 +6,7 @@ name: Deploy juego a GitHub Pages
 on:
   push:
     branches:
-      - claude/game-dev-exploration-SF6KM
+      - main
     paths:
       - "game/**"
       - ".github/workflows/deploy-game.yml"
