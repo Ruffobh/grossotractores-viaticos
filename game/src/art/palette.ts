@@ -54,4 +54,12 @@ export const PALETTE: Record<string, string> = {
   y: "#f2d24b", // dorado
   Y: "#fff3a8", // dorado brillante
   q: "#bf9a2e", // dorado oscuro
+
+  // Combate
+  J: "#8fa05c", // piel de orco (verde enfermizo)
+  j: "#6f7e43", // piel de orco oscura
+  l: "#d8dde6", // acero del espadazo
+  L: "#ffffff", // brillo del espadazo
+  v: "#c4302b", // rojo corazón
+  V: "#e85d57", // rojo corazón claro
 } as const;

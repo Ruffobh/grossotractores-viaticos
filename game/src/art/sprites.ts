@@ -265,7 +265,13 @@ export const ITEM_RELIC: PixelGrid = [
 // "left" se obtiene espejando "side" en código (ver BootScene).
 // La paleta de túnica se parametriza pasando un color de túnica (c/C, u/U, a/A).
 
-export type CharColors = { tunic: string; tunicDark: string; hair: string };
+export type CharColors = {
+  tunic: string;
+  tunicDark: string;
+  hair: string;
+  /** Color de piel (char de paleta). Por defecto "f". */
+  skin?: string;
+};
 
 /** Héroe: túnica verde, pelo marrón. */
 export const HERO_COLORS: CharColors = { tunic: "c", tunicDark: "C", hair: "h" };
@@ -273,6 +279,8 @@ export const HERO_COLORS: CharColors = { tunic: "c", tunicDark: "C", hair: "h" }
 export const ELDER_COLORS: CharColors = { tunic: "u", tunicDark: "U", hair: "H" };
 /** Aldeano: túnica terracota, pelo marrón. */
 export const VILLAGER_COLORS: CharColors = { tunic: "a", tunicDark: "A", hair: "h" };
+/** Orco: piel verde, túnica marrón oscura, pelo negro. */
+export const ORC_COLORS: CharColors = { tunic: "A", tunicDark: "n", hair: "z", skin: "J" };
 
 /**
  * Construye los 6 frames de un personaje (down0, down1, up0, up1, side0, side1)
@@ -281,12 +289,14 @@ export const VILLAGER_COLORS: CharColors = { tunic: "a", tunicDark: "A", hair: "
 export function buildCharacterFrames(
   colors: CharColors
 ): Record<string, PixelGrid> {
+  const skin = colors.skin ?? "f";
   const sub = (grid: string[]): PixelGrid =>
     grid.map((row) =>
       row
         .replace(/T/g, colors.tunic)
         .replace(/t/g, colors.tunicDark)
         .replace(/h/g, colors.hair)
+        .replace(/f/g, skin)
     );
 
   // Plantillas 16×16. "f"=piel, "z"=contorno/botas, "i"=ojos.
@@ -408,3 +418,68 @@ export function buildCharacterFrames(
     side_1: sub(SIDE_1),
   };
 }
+
+// ─── COMBATE: ESPADAZO Y CORAZONES ─────────────────────────────────────────
+
+/**
+ * Crescent del espadazo, orientado hacia la DERECHA (abre hacia la izquierda).
+ * Se rota en código según la dirección del héroe.
+ */
+export const SLASH: PixelGrid = [
+  "................",
+  "................",
+  ".........lll....",
+  "........lLLLl...",
+  ".......lLLl.....",
+  "......lLL.......",
+  "......lL........",
+  "......lL........",
+  "......lL........",
+  "......lLL.......",
+  ".......lLLl.....",
+  "........lLLLl...",
+  ".........lll....",
+  "................",
+  "................",
+  "................",
+];
+
+/** Corazón lleno (vida actual). */
+export const HEART_FULL: PixelGrid = [
+  "................",
+  "..vv....vv......",
+  ".vVVvv.vvVVv....",
+  "vVVVVVvVVVVVv...",
+  "vVVVVVVVVVVVv...",
+  "vVVVVVVVVVVVv...",
+  ".vVVVVVVVVVv....",
+  "..vVVVVVVVv.....",
+  "...vVVVVVv......",
+  "....vVVVv.......",
+  ".....vVv........",
+  "......v.........",
+  "................",
+  "................",
+  "................",
+  "................",
+];
+
+/** Corazón vacío (vida perdida). */
+export const HEART_EMPTY: PixelGrid = [
+  "................",
+  "..xx....xx......",
+  ".xssxx.xxssx....",
+  "xsssssxssssssx..",
+  "xsxxxxxxxxxxsx..",
+  "xsxxxxxxxxxxsx..",
+  ".xsxxxxxxxxsx...",
+  "..xsxxxxxxsx....",
+  "...xsxxxxsx.....",
+  "....xsxxsx......",
+  ".....xssx.......",
+  "......xx........",
+  "................",
+  "................",
+  "................",
+  "................",
+];

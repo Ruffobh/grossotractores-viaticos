@@ -16,6 +16,8 @@ export default class VirtualJoystick {
   private base: Phaser.GameObjects.Image;
   private thumb: Phaser.GameObjects.Image;
   private button: Phaser.GameObjects.Image;
+  private attackBtn: Phaser.GameObjects.Image;
+  private attackLabel: Phaser.GameObjects.Text;
   private pointerId: number | null = null;
   private origin = new Phaser.Math.Vector2();
   private vec = { x: 0, y: 0 };
@@ -23,36 +25,58 @@ export default class VirtualJoystick {
   constructor(private readonly scene: Phaser.Scene, private readonly bus: Phaser.Events.EventEmitter) {
     makeCircleTexture(scene, "joy_base", BASE_RADIUS, "rgba(20,16,12,0.35)", "rgba(255,255,255,0.4)");
     makeCircleTexture(scene, "joy_thumb", THUMB_RADIUS, "rgba(240,210,75,0.6)", "rgba(255,255,255,0.7)");
-    makeCircleTexture(scene, "joy_btn", BTN_RADIUS, "rgba(150,60,40,0.55)", "rgba(255,240,180,0.8)");
+    makeCircleTexture(scene, "joy_btn", BTN_RADIUS, "rgba(60,110,80,0.55)", "rgba(255,240,180,0.8)");
+    makeCircleTexture(scene, "joy_btn_atk", BTN_RADIUS, "rgba(150,60,40,0.6)", "rgba(255,220,180,0.85)");
 
     this.base = scene.add.image(0, 0, "joy_base").setScrollFactor(0).setDepth(1000).setVisible(false);
     this.thumb = scene.add.image(0, 0, "joy_thumb").setScrollFactor(0).setDepth(1001).setVisible(false);
 
-    // Botón de acción fijo en la esquina inferior derecha
+    // Botones fijos en la esquina inferior derecha: A (acción) y B (atacar)
     const { width, height } = scene.scale;
+    const ax = width - BTN_RADIUS - 24;
+    const ay = height - BTN_RADIUS - 24;
+    const bx = ax - BTN_RADIUS * 2 - 14; // botón de ataque a la izquierda
+    const by = ay - BTN_RADIUS - 6;
+
     this.button = scene.add
-      .image(width - BTN_RADIUS - 24, height - BTN_RADIUS - 24, "joy_btn")
+      .image(ax, ay, "joy_btn")
       .setScrollFactor(0)
       .setDepth(1000)
       .setInteractive({ useHandCursor: true });
     scene.add
-      .text(this.button.x, this.button.y, "A", {
-        fontFamily: "monospace",
-        fontSize: "28px",
-        color: "#fff3d8",
-      })
+      .text(ax, ay, "A", { fontFamily: "monospace", fontSize: "26px", color: "#fff3d8" })
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(1001);
-
     this.button.on("pointerdown", (p: Phaser.Input.Pointer) => {
       p.event.stopPropagation();
       this.bus.emit(EVENTS.ACTION);
     });
 
-    // Reposicionar el botón si cambia el tamaño (rotar el teléfono)
+    this.attackBtn = scene.add
+      .image(bx, by, "joy_btn_atk")
+      .setScrollFactor(0)
+      .setDepth(1000)
+      .setInteractive({ useHandCursor: true });
+    this.attackLabel = scene.add
+      .text(bx, by, "B", { fontFamily: "monospace", fontSize: "26px", color: "#fff0e0" })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(1001);
+    this.attackBtn.on("pointerdown", (p: Phaser.Input.Pointer) => {
+      p.event.stopPropagation();
+      this.bus.emit(EVENTS.ATTACK);
+    });
+
+    // Reposicionar los botones si cambia el tamaño (rotar el teléfono)
     scene.scale.on("resize", (size: Phaser.Structs.Size) => {
-      this.button.setPosition(size.width - BTN_RADIUS - 24, size.height - BTN_RADIUS - 24);
+      const nax = size.width - BTN_RADIUS - 24;
+      const nay = size.height - BTN_RADIUS - 24;
+      this.button.setPosition(nax, nay);
+      const nbx = nax - BTN_RADIUS * 2 - 14;
+      const nby = nay - BTN_RADIUS - 6;
+      this.attackBtn.setPosition(nbx, nby);
+      this.attackLabel.setPosition(nbx, nby);
     });
 
     scene.input.on("pointerdown", this.onDown, this);

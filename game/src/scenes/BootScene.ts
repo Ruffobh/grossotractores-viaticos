@@ -23,10 +23,15 @@ export const TEX = {
   door: "house_door",
   // Objeto
   relic: "item_relic",
+  // Combate
+  slash: "slash",
+  heartFull: "heart_full",
+  heartEmpty: "heart_empty",
   // Personajes (prefijos; los frames son `${prefix}_${dir}_${n}`)
   hero: "hero",
   elder: "elder",
   villager: "villager",
+  orc: "orc",
 } as const;
 
 /**
@@ -60,6 +65,9 @@ export default class BootScene extends Phaser.Scene {
       [TEX.wall]: S.HOUSE_WALL,
       [TEX.door]: S.HOUSE_DOOR,
       [TEX.relic]: S.ITEM_RELIC,
+      [TEX.slash]: S.SLASH,
+      [TEX.heartFull]: S.HEART_FULL,
+      [TEX.heartEmpty]: S.HEART_EMPTY,
     });
   }
 
@@ -68,6 +76,7 @@ export default class BootScene extends Phaser.Scene {
       [TEX.hero]: S.HERO_COLORS,
       [TEX.elder]: S.ELDER_COLORS,
       [TEX.villager]: S.VILLAGER_COLORS,
+      [TEX.orc]: S.ORC_COLORS,
     };
     for (const [prefix, colors] of Object.entries(chars)) {
       const frames = S.buildCharacterFrames(colors);
@@ -80,7 +89,7 @@ export default class BootScene extends Phaser.Scene {
   private buildAnimations(): void {
     // "left" reutiliza los frames "side" espejados con flipX en la entidad,
     // así que solo definimos down / up / side por personaje.
-    for (const prefix of [TEX.hero, TEX.elder, TEX.villager]) {
+    for (const prefix of [TEX.hero, TEX.elder, TEX.villager, TEX.orc]) {
       const dirs = ["down", "up", "side"];
       for (const dir of dirs) {
         this.anims.create({

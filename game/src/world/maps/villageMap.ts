@@ -69,15 +69,18 @@ for (let y = 0; y < HEIGHT; y++) {
   }
 }
 
-// Bosque (esquina superior izquierda): acá se esconde la reliquia
-fillRect(decor, 2, 2, 6, 5, TEX.tree);
+// Bosque (esquina superior izquierda): acá, en un claro custodiado por orcos,
+// se esconde la reliquia.
+fillRect(decor, 2, 2, 6, 5, TEX.tree); // bloque (2,2)-(7,6)
 set(decor, 3, 7, TEX.tree);
 set(decor, 6, 7, TEX.tree);
 set(decor, 8, 3, TEX.tree);
 set(decor, 8, 5, TEX.tree);
-// Un claro en el bosque (sin árbol) donde aparece la reliquia: (5,4)
-decor[4][5] = "";
-decor[4][4] = "";
+// Claro interior (arena) 3×3 en (4,3)-(6,5)
+fillRect(decor, 4, 3, 3, 3, "");
+// Entrada al claro desde el sur
+set(decor, 5, 6, "");
+set(decor, 5, 7, "");
 
 // Arbustos y rocas decorativas dispersas
 set(decor, 20, 6, TEX.bush);
@@ -121,6 +124,11 @@ export const villageMap: MapData = {
   ],
   items: [
     { id: "relic", tx: 5, ty: 4, texture: TEX.relic },
+  ],
+  enemies: [
+    { kind: "orc", tx: 4, ty: 3 },
+    { kind: "orc", tx: 6, ty: 4 },
+    { kind: "orc", tx: 5, ty: 5 },
   ],
 };
 

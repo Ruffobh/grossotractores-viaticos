@@ -40,6 +40,14 @@ export interface ItemDef {
   texture: string;
 }
 
+/** Definición de un enemigo en un mapa. */
+export interface EnemyDef {
+  /** Tipo de enemigo (por ahora solo "orc"). */
+  kind: "orc";
+  tx: number;
+  ty: number;
+}
+
 /** Datos completos de un mapa. */
 export interface MapData {
   /** Capa base (pasto/camino/agua). Cada celda es una key de tile. */
@@ -50,4 +58,5 @@ export interface MapData {
   spawn: { tx: number; ty: number };
   npcs: NpcDef[];
   items: ItemDef[];
+  enemies: EnemyDef[];
 }

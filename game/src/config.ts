@@ -17,6 +17,28 @@ export const HERO_SPEED = 90;
 /** Distancia (en px lógicos) a la que el héroe puede interactuar con un NPC. */
 export const INTERACT_RANGE = 22;
 
+// ─── Combate ────────────────────────────────────────────────────────────────
+/** Vida máxima del héroe (en corazones). */
+export const HERO_MAX_HP = 5;
+/** Daño del espadazo del héroe. */
+export const HERO_ATTACK_DAMAGE = 1;
+/** Cooldown entre espadazos (ms). */
+export const ATTACK_COOLDOWN = 360;
+/** Cuánto dura activo el hitbox del espadazo (ms). */
+export const ATTACK_ACTIVE = 160;
+/** Invulnerabilidad del héroe tras recibir daño (ms). */
+export const HERO_IFRAMES = 850;
+/** Fuerza del retroceso (px lógicos/seg). */
+export const KNOCKBACK = 160;
+/** Vida de un orco. */
+export const ORC_HP = 3;
+/** Daño que hace un orco al tocar al héroe. */
+export const ORC_DAMAGE = 1;
+/** Velocidad del orco (px lógicos/seg). */
+export const ORC_SPEED = 48;
+/** Distancia (px lógicos) a la que el orco detecta y persigue al héroe. */
+export const ORC_AGGRO = 110;
+
 /** Color de fondo fuera del mapa (negro cálido). */
 export const BACKGROUND_COLOR = "#100d0b";
 
@@ -40,4 +62,8 @@ export const EVENTS = {
   TOAST: "toast",
   /** Mostrar/ocultar la pista de interacción. payload: string | null */
   HINT: "hint",
+  /** Cambió la vida del héroe. payload: { hp: number; maxHp: number } */
+  HP_UPDATE: "hp:update",
+  /** El jugador apretó el botón de ataque (teclado o táctil). */
+  ATTACK: "attack",
 } as const;

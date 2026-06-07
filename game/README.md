@@ -20,6 +20,7 @@ Abrí la URL que muestra Vite (típicamente http://localhost:5173).
 - **Moverse:** WASD o flechas. En el celular, un **joystick** aparece al tocar la mitad
   izquierda de la pantalla.
 - **Interactuar / hablar:** tecla `E` o `Espacio`. En el celular, el **botón A** abajo a la derecha.
+- **Atacar (espada):** tecla `J` o `K`. En el celular, el **botón B**.
 
 ### Probar en el celular
 
@@ -41,8 +42,17 @@ El nombre aparece en el título y en los diálogos automáticamente.
 ## La misión del slice
 
 1. Hablá con el **Anciano** (centro del pueblo) → te encarga buscar una reliquia.
-2. Andá al **bosque del noroeste** y caminá sobre la **reliquia dorada** para recogerla.
+2. Andá al **bosque del noroeste**: la reliquia está en un claro **custodiado por orcos**.
+   Derrotalos con la espada (`J` / botón B) y caminá sobre la **reliquia dorada** para recogerla.
 3. Volvé y entregásela al **Aldeano** (casa del este) → misión completada.
+
+## Combate
+
+- Tenés **5 corazones** de vida (arriba a la izquierda). Los orcos te quitan uno por golpe;
+  tras recibir daño quedás invulnerable un instante (parpadeás) y salís despedido.
+- Cada **espadazo** hace daño en la dirección que mirás. Los orcos tienen 3 de vida.
+- Al morir un orco, a veces **suelta un corazón** que te cura al recogerlo.
+- Si te quedás sin corazones, **te desmayás** y despertás a salvo en la aldea con la vida llena.
 
 ## Otros comandos
 

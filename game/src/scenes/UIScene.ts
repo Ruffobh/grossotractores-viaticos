@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import type { DialogueLine } from "../types";
-import { EVENTS } from "../config";
+import { EVENTS, HERO_MAX_HP } from "../config";
+import { TEX } from "./BootScene";
 import VirtualJoystick from "../input/VirtualJoystick";
 
 /**
@@ -16,6 +17,7 @@ export default class UIScene extends Phaser.Scene {
   private questText!: Phaser.GameObjects.Text;
   private hintText!: Phaser.GameObjects.Text;
   private toastText!: Phaser.GameObjects.Text;
+  private hearts: Phaser.GameObjects.Image[] = [];
   private bus!: Phaser.Events.EventEmitter;
 
   constructor() {
@@ -27,6 +29,7 @@ export default class UIScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
+    this.createHearts();
     this.createQuestHud(w);
     this.createDialoguePanel(w, h);
     this.createHint(w, h);
@@ -41,8 +44,28 @@ export default class UIScene extends Phaser.Scene {
     this.bus.on(EVENTS.QUEST_UPDATE, this.showQuest, this);
     this.bus.on(EVENTS.HINT, this.showHint, this);
     this.bus.on(EVENTS.TOAST, this.showToast, this);
+    this.bus.on(EVENTS.HP_UPDATE, this.updateHp, this);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.cleanup, this);
+  }
+
+  private createHearts(): void {
+    const size = 32;
+    for (let i = 0; i < HERO_MAX_HP; i++) {
+      const heart = this.add
+        .image(20 + i * (size + 4), 22, TEX.heartFull)
+        .setOrigin(0)
+        .setScale(2)
+        .setScrollFactor(0)
+        .setDepth(900);
+      this.hearts.push(heart);
+    }
+  }
+
+  private updateHp(payload: { hp: number; maxHp: number }): void {
+    for (let i = 0; i < this.hearts.length; i++) {
+      this.hearts[i].setTexture(i < payload.hp ? TEX.heartFull : TEX.heartEmpty);
+    }
   }
 
   private createQuestHud(w: number): void {
@@ -184,5 +207,6 @@ export default class UIScene extends Phaser.Scene {
     this.bus.off(EVENTS.QUEST_UPDATE, this.showQuest, this);
     this.bus.off(EVENTS.HINT, this.showHint, this);
     this.bus.off(EVENTS.TOAST, this.showToast, this);
+    this.bus.off(EVENTS.HP_UPDATE, this.updateHp, this);
   }
 }

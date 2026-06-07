@@ -12,6 +12,8 @@ export default class KeyboardInput {
   private keyD: Phaser.Input.Keyboard.Key;
   private keyE: Phaser.Input.Keyboard.Key;
   private keySpace: Phaser.Input.Keyboard.Key;
+  private keyJ: Phaser.Input.Keyboard.Key;
+  private keyK: Phaser.Input.Keyboard.Key;
 
   constructor(scene: Phaser.Scene) {
     const kb = scene.input.keyboard!;
@@ -22,6 +24,8 @@ export default class KeyboardInput {
     this.keyD = kb.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     this.keyE = kb.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.keySpace = kb.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.keyJ = kb.addKey(Phaser.Input.Keyboard.KeyCodes.J);
+    this.keyK = kb.addKey(Phaser.Input.Keyboard.KeyCodes.K);
   }
 
   /** Vector de movimiento (-1..1 por eje). */
@@ -35,11 +39,19 @@ export default class KeyboardInput {
     return { x, y };
   }
 
-  /** true solo en el frame en que se presionó la acción. */
+  /** true solo en el frame en que se presionó la acción (hablar/avanzar). */
   actionJustPressed(): boolean {
     return (
       Phaser.Input.Keyboard.JustDown(this.keyE) ||
       Phaser.Input.Keyboard.JustDown(this.keySpace)
+    );
+  }
+
+  /** true solo en el frame en que se presionó el ataque. */
+  attackJustPressed(): boolean {
+    return (
+      Phaser.Input.Keyboard.JustDown(this.keyJ) ||
+      Phaser.Input.Keyboard.JustDown(this.keyK)
     );
   }
 }
