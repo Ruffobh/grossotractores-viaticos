@@ -1,0 +1,20 @@
+{
+  "name": "cronicas-medievales",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RPG 2D top-down medieval — proyecto de juego independiente (regalo)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}
