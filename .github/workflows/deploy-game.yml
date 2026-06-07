@@ -1,0 +1,66 @@
+name: Deploy juego a GitHub Pages
+
+# Compila el juego (carpeta game/) y lo publica en GitHub Pages.
+# Se dispara al actualizar la rama de desarrollo del juego, o a mano.
+
+on:
+  push:
+    branches:
+      - claude/game-dev-exploration-SF6KM
+    paths:
+      - "game/**"
+      - ".github/workflows/deploy-game.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Una sola publicación a la vez
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: game
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Activa GitHub Pages automáticamente si todavía no lo está
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar
+        run: npm run build
+
+      - name: Subir artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: game/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
