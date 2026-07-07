@@ -39,13 +39,15 @@ export default async function ExpensesPage({
         branchesList = bData || []
     }
 
+    const selectedArea = params.area as string | undefined
+
     // 2. Build Query
     // Explicitly specify the FK column for profiles to avoid ambiguity now that we have two FKs (user_id and loaded_by)
     let query = supabase
         .from('invoices')
         .select(`
             *,
-            profiles!invoices_user_id_fkey(full_name, branch, area),
+            profiles:profiles!invoices_user_id_fkey${selectedArea ? '!inner' : ''}(full_name, branch, area),
             loaded_by_profile:profiles!invoices_loaded_by_fkey(full_name, branch, area)
         `)
         .order('date', { ascending: false })
@@ -65,7 +67,11 @@ export default async function ExpensesPage({
 
     // --- Count queries using head:true (no row limit, returns only count via HTTP header) ---
     const buildCountQuery = (status?: string) => {
-        let q = supabase.from('invoices').select('*', { count: 'exact', head: true }).neq('status', 'draft')
+        let selectStr = '*'
+        if (isManagerOrAdmin && selectedArea) {
+            selectStr = '*, profiles:profiles!invoices_user_id_fkey!inner(area)'
+        }
+        let q = supabase.from('invoices').select(selectStr, { count: 'exact', head: true }).neq('status', 'draft')
         if (role === 'user' && !hasApproveArea) q = q.eq('user_id', user.id)
         // Manager: only count invoices from their branches
         if ((role === 'manager' || role === 'branch_manager') && userBranches.length > 0 && !params.branch) {
@@ -76,6 +82,7 @@ export default async function ExpensesPage({
             if (params.branch) q = q.eq('branch', params.branch as string)
             if (params.expense_category) q = q.eq('expense_category', params.expense_category as string)
             if (params.payment_method) q = q.eq('payment_method', params.payment_method as string)
+            if (selectedArea) q = q.eq('profiles.area', selectedArea)
         }
         if (status) q = q.eq('status', status)
         return q
@@ -116,6 +123,7 @@ export default async function ExpensesPage({
         if (params.branch) query = query.eq('branch', params.branch as string)
         if (params.expense_category) query = query.eq('expense_category', params.expense_category as string)
         if (params.payment_method) query = query.eq('payment_method', params.payment_method as string)
+        if (selectedArea) query = query.eq('profiles.area', selectedArea)
     }
 
     const { data: rawExpenses, error } = await query.range(0, 199)
@@ -140,6 +148,7 @@ export default async function ExpensesPage({
     if (params.branch) activeFilters.branch = params.branch as string
     if (params.expense_category) activeFilters.expense_category = params.expense_category as string
     if (params.payment_method) activeFilters.payment_method = params.payment_method as string
+    if (selectedArea) activeFilters.area = selectedArea
 
     return (
         <div className={styles.container}>

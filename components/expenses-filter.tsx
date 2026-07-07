@@ -11,7 +11,7 @@ interface FilterProps {
 }
 
 import styles from './expenses-filter.module.css'
-import { EXPENSE_TYPES, PAYMENT_METHODS } from '@/app/constants'
+import { EXPENSE_TYPES, PAYMENT_METHODS, AREAS } from '@/app/constants'
 
 export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProps) {
     const router = useRouter()
@@ -24,7 +24,8 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
         user_id: searchParams.get('user_id') || '',
         branch: searchParams.get('branch') || '',
         expense_category: searchParams.get('expense_category') || '',
-        payment_method: searchParams.get('payment_method') || ''
+        payment_method: searchParams.get('payment_method') || '',
+        area: searchParams.get('area') || ''
     })
 
     const handleChange = (key: string, value: string) => {
@@ -45,12 +46,13 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
             user_id: '',
             branch: '',
             expense_category: '',
-            payment_method: ''
+            payment_method: '',
+            area: ''
         })
         router.push('/expenses') // or keep status param if we want to separate logic
     }
 
-    const hasActiveFilters = filters.user_id || filters.branch || filters.expense_category || filters.payment_method
+    const hasActiveFilters = filters.user_id || filters.branch || filters.expense_category || filters.payment_method || filters.area
 
     return (
         <div className={styles.container}>
@@ -94,6 +96,21 @@ export function ExpensesFilter({ users, branches, isManagerOrAdmin }: FilterProp
                         <option value="">Todas</option>
                         {branches.map(b => (
                             <option key={b.id} value={b.name}>{b.name}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Area Filter */}
+                <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Área</label>
+                    <select
+                        className={styles.select}
+                        value={filters.area}
+                        onChange={(e) => handleChange('area', e.target.value)}
+                    >
+                        <option value="">Todas</option>
+                        {AREAS.map(a => (
+                            <option key={a} value={a}>{a}</option>
                         ))}
                     </select>
                 </div>

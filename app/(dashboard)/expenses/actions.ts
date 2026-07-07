@@ -22,11 +22,13 @@ export async function loadMoreExpenses(
     const hasApproveArea = (profile?.permissions as any)?.approve_area_expenses === true
     const isManagerOrAdmin = role === 'manager' || role === 'branch_manager' || role === 'admin'
 
+    const selectedArea = filters.area
+
     let query = supabase
         .from('invoices')
         .select(`
             *,
-            profiles!invoices_user_id_fkey(full_name, branch, area),
+            profiles:profiles!invoices_user_id_fkey${selectedArea ? '!inner' : ''}(full_name, branch, area),
             loaded_by_profile:profiles!invoices_loaded_by_fkey(full_name, branch, area)
         `)
         .order('date', { ascending: false })
@@ -43,6 +45,7 @@ export async function loadMoreExpenses(
         if (filters.branch) query = query.eq('branch', filters.branch)
         if (filters.expense_category) query = query.eq('expense_category', filters.expense_category)
         if (filters.payment_method) query = query.eq('payment_method', filters.payment_method)
+        if (selectedArea) query = query.eq('profiles.area', selectedArea)
     }
 
     const { data: rawExpenses } = await query

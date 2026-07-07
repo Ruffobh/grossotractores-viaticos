@@ -152,18 +152,22 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
         // Set column widths but NOT headers (Table will handle headers)
         worksheet.getColumn(1).width = 12; // Fecha
         worksheet.getColumn(2).width = 25; // Usuario
-        worksheet.getColumn(3).width = 25; // Proveedor
-        worksheet.getColumn(4).width = 20; // N° Comp
-        worksheet.getColumn(5).width = 15; // Tipo
-        worksheet.getColumn(6).width = 20; // Tipo de Gasto
-        worksheet.getColumn(7).width = 15; // Monto
-        worksheet.getColumn(8).width = 10; // Moneda
-        worksheet.getColumn(9).width = 15; // Estado
+        worksheet.getColumn(3).width = 18; // Sucursal
+        worksheet.getColumn(4).width = 18; // Área
+        worksheet.getColumn(5).width = 25; // Proveedor
+        worksheet.getColumn(6).width = 20; // N° Comp
+        worksheet.getColumn(7).width = 15; // Tipo
+        worksheet.getColumn(8).width = 20; // Tipo de Gasto
+        worksheet.getColumn(9).width = 15; // Monto
+        worksheet.getColumn(10).width = 10; // Moneda
+        worksheet.getColumn(11).width = 15; // Estado
 
         // Prepare data
         const rows = getSortedExpenses().map(exp => [
             new Date(exp.date).toLocaleDateString('es-AR'),
             exp.profiles?.full_name || 'Desconocido',
+            exp.profiles?.branch || 'Sin sucursal',
+            exp.profiles?.area || 'Sin área',
             exp.vendor_name || '',
             exp.invoice_number || '',
             exp.invoice_type || '',
@@ -185,6 +189,8 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
             columns: [
                 { name: 'Fecha', filterButton: true },
                 { name: 'Usuario', filterButton: true },
+                { name: 'Sucursal', filterButton: true },
+                { name: 'Área', filterButton: true },
                 { name: 'Proveedor', filterButton: true },
                 { name: 'N° Comprobante', filterButton: true },
                 { name: 'Tipo', filterButton: true },
