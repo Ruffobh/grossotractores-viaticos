@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Trash2, Search, Download, ArrowUp, ArrowDown } from 'lucide-react'
 import styles from './expenses-table.module.css'
-import { deleteExpense, loadMoreExpenses } from '@/app/(dashboard)/expenses/actions'
+import { deleteExpense, loadMoreExpenses, getAllExpensesForExport } from '@/app/(dashboard)/expenses/actions'
 import { useRouter } from 'next/navigation'
 
 interface Expense {
@@ -46,6 +46,7 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
     const [allExpenses, setAllExpenses] = useState<Expense[]>(expenses)
     const [hasMoreState, setHasMoreState] = useState(hasMore)
     const [isLoadingMore, setIsLoadingMore] = useState(false)
+    const [isExporting, setIsExporting] = useState(false)
     const [dbOffset, setDbOffset] = useState(200)
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
@@ -144,72 +145,116 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
     };
 
     const exportToExcel = async () => {
-        const ExcelJS = (await import('exceljs')).default;
+        setIsExporting(true);
+        try {
+            // Obtener todos los comprobantes que coinciden con los filtros directamente desde la base de datos
+            const result = await getAllExpensesForExport(filters, currentUserRole, userBranches);
+            let exportExpenses = result.expenses || [];
 
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Comprobantes');
+            // Si el usuario tiene una búsqueda activa por texto en la pantalla, la aplicamos
+            if (searchTerm) {
+                const lowerTerm = searchTerm.toLowerCase();
+                exportExpenses = exportExpenses.filter((expense: any) =>
+                    (expense.vendor_name?.toLowerCase().includes(lowerTerm)) ||
+                    (expense.invoice_number?.toLowerCase().includes(lowerTerm)) ||
+                    (expense.profiles?.full_name?.toLowerCase().includes(lowerTerm)) ||
+                    (expense.total_amount?.toString().includes(lowerTerm))
+                );
+            }
 
-        // Set column widths but NOT headers (Table will handle headers)
-        worksheet.getColumn(1).width = 12; // Fecha
-        worksheet.getColumn(2).width = 25; // Usuario
-        worksheet.getColumn(3).width = 18; // Sucursal
-        worksheet.getColumn(4).width = 18; // Área
-        worksheet.getColumn(5).width = 25; // Proveedor
-        worksheet.getColumn(6).width = 20; // N° Comp
-        worksheet.getColumn(7).width = 15; // Tipo
-        worksheet.getColumn(8).width = 20; // Tipo de Gasto
-        worksheet.getColumn(9).width = 15; // Monto
-        worksheet.getColumn(10).width = 10; // Moneda
-        worksheet.getColumn(11).width = 15; // Estado
+            // Aplicar el mismo ordenamiento seleccionado en la UI si existe
+            if (sortConfig) {
+                exportExpenses.sort((a: any, b: any) => {
+                    let aValue = a[sortConfig.key];
+                    let bValue = b[sortConfig.key];
 
-        // Prepare data
-        const rows = getSortedExpenses().map(exp => [
-            new Date(exp.date).toLocaleDateString('es-AR'),
-            exp.profiles?.full_name || 'Desconocido',
-            exp.profiles?.branch || 'Sin sucursal',
-            exp.profiles?.area || 'Sin área',
-            exp.vendor_name || '',
-            exp.invoice_number || '',
-            exp.invoice_type || '',
-            exp.expense_category || '',
-            exp.total_amount || 0,
-            exp.currency || 'ARS',
-            formatStatus(exp.status)
-        ]);
+                    if (sortConfig.key === 'user') {
+                        aValue = a.profiles?.full_name || '';
+                        bValue = b.profiles?.full_name || '';
+                    }
 
-        // Add Table with "TableStyleMedium2" (Blue with headers and filters)
-        worksheet.addTable({
-            name: 'ComprobantesTable',
-            ref: 'A1',
-            headerRow: true,
-            style: {
-                theme: 'TableStyleMedium2',
-                showRowStripes: true,
-            },
-            columns: [
-                { name: 'Fecha', filterButton: true },
-                { name: 'Usuario', filterButton: true },
-                { name: 'Sucursal', filterButton: true },
-                { name: 'Área', filterButton: true },
-                { name: 'Proveedor', filterButton: true },
-                { name: 'N° Comprobante', filterButton: true },
-                { name: 'Tipo', filterButton: true },
-                { name: 'Tipo de Gasto', filterButton: true },
-                { name: 'Monto', filterButton: true },
-                { name: 'Moneda', filterButton: true },
-                { name: 'Estado', filterButton: true },
-            ],
-            rows: rows,
-        });
+                    if (aValue < bValue) {
+                        return sortConfig.direction === 'asc' ? -1 : 1;
+                    }
+                    if (aValue > bValue) {
+                        return sortConfig.direction === 'asc' ? 1 : -1;
+                    }
+                    return 0;
+                });
+            }
 
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute('download', `comprobantes_${new Date().toISOString().split('T')[0]}.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            const ExcelJS = (await import('exceljs')).default;
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Comprobantes');
+
+            // Set column widths but NOT headers (Table will handle headers)
+            worksheet.getColumn(1).width = 12; // Fecha
+            worksheet.getColumn(2).width = 25; // Usuario
+            worksheet.getColumn(3).width = 18; // Sucursal
+            worksheet.getColumn(4).width = 18; // Área
+            worksheet.getColumn(5).width = 25; // Proveedor
+            worksheet.getColumn(6).width = 20; // N° Comp
+            worksheet.getColumn(7).width = 15; // Tipo
+            worksheet.getColumn(8).width = 20; // Tipo de Gasto
+            worksheet.getColumn(9).width = 15; // Monto
+            worksheet.getColumn(10).width = 10; // Moneda
+            worksheet.getColumn(11).width = 15; // Estado
+
+            // Prepare data
+            const rows = exportExpenses.map((exp: any) => [
+                new Date(exp.date).toLocaleDateString('es-AR'),
+                exp.profiles?.full_name || 'Desconocido',
+                exp.profiles?.branch || 'Sin sucursal',
+                exp.profiles?.area || 'Sin área',
+                exp.vendor_name || '',
+                exp.invoice_number || '',
+                exp.invoice_type || '',
+                exp.expense_category || '',
+                exp.total_amount || 0,
+                exp.currency || 'ARS',
+                formatStatus(exp.status)
+            ]);
+
+            // Add Table with "TableStyleMedium2" (Blue with headers and filters)
+            worksheet.addTable({
+                name: 'ComprobantesTable',
+                ref: 'A1',
+                headerRow: true,
+                style: {
+                    theme: 'TableStyleMedium2',
+                    showRowStripes: true,
+                },
+                columns: [
+                    { name: 'Fecha', filterButton: true },
+                    { name: 'Usuario', filterButton: true },
+                    { name: 'Sucursal', filterButton: true },
+                    { name: 'Área', filterButton: true },
+                    { name: 'Proveedor', filterButton: true },
+                    { name: 'N° Comprobante', filterButton: true },
+                    { name: 'Tipo', filterButton: true },
+                    { name: 'Tipo de Gasto', filterButton: true },
+                    { name: 'Monto', filterButton: true },
+                    { name: 'Moneda', filterButton: true },
+                    { name: 'Estado', filterButton: true },
+                ],
+                rows: rows,
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `comprobantes_${new Date().toISOString().split('T')[0]}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+        } catch (error) {
+            console.error('Error al exportar a Excel:', error);
+            alert('Ocurrió un error al exportar la planilla Excel.');
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const displayedExpenses = getSortedExpenses();
@@ -232,9 +277,13 @@ export function ExpensesTable({ expenses, isManagerOrAdmin, currentUserId, curre
                     {/* Actions Container to enforce right alignment */}
                     <div className={styles.actionsContainer}>
                         {(isManagerOrAdmin) && (
-                            <button onClick={exportToExcel} className={styles.exportButton}>
+                            <button
+                                onClick={exportToExcel}
+                                className={styles.exportButton}
+                                disabled={isExporting}
+                            >
                                 <Download size={18} />
-                                Exportar Excel
+                                {isExporting ? 'Exportando...' : 'Exportar Excel'}
                             </button>
                         )}
                     </div>
