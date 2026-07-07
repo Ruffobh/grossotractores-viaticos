@@ -62,6 +62,12 @@ export default async function ExpensesPage({
     if (params.status) {
         query = query.eq('status', params.status as string)
     }
+    if (params.date_from) {
+        query = query.gte('date', params.date_from as string)
+    }
+    if (params.date_to) {
+        query = query.lte('date', params.date_to as string)
+    }
 
     const userBranches = profile?.branches || (profile?.branch ? [profile.branch] : [])
 
@@ -84,6 +90,8 @@ export default async function ExpensesPage({
             if (params.payment_method) q = q.eq('payment_method', params.payment_method as string)
             if (selectedArea) q = q.eq('profiles.area', selectedArea)
         }
+        if (params.date_from) q = q.gte('date', params.date_from as string)
+        if (params.date_to) q = q.lte('date', params.date_to as string)
         if (status) q = q.eq('status', status)
         return q
     }
@@ -149,6 +157,8 @@ export default async function ExpensesPage({
     if (params.expense_category) activeFilters.expense_category = params.expense_category as string
     if (params.payment_method) activeFilters.payment_method = params.payment_method as string
     if (selectedArea) activeFilters.area = selectedArea
+    if (params.date_from) activeFilters.date_from = params.date_from as string
+    if (params.date_to) activeFilters.date_to = params.date_to as string
 
     return (
         <div className={styles.container}>

@@ -100,3 +100,27 @@
         padding: 0.875rem;
     }
 }
+
+.input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: var(--gt-dark);
+    background-color: var(--gray-50);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.input:hover {
+    background-color: var(--gt-white);
+    border-color: var(--gt-navy);
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--gt-navy);
+    box-shadow: 0 0 0 3px rgba(13, 67, 97, 0.08);
+    background-color: var(--gt-white);
+}

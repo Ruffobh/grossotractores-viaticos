@@ -47,6 +47,8 @@ export async function loadMoreExpenses(
         if (filters.payment_method) query = query.eq('payment_method', filters.payment_method)
         if (selectedArea) query = query.eq('profiles.area', selectedArea)
     }
+    if (filters.date_from) query = query.gte('date', filters.date_from)
+    if (filters.date_to) query = query.lte('date', filters.date_to)
 
     const { data: rawExpenses } = await query
     let expenses = rawExpenses || []
@@ -1066,6 +1068,8 @@ export async function getAllExpensesForExport(
         if (filters.payment_method) query = query.eq('payment_method', filters.payment_method)
         if (selectedArea) query = query.eq('profiles.area', selectedArea)
     }
+    if (filters.date_from) query = query.gte('date', filters.date_from)
+    if (filters.date_to) query = query.lte('date', filters.date_to)
 
     const { data: rawExpenses, error } = await query
     if (error) {
